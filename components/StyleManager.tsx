@@ -14,6 +14,79 @@ import {
   Tag, Ruler, Pipette, Repeat, SlidersHorizontal, Sparkle, Link as LinkIcon
 } from 'lucide-react';
 
+// --- المكونات المساعدة الخارجية ---
+
+const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px" }: any) => {
+  const [tempValue, setTempValue] = useState(value.toString());
+
+  useEffect(() => {
+    setTempValue(value.toString());
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^\d-]/g, '');
+    setTempValue(val);
+    if (val !== '' && val !== '-') {
+      onChange(parseInt(val) || 0);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+           {Icon && <Icon size={14} className="text-indigo-600" />}
+           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+        </div>
+        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 rounded-full px-1 py-0.5 border border-indigo-100 dark:border-indigo-800/30">
+           <input 
+             type="text"
+             inputMode="numeric"
+             dir="ltr"
+             value={tempValue} 
+             onChange={handleInputChange}
+             className="w-16 bg-transparent text-center text-xs font-black text-indigo-600 outline-none border-none"
+           />
+           <span className="text-[8px] font-black text-indigo-400 pr-2 pointer-events-none">{unit}</span>
+        </div>
+      </div>
+      <input 
+        type="range" 
+        min={min} 
+        max={max} 
+        value={isNaN(parseInt(tempValue)) ? 0 : parseInt(tempValue)} 
+        onChange={(e) => onChange(parseInt(e.target.value))} 
+        className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-indigo-600" 
+      />
+    </div>
+  );
+};
+
+const ColorInput = ({ label, value, onChange }: any) => (
+  <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+    <div className="flex items-center gap-2">
+      <div className="relative w-8 h-8 rounded-lg overflow-hidden border shadow-sm">
+        <input type="color" value={value || '#ffffff'} onChange={e => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
+        <div className="w-full h-full" style={{ backgroundColor: value || '#ffffff' }} />
+      </div>
+      <input type="text" value={value || ''} onChange={e => onChange(e.target.value)} className="bg-transparent border-none outline-none font-mono text-[10px] font-black w-20 text-center dark:text-gray-400" placeholder="#HEX" />
+    </div>
+  </div>
+);
+
+const ToggleSwitch = ({ label, value, onChange, icon: Icon, color = "bg-indigo-600", isRtl }: any) => (
+  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+    <div className="flex items-center gap-3">
+      {Icon && <Icon size={16} className={value ? "text-indigo-600" : "text-gray-300"} />}
+      <span className={`text-[10px] font-black uppercase tracking-widest ${value ? 'dark:text-white' : 'text-gray-400'}`}>{label}</span>
+    </div>
+    <button onClick={() => onChange(!value)} className={`w-12 h-6 rounded-full relative transition-all ${value ? color + ' shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
+      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (value ? 'right-7' : 'right-1') : (value ? 'left-7' : 'left-1')}`} />
+    </button>
+  </div>
+);
+
 interface StyleManagerProps {
   lang: Language;
 }
@@ -109,7 +182,7 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
 
   const handleSave = async () => {
     if (!editingStyle?.nameAr || !editingStyle?.nameEn) {
-      alert(isRtl ? "يرجى إدخال اسم النمط" : "Please enter style name");
+      alert(isRtl ? "يرجى إدخل اسم النمط" : "Please enter style name");
       return;
     }
     setIsSaving(true);
@@ -158,54 +231,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
       setUploadingBg(false);
     }
   };
-
-  const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px" }: any) => (
-    <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm space-y-3">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-           {Icon && <Icon size={14} className="text-indigo-600" />}
-           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
-        </div>
-        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 rounded-full px-1 py-0.5 border border-indigo-100 dark:border-indigo-800/30">
-           <input 
-             type="number" 
-             value={value} 
-             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-             className="w-12 bg-transparent text-center text-[10px] font-black text-indigo-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-           />
-           <span className="text-[8px] font-black text-indigo-400 pr-2 pointer-events-none">{unit}</span>
-        </div>
-      </div>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-    </div>
-  );
-
-  const ColorInput = ({ label, value, onChange }: any) => (
-    <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
-      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
-      <div className="flex items-center gap-2">
-        <div className="relative w-8 h-8 rounded-lg overflow-hidden border shadow-sm">
-          <input type="color" value={value || '#ffffff'} onChange={e => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
-          <div className="w-full h-full" style={{ backgroundColor: value || '#ffffff' }} />
-        </div>
-        <input type="text" value={value || ''} onChange={e => onChange(e.target.value)} className="bg-transparent border-none outline-none font-mono text-[10px] font-black w-20 text-center dark:text-gray-400" placeholder="#HEX" />
-      </div>
-    </div>
-  );
-
-  const ToggleSwitch = ({ label, value, onChange, icon: Icon, color = "bg-indigo-600" }: any) => (
-    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-      <div className="flex items-center gap-3">
-        {Icon && <Icon size={16} className={value ? "text-indigo-600" : "text-gray-300"} />}
-        <span className={`text-[10px] font-black uppercase tracking-widest ${value ? 'dark:text-white' : 'text-gray-400'}`}>{label}</span>
-      </div>
-      <button onClick={() => onChange(!value)} className={`w-12 h-6 rounded-full relative transition-all ${value ? color + ' shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
-        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (value ? 'right-7' : 'right-1') : (value ? 'left-7' : 'left-1')}`} />
-      </button>
-    </div>
-  );
-
-  const inputClasses = "w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/20 transition-all shadow-inner";
 
   if (loading && !editingStyle && !styleToDelete) return (
     <div className="flex flex-col items-center justify-center py-20">
@@ -335,14 +360,14 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <RangeControl label={t('ارتفاع الترويسة', 'Header Depth')} min={40} max={1000} value={editingStyle.config?.headerHeight || 180} onChange={(v: number) => updateConfig('headerHeight', v)} icon={Maximize2} />
-                      <ToggleSwitch label={t('ترويسة زجاجية', 'Glassy Header')} value={editingStyle.config?.headerGlassy} onChange={(v: boolean) => updateConfig('headerGlassy', v)} icon={GlassWater} />
+                      <ToggleSwitch label={t('ترويسة زجاجية', 'Glassy Header')} value={editingStyle.config?.headerGlassy} onChange={(v: boolean) => updateConfig('headerGlassy', v)} icon={GlassWater} isRtl={isRtl} />
                     </div>
                  </div>
 
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
                     <div className="flex items-center gap-4"><Box className="text-indigo-600" size={24}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('هندسة إطار البيانات', 'Body Geometry & Effects')}</h3></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <ToggleSwitch label={t('تأثير زجاجي فاخر للجسم', 'Glassmorphism Body')} value={editingStyle.config?.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} />
+                       <ToggleSwitch label={t('تأثير زجاجي فاخر للجسم', 'Glassmorphism Body')} value={editingStyle.config?.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} isRtl={isRtl} />
                        <RangeControl label={t('درجة شفافية الجسم', 'Body Transparency')} min={0} max={100} unit="%" value={editingStyle.config?.bodyOpacity ?? 100} onChange={(v: number) => updateConfig('bodyOpacity', v)} icon={Sun} />
                        <RangeControl label={t('إزاحة منطقة البيانات', 'Overlap Y Offset')} min={-2000} max={2000} value={editingStyle.config?.bodyOffsetY || 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} />
                        <RangeControl label={t('انحناء زوايا الجسم', 'Border Radius')} min={0} max={120} value={editingStyle.config?.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
@@ -354,7 +379,7 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                               <Sparkle className="text-indigo-600" size={22} />
                               <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('ميزة جسم البطاقة الخاصة (DNA)', 'Special Body Feature DNA')}</h4>
                            </div>
-                           <ToggleSwitch label={t('تفعيل الميزة', 'Enable')} value={editingStyle.config?.showBodyFeatureByDefault} onChange={(v: boolean) => updateConfig('showBodyFeatureByDefault', v)} color="bg-emerald-600" />
+                           <ToggleSwitch label={t('تفعيل الميزة', 'Enable')} value={editingStyle.config?.showBodyFeatureByDefault} onChange={(v: boolean) => updateConfig('showBodyFeatureByDefault', v)} color="bg-emerald-600" isRtl={isRtl} />
                         </div>
 
                         {editingStyle.config?.showBodyFeatureByDefault && (

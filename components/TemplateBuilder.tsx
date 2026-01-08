@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -18,7 +17,109 @@ import {
   CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search
 } from 'lucide-react';
 
-type BuilderTab = 'header' | 'body-style' | 'avatar' | 'visuals' | 'bio-lab' | 'identity-lab' | 'direct-links' | 'membership-lab' | 'contact-lab' | 'desktop-lab' | 'special-links' | 'location' | 'social-lab' | 'qrcode' | 'special-features';
+// --- المكونات المساعدة (خارج المكون الرئيسي لمنع إعادة التركيب remounting) ---
+
+type BuilderTab = 
+  | 'header' 
+  | 'body-style' 
+  | 'avatar' 
+  | 'visuals' 
+  | 'identity-lab' 
+  | 'bio-lab' 
+  | 'direct-links' 
+  | 'membership-lab' 
+  | 'contact-lab' 
+  | 'special-links' 
+  | 'location' 
+  | 'social-lab' 
+  | 'qrcode' 
+  | 'special-features' 
+  | 'desktop-lab';
+
+const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Icon, hint }: any) => {
+  const [tempValue, setTempValue] = useState(value.toString());
+
+  useEffect(() => {
+    setTempValue(value.toString());
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^\d-]/g, '');
+    setTempValue(val);
+    if (val !== '' && val !== '-') {
+      onChange(parseInt(val) || 0);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-[#121215] p-5 rounded-[2rem] border border-gray-100 dark:border-white/5 shadow-sm space-y-4 transition-all hover:border-blue-200">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">
+             {Icon && <Icon size={14} />}
+           </div>
+           <div className="flex flex-col">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
+              {hint && <span className="text-[8px] text-gray-400 font-bold">{hint}</span>}
+           </div>
+        </div>
+        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
+           <input 
+             type="text"
+             inputMode="numeric"
+             dir="ltr"
+             value={tempValue} 
+             onChange={handleInputChange}
+             className="w-16 bg-transparent text-center text-xs font-black text-blue-600 outline-none border-none"
+           />
+           <span className="text-[8px] font-black text-blue-400 pr-2 pointer-events-none">{unit}</span>
+        </div>
+      </div>
+      <input 
+        type="range" 
+        min={min} 
+        max={max} 
+        value={isNaN(parseInt(tempValue)) ? 0 : parseInt(tempValue)} 
+        onChange={(e) => onChange(parseInt(e.target.value))} 
+        className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" 
+      />
+    </div>
+  );
+};
+
+const ToggleSwitch = ({ label, value, onChange, icon: Icon, color = "bg-blue-600", isRtl }: any) => (
+  <div className="flex items-center justify-between p-6 bg-white dark:bg-[#121215] rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm transition-all hover:bg-gray-50/50">
+    <div className="flex items-center gap-4">
+      <div className={`p-3 rounded-2xl ${value ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+        {Icon && <Icon size={20} />}
+      </div>
+      <span className={`text-xs font-black uppercase tracking-widest ${value ? 'dark:text-white' : 'text-gray-400'}`}>{label}</span>
+    </div>
+    <button type="button" onClick={() => onChange(!value)} className={`w-14 h-7 rounded-full relative transition-all ${value ? color + ' shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}>
+      <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (value ? 'right-8' : 'right-1') : (value ? 'left-8' : 'left-1')}`} />
+    </button>
+  </div>
+);
+
+const ColorPicker = ({ label, value, onChange }: any) => (
+  <div className={`flex items-center justify-between p-5 bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm`}>
+    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+    <div className="flex items-center gap-3">
+       <div className="relative w-9 h-9 rounded-2xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md">
+          <input type="color" value={value?.startsWith('rgba') || !value?.startsWith('#') ? '#3b82f6' : (value || '#ffffff')} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
+          <div className="w-full h-full" style={{ backgroundColor: value || '#ffffff' }} />
+       </div>
+       <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-2 text-[10px] font-black text-blue-600 w-24 uppercase text-center outline-none" placeholder="#HEX" />
+    </div>
+  </div>
+);
+
+const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon }: any) => (
+  <button type="button" onClick={() => setActiveTab(id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${activeTab === id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+    <div className={`p-2 rounded-xl ${activeTab === id ? 'bg-white/20' : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'} transition-colors`}><Icon size={18} /></div>
+    <span className="text-[10px] font-black uppercase tracking-widest leading-tight">{label}</span>
+  </button>
+);
 
 interface TemplateBuilderProps {
   lang: Language;
@@ -32,7 +133,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const labelTextClasses = "text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1 block mb-1.5";
   const inputClasses = "w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all shadow-inner";
 
-  const headerAssetInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const specialLinkInputRef = useRef<HTMLInputElement>(null);
@@ -402,85 +502,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     setCurrentSpecialLinks(currentSpecialLinks.filter(l => l.id !== id));
   };
 
-  const handleAddDefaultLink = (type: 'email' | 'website') => {
-    if (type === 'email') setDefaultEmails([...defaultEmails, '']);
-    else setDefaultWebsites([...defaultWebsites, '']);
-  };
-
-  const handleUpdateDefaultLink = (type: 'email' | 'website', index: number, val: string) => {
-    if (type === 'email') {
-      const copy = [...defaultEmails]; copy[index] = val; setDefaultEmails(copy);
-    } else {
-      const copy = [...defaultWebsites]; copy[index] = val; setDefaultWebsites(copy);
-    }
-  };
-
-  const handleRemoveDefaultLink = (type: 'email' | 'website', index: number) => {
-    if (type === 'email') setDefaultEmails(defaultEmails.filter((_, i) => i !== index));
-    else setDefaultWebsites(defaultWebsites.filter((_, i) => i !== index));
-  };
-
   const sampleCardData = (SAMPLE_DATA[lang] || SAMPLE_DATA['en']) as CardData;
-
-  const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Icon, hint }: any) => (
-    <div className="bg-white dark:bg-[#121215] p-5 rounded-[2rem] border border-gray-100 dark:border-white/5 shadow-sm space-y-4 transition-all hover:border-blue-200">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg">
-             {Icon && <Icon size={14} />}
-           </div>
-           <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
-              {hint && <span className="text-[8px] text-gray-400 font-bold">{hint}</span>}
-           </div>
-        </div>
-        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
-           <input 
-             type="number" 
-             value={value} 
-             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-             className="w-12 bg-transparent text-center text-[10px] font-black text-blue-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-           />
-           <span className="text-[8px] font-black text-blue-400 pr-2 pointer-events-none">{unit}</span>
-        </div>
-      </div>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-    </div>
-  );
-
-  const ToggleSwitch = ({ label, value, onChange, icon: Icon, color = "bg-blue-600" }: any) => (
-    <div className="flex items-center justify-between p-6 bg-white dark:bg-[#121215] rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm transition-all hover:bg-gray-50/50">
-      <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-2xl ${value ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
-          {Icon && <Icon size={20} />}
-        </div>
-        <span className={`text-xs font-black uppercase tracking-widest ${value ? 'dark:text-white' : 'text-gray-400'}`}>{label}</span>
-      </div>
-      <button type="button" onClick={() => onChange(!value)} className={`w-14 h-7 rounded-full relative transition-all ${value ? color + ' shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}>
-        <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (value ? 'right-8' : 'right-1') : (value ? 'left-8' : 'left-1')}`} />
-      </button>
-    </div>
-  );
-
-  const ColorPicker = ({ label, value, onChange }: any) => (
-    <div className={`flex items-center justify-between p-5 bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm`}>
-      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
-      <div className="flex items-center gap-3">
-         <div className="relative w-9 h-9 rounded-2xl overflow-hidden border-2 border-white dark:border-gray-700 shadow-md">
-            <input type="color" value={value?.startsWith('rgba') || !value?.startsWith('#') ? '#3b82f6' : (value || '#ffffff')} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
-            <div className="w-full h-full" style={{ backgroundColor: value || '#ffffff' }} />
-         </div>
-         <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} className="bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-3 py-2 text-[10px] font-black text-blue-600 w-24 uppercase text-center outline-none" placeholder="#HEX" />
-      </div>
-    </div>
-  );
-
-  const NavItem = ({ id, label, icon: Icon }: { id: BuilderTab, label: string, icon: any }) => (
-    <button type="button" onClick={() => setActiveTab(id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${activeTab === id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-      <div className={`p-2 rounded-xl ${activeTab === id ? 'bg-white/20' : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'} transition-colors`}><Icon size={18} /></div>
-      <span className="text-[10px] font-black uppercase tracking-widest leading-tight">{label}</span>
-    </button>
-  );
 
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
@@ -556,21 +578,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-l dark:border-gray-800 p-6 flex flex-col gap-1 overflow-y-auto no-scrollbar shrink-0 bg-gray-50/30 dark:bg-transparent">
-          <NavItem id="header" label={t('الترويسة والأنماط', 'Header & Patterns')} icon={Layout} />
-          <NavItem id="body-style" label={t('جسم البطاقة', 'Card Body Style')} icon={Box} />
-          <NavItem id="avatar" label={t('الصورة الشخصية', 'Avatar Style')} icon={Circle} />
-          <NavItem id="visuals" label={t('الألوان والسمة', 'Colors & Theme')} icon={Palette} />
-          <NavItem id="identity-lab" label={t('بيانات الهوية', 'Identity Details')} icon={UserIcon} />
-          <NavItem id="bio-lab" label={t('النبذة المهنية', 'Professional Bio')} icon={Quote} />
-          <NavItem id="direct-links" label={t('قسم الروابط المباشرة', 'Direct Links Section')} icon={LinkIcon} />
-          <NavItem id="membership-lab" label={t('membershipSection')} icon={ShieldCheck} />
-          <NavItem id="contact-lab" label={t('قسم الاتصال', 'Contact Section')} icon={Phone} />
-          <NavItem id="special-links" label={t('روابط صور (عروض/منتجات)', 'Image Links (Offers/Products)')} icon={ImagePlus} />
-          <NavItem id="location" label={t('الموقع الجغرافي', 'Geographical Location')} icon={MapIcon} />
-          <NavItem id="social-lab" label={t('أيقونات التواصل', 'Social Icons')} icon={Share2} />
-          <NavItem id="qrcode" label={t('رمز الـ QR', 'QR Code Style')} icon={QrCode} />
-          <NavItem id="special-features" label={t('المميزات الخاصة', 'Special Features')} icon={Trophy} />
-          <NavItem id="desktop-lab" label={t('إعدادات العرض (سطح المكتب)', 'Display Settings (Desktop)')} icon={MonitorDot} />
+          <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={t('الترويسة والأنماط', 'Header & Patterns')} icon={Layout} />
+          <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={t('جسم البطاقة', 'Card Body Style')} icon={Box} />
+          <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={t('الصورة الشخصية', 'Avatar Style')} icon={Circle} />
+          <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={t('الألوان والسمة', 'Colors & Theme')} icon={Palette} />
+          <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('بيانات الهوية', 'Identity Details')} icon={UserIcon} />
+          <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('النبذة المهنية', 'Professional Bio')} icon={Quote} />
+          <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={t('قسم الروابط المباشرة', 'Direct Links Section')} icon={LinkIcon} />
+          <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('membershipSection')} icon={ShieldCheck} />
+          <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('قسم الاتصال', 'Contact Section')} icon={Phone} />
+          <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={t('روابط صور (عروض/منتجات)', 'Image Links (Offers/Products)')} icon={ImagePlus} />
+          <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={t('الموقع الجغرافي', 'Geographical Location')} icon={MapIcon} />
+          <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('أيقونات التواصل', 'Social Icons')} icon={Share2} />
+          <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={t('رمز الـ QR', 'QR Code Style')} icon={QrCode} />
+          <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={t('المميزات الخاصة', 'Special Features')} icon={Trophy} />
+          <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('إعدادات العرض (سطح المكتب)', 'Display Settings (Desktop)')} icon={MonitorDot} />
         </div>
 
         <div className="flex-1 p-8 overflow-y-auto no-scrollbar bg-gray-50/20 dark:bg-transparent">
@@ -640,7 +662,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <div className="flex items-center gap-3"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" />
+                        <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                         
                         <ColorPicker label={isRtl ? 'لون جسم البطاقة' : 'Card Body Color'} value={template.config.cardBodyColor || ''} onChange={(v: string) => updateConfig('cardBodyColor', v)} />
 
@@ -731,29 +753,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800 items-center">
-                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" />
-                          <div className="bg-white dark:bg-[#121215] p-5 rounded-[2rem] border border-gray-100 dark:border-white/5 shadow-sm space-y-3">
-                             <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                   <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Move size={14} /></div>
-                                   <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('الإزاحة الرأسية')}</span>
-                                </div>
-                                <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
-                                   <input 
-                                     type="number" 
-                                     value={template.config.membershipOffsetY || 0} 
-                                     onChange={(e) => updateConfig('membershipOffsetY', parseInt(e.target.value) || 0)}
-                                     className="w-12 bg-transparent text-center text-[10px] font-black text-blue-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                   />
-                                   <span className="text-[8px] font-black text-blue-400 pr-2 pointer-events-none">px</span>
-                                </div>
-                             </div>
-                             <input type="range" min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(e) => updateConfig('membershipOffsetY', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                          </div>
+                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <RangeControl label={t('الإزاحة الرأسية')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
                        </div>
 
                        <div className="pt-4 flex justify-end">
-                          <ToggleSwitch label={t('إظهار قسم العضوية', 'Show Section')} value={template.config.showMembershipByDefault} onChange={(v: boolean) => updateConfig('showMembershipByDefault', v)} icon={Eye} color="bg-emerald-600" />
+                          <ToggleSwitch label={t('إظهار قسم العضوية', 'Show Section')} value={template.config.showMembershipByDefault} onChange={(v: boolean) => updateConfig('showMembershipByDefault', v)} icon={Eye} color="bg-emerald-600" isRtl={isRtl} />
                        </div>
                     </div>
                  </div>
@@ -763,7 +768,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'avatar' && (
               <div className="space-y-6 animate-fade-in">
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                    <ToggleSwitch label={t('تفعيل ظهور الصورة', 'Show Avatar')} value={template.config.avatarStyle !== 'none'} onChange={(v: boolean) => updateConfig('avatarStyle', v ? 'circle' : 'none')} icon={Camera} />
+                    <ToggleSwitch label={t('تفعيل ظهور الصورة', 'Show Avatar')} value={template.config.avatarStyle !== 'none'} onChange={(v: boolean) => updateConfig('avatarStyle', v ? 'circle' : 'none')} icon={Camera} isRtl={isRtl} />
                     
                     {template.config.avatarStyle !== 'none' && (
                       <div className="pt-4 border-t dark:border-gray-800 space-y-4">
@@ -867,14 +872,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('إطار مضيء ومتحرك', 'Animated Border Lab')}</h4>
                        </div>
                        
-                       <ToggleSwitch label={t('تفعيل الإطار المتحرك', 'Enable Animated Border')} value={template.config.avatarAnimatedBorder} onChange={(v: boolean) => updateConfig('avatarAnimatedBorder', v)} icon={Sparkles} color="bg-amber-500" />
+                       <ToggleSwitch label={t('تفعيل الإطار المتحرك', 'Enable Animated Border')} value={template.config.avatarAnimatedBorder} onChange={(v: boolean) => updateConfig('avatarAnimatedBorder', v)} icon={Sparkles} color="bg-amber-500" isRtl={isRtl} />
                        
                        {template.config.avatarAnimatedBorder && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
                              <ColorPicker label={t('لون حركة 1', 'Motion Color 1')} value={template.config.avatarAnimatedBorderColor1} onChange={(v: string) => updateConfig('avatarAnimatedBorderColor1', v)} />
                              <ColorPicker label={t('لون حركة 2', 'Motion Color 2')} value={template.config.avatarAnimatedBorderColor2} onChange={(v: string) => updateConfig('avatarAnimatedBorderColor2', v)} />
                              <RangeControl label={t('سرعة الدوران', 'Rotation Speed')} min={1} max={10} value={template.config.avatarAnimatedBorderSpeed || 3} onChange={(v: number) => updateConfig('avatarAnimatedBorderSpeed', v)} icon={RefreshCcw} unit="s" hint={t('كلما قل الرقم زادت السرعة', 'Lower is faster')} />
-                             <ToggleSwitch label={t('تأثير التوهج (Glow)', 'Glow Effect')} value={template.config.avatarAnimatedGlow} onChange={(v: boolean) => updateConfig('avatarAnimatedGlow', v)} icon={Sun} color="bg-blue-600" />
+                             <ToggleSwitch label={t('تأثير التوهج (Glow)', 'Glow Effect')} value={template.config.avatarAnimatedGlow} onChange={(v: boolean) => updateConfig('avatarAnimatedGlow', v)} icon={Sun} color="bg-blue-600" isRtl={isRtl} />
                           </div>
                        )}
                     </div>
@@ -969,9 +974,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                            </div>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
-                           <ToggleSwitch label={t('إظهار الاسم', 'Show Name')} value={template.config.showNameByDefault} onChange={(v: boolean) => updateConfig('showNameByDefault', v)} icon={TypographyIcon} />
-                           <ToggleSwitch label={t('المسمى الوظيفي', 'Show Title')} value={template.config.showTitleByDefault} onChange={(v: boolean) => updateConfig('showTitleByDefault', v)} icon={Briefcase} />
-                           <ToggleSwitch label={t('اسم الشركة', 'Show Company')} value={template.config.showCompanyByDefault} onChange={(v: boolean) => updateConfig('showCompanyByDefault', v)} icon={Box} />
+                           <ToggleSwitch label={t('إظهار الاسم', 'Show Name')} value={template.config.showNameByDefault} onChange={(v: boolean) => updateConfig('showNameByDefault', v)} icon={TypographyIcon} isRtl={isRtl} />
+                           <ToggleSwitch label={t('المسمى الوظيفي', 'Show Title')} value={template.config.showTitleByDefault} onChange={(v: boolean) => updateConfig('showTitleByDefault', v)} icon={Briefcase} isRtl={isRtl} />
+                           <ToggleSwitch label={t('اسم الشركة', 'Show Company')} value={template.config.showCompanyByDefault} onChange={(v: boolean) => updateConfig('showCompanyByDefault', v)} icon={Box} isRtl={isRtl} />
                         </div>
                      </div>
 
@@ -1022,11 +1027,11 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
 
                     <div className="space-y-6">
-                       <ToggleSwitch label={t('تفعيل عرض النبذة', 'Show Bio')} value={template.config.showBioByDefault} onChange={(v: boolean) => updateConfig('showBioByDefault', v)} icon={Eye} />
+                       <ToggleSwitch label={t('تفعيل عرض النبذة', 'Show Bio')} value={template.config.showBioByDefault} onChange={(v: boolean) => updateConfig('showBioByDefault', v)} icon={Eye} isRtl={isRtl} />
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t dark:border-gray-800 pt-6">
                           <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('النبذة الافتراضية (AR)', 'Default Bio (AR)')}</label>
+                             <label className={labelTextClasses}>{t('النبذة المهنية (AR)', 'Default Bio (AR)')}</label>
                              <textarea 
                                value={template.config.defaultBioAr || ''} 
                                onChange={e => updateConfig('defaultBioAr', e.target.value)} 
@@ -1035,7 +1040,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              />
                           </div>
                           <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('النبذة الافتراضية (EN)', 'Default Bio (EN)')}</label>
+                             <label className={labelTextClasses}>{t('النبذة المهنية (EN)', 'Default Bio (EN)')}</label>
                              <textarea 
                                value={template.config.defaultBioEn || ''} 
                                onChange={e => updateConfig('defaultBioEn', e.target.value)} 
@@ -1068,7 +1073,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-6 border-t dark:border-gray-800">
-                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" />
+                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                           <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
                              <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إظهار الإطار', 'Show Border')}</span>
@@ -1095,10 +1100,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                     <div className="space-y-6">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <ToggleSwitch label={t('إظهار البريد', 'Show Email')} value={template.config.showEmailByDefault} onChange={(v: boolean) => updateConfig('showEmailByDefault', v)} icon={Mail} />
-                          <ToggleSwitch label={t('إظهار الموقع', 'Show Website')} value={template.config.showWebsiteByDefault} onChange={(v: boolean) => updateConfig('showWebsiteByDefault', v)} icon={ShoppingCart} />
-                          <ToggleSwitch label={t('أزرار الحفظ', 'Show Save Buttons')} value={template.config.showButtonsByDefault} onChange={(v: boolean) => updateConfig('showButtonsByDefault', v)} icon={Save} />
-                          <ToggleSwitch label={t('إظهار النص (رابط/بريد)', 'Show Link Text')} value={template.config.linksShowText} onChange={(v: boolean) => updateConfig('linksShowText', v)} icon={TypographyIcon} />
+                          <ToggleSwitch label={t('إظهار البريد', 'Show Email')} value={template.config.showEmailByDefault} onChange={(v: boolean) => updateConfig('showEmailByDefault', v)} icon={Mail} isRtl={isRtl} />
+                          <ToggleSwitch label={t('إظهار الموقع', 'Show Website')} value={template.config.showWebsiteByDefault} onChange={(v: boolean) => updateConfig('showWebsiteByDefault', v)} icon={ShoppingCart} isRtl={isRtl} />
+                          <ToggleSwitch label={t('أزرار الحفظ', 'Show Save Buttons')} value={template.config.showButtonsByDefault} onChange={(v: boolean) => updateConfig('showButtonsByDefault', v)} icon={Save} isRtl={isRtl} />
+                          <ToggleSwitch label={t('إظهار النص (رابط/بريد)', 'Show Link Text')} value={template.config.linksShowText} onChange={(v: boolean) => updateConfig('linksShowText', v)} icon={TypographyIcon} isRtl={isRtl} />
                        </div>
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
@@ -1146,8 +1151,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                     <div className="space-y-6">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <ToggleSwitch label={t('إظهار زر الهاتف', 'Show Phone')} value={template.config.showPhoneByDefault} onChange={(v: boolean) => updateConfig('showPhoneByDefault', v)} icon={Phone} />
-                          <ToggleSwitch label={t('إظهار زر واتساب', 'Show WhatsApp')} value={template.config.showWhatsappByDefault} onChange={(v: boolean) => updateConfig('showWhatsappByDefault', v)} icon={MessageCircle} />
+                          <ToggleSwitch label={t('إظهار زر الهاتف', 'Show Phone')} value={template.config.showPhoneByDefault} onChange={(v: boolean) => updateConfig('showPhoneByDefault', v)} icon={Phone} isRtl={isRtl} />
+                          <ToggleSwitch label={t('إظهار زر واتساب', 'Show WhatsApp')} value={template.config.showWhatsappByDefault} onChange={(v: boolean) => updateConfig('showWhatsappByDefault', v)} icon={MessageCircle} isRtl={isRtl} />
                        </div>
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
@@ -1171,7 +1176,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              <RangeControl label={t('ارتفاع الأزرار (تعبئة)', 'Buttons Height')} min={4} max={40} value={template.config.contactButtonsPaddingV ?? 16} onChange={(v: number) => updateConfig('contactButtonsPaddingV', v)} icon={Maximize2} />
                           </div>
 
-                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Style')} value={template.config.contactButtonsGlassy} onChange={(v: boolean) => updateConfig('contactButtonsGlassy', v)} icon={GlassWater} color="bg-indigo-600" />
+                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Style')} value={template.config.contactButtonsGlassy} onChange={(v: boolean) => updateConfig('contactButtonsGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                        </div>
                     </div>
                  </div>
@@ -1195,6 +1200,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         value={template.config.showSpecialLinksByDefault} 
                         onChange={(v: boolean) => updateConfig('showSpecialLinksByDefault', v)} 
                         icon={Eye} 
+                        isRtl={isRtl}
                        />
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1290,7 +1296,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
 
                     <div className="space-y-6">
-                       <ToggleSwitch label={t('تفعيل عرض الموقع', 'Show Location Section')} value={template.config.showLocationByDefault} onChange={(v: boolean) => updateConfig('showLocationByDefault', v)} icon={Eye} />
+                       <ToggleSwitch label={t('تفعيل عرض الموقع', 'Show Location Section')} value={template.config.showLocationByDefault} onChange={(v: boolean) => updateConfig('showLocationByDefault', v)} icon={Eye} isRtl={isRtl} />
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('انحناء حواف الصندوق', 'Border Radius')} min={0} max={60} value={template.config.locationBorderRadius ?? 24} onChange={(v: number) => updateConfig('locationBorderRadius', v)} icon={Ruler} />
@@ -1300,7 +1306,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-4 border-t dark:border-gray-800">
-                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.locationGlassy} onChange={(v: boolean) => updateConfig('locationGlassy', v)} icon={GlassWater} color="bg-blue-500" />
+                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.locationGlassy} onChange={(v: boolean) => updateConfig('locationGlassy', v)} icon={GlassWater} color="bg-blue-500" isRtl={isRtl} />
                           <ColorPicker label={t('لون خلفية', 'Background Color')} value={template.config.locationBgColor} onChange={(v: string) => updateConfig('locationBgColor', v)} />
                           <ColorPicker label={t('لون الأيقونة', 'Icon Color')} value={template.config.locationIconColor} onChange={(v: string) => updateConfig('locationIconColor', v)} />
                           <ColorPicker label={t('لون النص', 'Text Color')} value={template.config.locationTextColor} onChange={(v: string) => updateConfig('locationTextColor', v)} />
@@ -1322,6 +1328,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         onChange={(v: boolean) => updateConfig('showSocialLinksByDefault', v)} 
                         icon={Eye} 
                         color="bg-indigo-600" 
+                        isRtl={isRtl}
                        />
 
                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest pt-4 border-t dark:border-gray-800">{t('شكل وحجم الأيقونة', 'Shape & Size DNA')}</h4>
@@ -1332,6 +1339,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         onChange={(v: boolean) => updateConfig('useSocialBrandColors', v)} 
                         icon={Zap} 
                         color="bg-emerald-600" 
+                        isRtl={isRtl}
                        />
 
                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1378,7 +1386,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                <div className="space-y-8 animate-fade-in">
                   <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
                      <div className="flex items-center gap-3"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
-                     <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} />
+                     <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} isRtl={isRtl} />
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
                      <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
                      <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
@@ -1409,6 +1417,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                             onChange={(v: boolean) => updateConfig('showStarsByDefault', v)} 
                             icon={Star} 
                             color="bg-amber-500" 
+                            isRtl={isRtl}
                           />
                           <ToggleSwitch 
                             label={isRtl ? 'وسام الحساب الموثق (Verified)' : 'Verified Account Badge'} 
@@ -1416,6 +1425,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                             onChange={(v: boolean) => updateConfig('isVerifiedByDefault', v)} 
                             icon={CheckCircle2} 
                             color="bg-blue-500" 
+                            isRtl={isRtl}
                           />
                           <ToggleSwitch 
                             label={isRtl ? 'إطار ذهبي للبطاقة كاملة' : 'Full Card Golden Frame'} 
@@ -1423,6 +1433,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                             onChange={(v: boolean) => updateConfig('hasGoldenFrameByDefault', v)} 
                             icon={Maximize2} 
                             color="bg-yellow-600" 
+                            isRtl={isRtl}
                           />
                        </div>
 
@@ -1432,7 +1443,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <Sparkle className="text-blue-600" size={22} />
                                 <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('ميزة جسم البطاقة الخاصة (مربع حصري)', 'Special Body Feature (Exclusive Box)')}</h4>
                              </div>
-                             <ToggleSwitch label={t('تفعيل الميزة', 'Enable')} value={template.config.showBodyFeatureByDefault} onChange={(v: boolean) => updateConfig('showBodyFeatureByDefault', v)} color="bg-emerald-600" />
+                             <ToggleSwitch label={t('تفعيل الميزة', 'Enable')} value={template.config.showBodyFeatureByDefault} onChange={(v: boolean) => updateConfig('showBodyFeatureByDefault', v)} color="bg-emerald-600" isRtl={isRtl} />
                           </div>
 
                           {template.config.showBodyFeatureByDefault && (
@@ -1459,7 +1470,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                    <ColorPicker label={t('لون خلفية', 'Background')} value={template.config.bodyFeatureBgColor} onChange={(v: string) => updateConfig('bodyFeatureBgColor', v)} />
                                    <ColorPicker label={t('لون نص', 'Text Color')} value={template.config.bodyFeatureTextColor} onChange={(v: string) => updateConfig('bodyFeatureTextColor', v)} />
-                                   <ToggleSwitch label={t('نمط زجاجي', 'Glassy')} value={template.config.bodyFeatureGlassy} onChange={(v: boolean) => updateConfig('bodyFeatureGlassy', v)} icon={GlassWater} color="bg-indigo-600" />
+                                   <ToggleSwitch label={t('نمط زجاجي', 'Glassy')} value={template.config.bodyFeatureGlassy} onChange={(v: boolean) => updateConfig('bodyFeatureGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                                 </div>
                              </div>
                           )}
