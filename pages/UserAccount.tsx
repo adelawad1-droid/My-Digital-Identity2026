@@ -77,9 +77,14 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         securityData.newEmail,
         securityData.newPassword || undefined
       );
+      
+      const isEmailChanging = securityData.newEmail !== user?.email;
+      
       setStatus({ 
         type: 'success', 
-        message: t("تم تحديث بيانات حسابك بنجاح", "Account details updated successfully") 
+        message: isEmailChanging 
+          ? t("تم إرسال رابط تأكيد إلى البريد الجديد. يرجى تفعيله لإتمام التغيير.", "A confirmation link has been sent to your new email. Please verify it to complete the change.")
+          : t("تم تحديث بيانات حسابك بنجاح", "Account details updated successfully") 
       });
       setSecurityData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
     } catch (error: any) {
@@ -232,7 +237,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+          <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={40} />
              </div>

@@ -50,7 +50,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
-export const ADMIN_EMAIL = "adelawad1free@gmail.com";
+export const ADMIN_EMAIL = "adelawad1@gmail.com";
 
 const sanitizeData = (data: any) => {
   const clean: any = {};

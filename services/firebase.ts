@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  updateEmail, 
+  verifyBeforeUpdateEmail, 
   updatePassword, 
   reauthenticateWithCredential, 
   EmailAuthProvider,
@@ -48,7 +48,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
-export const ADMIN_EMAIL = "adelawad1free@gmail.com";
+export const ADMIN_EMAIL = "adelawad1@gmail.com";
 
 const sanitizeData = (data: any) => {
   const clean: any = {};
@@ -108,7 +108,11 @@ export const syncUserProfile = async (user: User) => {
         isActive: true
       });
     } else {
-      await updateDoc(userRef, userData);
+      // التأكد من تحديث الصلاحية إذا كان بريد الأدمن قد تغير
+      const updates: any = { ...userData };
+      if (user.email === ADMIN_EMAIL) updates.role = 'admin';
+      
+      await updateDoc(userRef, updates);
     }
   } catch (error) {
     console.warn("Registry sync failed:", error);
@@ -398,6 +402,9 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   if (!user || !user.email) throw new Error("auth/no-user");
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
-  if (newEmail && newEmail !== user.email) await updateEmail(user, newEmail);
+  if (newEmail && newEmail !== user.email) {
+    // Modern Firebase requires verifyBeforeUpdateEmail
+    await verifyBeforeUpdateEmail(user, newEmail);
+  }
   if (newPassword) await updatePassword(user, newPassword);
 };
