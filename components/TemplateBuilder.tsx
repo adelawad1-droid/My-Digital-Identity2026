@@ -59,7 +59,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [showDirectAuth, setShowDirectAuth] = useState(false);
   
-  // منطق البحث عن الأعضاء
   const [userQuery, setUserQuery] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
@@ -264,7 +263,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     updateConfig('defaultSpecialLinks', currentSpecialLinks);
   }, [currentSpecialLinks]);
 
-  // منطق البحث التلقائي عن المستخدم
   useEffect(() => {
     if (userQuery.length >= 3) {
       setIsSearchingUsers(true);
@@ -436,7 +434,15 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               {hint && <span className="text-[8px] text-gray-400 font-bold">{hint}</span>}
            </div>
         </div>
-        <span className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full">{value}{unit}</span>
+        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
+           <input 
+             type="number" 
+             value={value} 
+             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+             className="w-12 bg-transparent text-center text-[10px] font-black text-blue-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+           />
+           <span className="text-[8px] font-black text-blue-400 pr-2 pointer-events-none">{unit}</span>
+        </div>
       </div>
       <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
     </div>
@@ -650,7 +656,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-200} max={200} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "تزامن مع خيار إزاحة الجوال" : "Synced with mobile offset option"} />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "تزامن مع خيار إزاحة الجوال" : "Synced with mobile offset option"} />
                         </div>
                      </div>
 
@@ -714,7 +720,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
                           <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم العضوية والاشتراك' : 'Membership Section Colors'}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <ColorPicker label={t('لون الخلفية (المربع)', 'Box Background')} value={template.config.membershipBgColor} onChange={(v: string) => updateConfig('membershipBgColor', v)} />
+                             <ColorPicker label={t('لون خلفية (المربع)', 'Box Background')} value={template.config.membershipBgColor} onChange={(v: string) => updateConfig('membershipBgColor', v)} />
                              <ColorPicker label={t('لون الإطار (الفريم)', 'Border/Frame Color')} value={template.config.membershipBorderColor} onChange={(v: string) => updateConfig('membershipBorderColor', v)} />
                              <ColorPicker label={t('لون النصوص', 'Text Color')} value={template.config.membershipTextColor} onChange={(v: string) => updateConfig('membershipTextColor', v)} />
                              <ColorPicker label={t('اللون المميز (ACCENT)', 'Accent Color')} value={template.config.membershipAccentColor} onChange={(v: string) => updateConfig('membershipAccentColor', v)} />
@@ -732,9 +738,17 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                    <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Move size={14} /></div>
                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('الإزاحة الرأسية')}</span>
                                 </div>
-                                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{template.config.membershipOffsetY || 0}px</span>
+                                <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
+                                   <input 
+                                     type="number" 
+                                     value={template.config.membershipOffsetY || 0} 
+                                     onChange={(e) => updateConfig('membershipOffsetY', parseInt(e.target.value) || 0)}
+                                     className="w-12 bg-transparent text-center text-[10px] font-black text-blue-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                   />
+                                   <span className="text-[8px] font-black text-blue-400 pr-2 pointer-events-none">px</span>
+                                </div>
                              </div>
-                             <input type="range" min={-100} max={150} value={template.config.membershipOffsetY || 0} onChange={(e) => updateConfig('membershipOffsetY', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                             <input type="range" min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(e) => updateConfig('membershipOffsetY', parseInt(e.target.value))} className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                           </div>
                        </div>
 
@@ -821,9 +835,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              </button>
                           ))}
                        </div>
-                       <p className="text-[9px] font-bold text-gray-400 mt-2 px-2 uppercase tracking-tight opacity-60">
-                          {isRtl ? '* اختر كركتر مميز ليكون صورة المعاينة للقالب.' : '* Pick a unique character to be the template preview photo.'}
-                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -834,14 +845,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t dark:border-gray-800 pt-4">
                        <RangeControl 
                           label={t('إزاحة (أعلى/أسفل)', 'Vertical Offset')} 
-                          min={-200} max={200} 
+                          min={-2000} max={2000} 
                           value={template.config.avatarOffsetY || 0} 
                           onChange={(v: number) => updateConfig('avatarOffsetY', v)} 
                           icon={ArrowUpDown} 
                        />
                        <RangeControl 
                           label={t('إزاحة (يمين/يسار)', 'Horizontal Offset')} 
-                          min={-150} max={150} 
+                          min={-1000} max={1000} 
                           value={template.config.avatarOffsetX || 0} 
                           onChange={(v: number) => updateConfig('avatarOffsetX', v)} 
                           icon={ArrowLeftRight} 
@@ -990,9 +1001,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <RangeControl label={t('حجم خط الاسم', 'Name Font Size')} min={16} max={56} value={template.config.nameSize} onChange={(v: number) => updateConfig('nameSize', v)} icon={TypographyIcon} />
-                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-100} max={150} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={MousePointer2} />
-                           <RangeControl label={t('إزاحة المسمى الوظيفي (رأسياً)', 'Title Y Offset')} min={-100} max={150} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
-                           <RangeControl label={t('إزاحة منطقة الصورة (رأسياً)', 'Avatar Y Offset')} min={-150} max={200} value={template.config.avatarOffsetY} onChange={(v: number) => updateConfig('avatarOffsetY', v)} icon={Move} />
+                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة المسمى الوظيفي (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة منطقة الصورة (رأسياً)', 'Avatar Y Offset')} min={-2000} max={2000} value={template.config.avatarOffsetY} onChange={(v: number) => updateConfig('avatarOffsetY', v)} icon={Move} />
                         </div>
                      </div>
                   </div>
@@ -1036,7 +1047,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('حجم الخط', 'Font Size')} min={10} max={40} value={template.config.bioSize} onChange={(v: number) => updateConfig('bioSize', v)} icon={TypographyIcon} />
-                          <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-100} max={200} value={template.config.bioOffsetY} onChange={(v: number) => updateConfig('bioOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.bioOffsetY} onChange={(v: number) => updateConfig('bioOffsetY', v)} icon={Move} />
                           <RangeControl label={t('العرض الأقصى (%)', 'Max Width')} min={50} max={100} value={template.config.bioMaxWidth ?? 90} onChange={(v: number) => updateConfig('bioMaxWidth', v)} icon={Maximize2} />
                           <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.bioBorderRadius ?? 32} onChange={(v: number) => updateConfig('bioBorderRadius', v)} icon={Ruler} />
                        </div>
@@ -1103,7 +1114,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
                           <RangeControl label={t('انحناء حواف القسم', 'Section Radius')} min={0} max={60} value={template.config.linksSectionRadius ?? 24} onChange={(v: number) => updateConfig('linksSectionRadius', v)} icon={Ruler} />
                           <RangeControl label={t('انحناء حواف الروابط', 'Item Radius')} min={0} max={50} value={template.config.linksItemRadius ?? 16} onChange={(v: number) => updateConfig('linksItemRadius', v)} icon={Ruler} />
-                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-200} max={200} value={template.config.linksSectionOffsetY || 0} onChange={(v: number) => updateConfig('linksSectionOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.linksSectionOffsetY || 0} onChange={(v: number) => updateConfig('linksSectionOffsetY', v)} icon={Move} />
                           <RangeControl label={t('الارتفاع الداخلي للقسم', 'Vertical Padding')} min={0} max={100} value={template.config.linksSectionPaddingV ?? 24} onChange={(v: number) => updateConfig('linksSectionPaddingV', v)} icon={Maximize2} />
                        </div>
 
@@ -1154,7 +1165,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-100} max={200} value={template.config.contactButtonsOffsetY} onChange={(v: number) => updateConfig('contactButtonsOffsetY', v)} icon={Move} />
+                             <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.contactButtonsOffsetY} onChange={(v: number) => updateConfig('contactButtonsOffsetY', v)} icon={Move} />
                              <RangeControl label={t('المسافة بين الزرين', 'Buttons Gap')} min={0} max={40} value={template.config.contactButtonsGap ?? 12} onChange={(v: number) => updateConfig('contactButtonsGap', v)} icon={SlidersHorizontal} />
                              <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.contactButtonsRadius ?? 16} onChange={(v: number) => updateConfig('contactButtonsRadius', v)} icon={Ruler} />
                              <RangeControl label={t('ارتفاع الأزرار (تعبئة)', 'Buttons Height')} min={4} max={40} value={template.config.contactButtonsPaddingV ?? 16} onChange={(v: number) => updateConfig('contactButtonsPaddingV', v)} icon={Maximize2} />
@@ -1189,7 +1200,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('المسافة بين الصور', 'Link Spacing')} min={0} max={40} value={template.config.specialLinksGap || 12} onChange={(v: number) => updateConfig('specialLinksGap', v)} icon={SlidersHorizontal} />
                           <RangeControl label={t('عدد الأعمدة', 'Columns')} min={1} max={3} value={template.config.specialLinksCols || 2} onChange={(v: number) => updateConfig('specialLinksCols', v)} icon={Grid} />
-                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-100} max={150} value={template.config.specialLinksOffsetY || 0} onChange={(v: number) => updateConfig('specialLinksOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.specialLinksOffsetY || 0} onChange={(v: number) => updateConfig('specialLinksOffsetY', v)} icon={Move} />
                           <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.specialLinksRadius ?? 24} onChange={(v: number) => updateConfig('specialLinksRadius', v)} icon={Ruler} />
                        </div>
 
@@ -1264,12 +1275,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <button onClick={() => removeSpecialLink(link.id)} className="p-4 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all self-center"><Trash2 size={22} /></button>
                              </div>
                           ))}
-                          {currentSpecialLinks.length === 0 && (
-                            <div className="py-12 text-center border-2 border-dashed border-gray-200 dark:border-white/5 rounded-[2.5rem]">
-                               <ImageIcon size={48} className="mx-auto text-gray-300 dark:text-gray-700 mb-4" />
-                               <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{isRtl ? 'لا توجد عينات مضافة للقالب' : 'No samples added to template'}</p>
-                            </div>
-                          )}
                        </div>
                     </div>
                   </div>
@@ -1289,7 +1294,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('انحناء حواف الصندوق', 'Border Radius')} min={0} max={60} value={template.config.locationBorderRadius ?? 24} onChange={(v: number) => updateConfig('locationBorderRadius', v)} icon={Ruler} />
-                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-100} max={150} value={template.config.locationOffsetY || 0} onChange={(v: number) => updateConfig('locationOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.locationOffsetY || 0} onChange={(v: number) => updateConfig('locationOffsetY', v)} icon={Move} />
                           <RangeControl label={t('تضييق الارتفاع (المساحة الداخلية)', 'Vertical Padding')} min={4} max={60} value={template.config.locationPaddingV ?? 20} onChange={(v: number) => updateConfig('locationPaddingV', v)} icon={Maximize2} />
                           <RangeControl label={t('حجم خط العنوان التفصيلي', 'Address Font Size')} min={8} max={20} value={template.config.locationAddressSize ?? 13} onChange={(v: number) => updateConfig('locationAddressSize', v)} icon={TypographyIcon} />
                        </div>
@@ -1343,6 +1348,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <RangeControl label={t('المساحة الداخلية', 'Padding')} min={4} max={30} value={template.config.socialIconPadding || 14} onChange={(v: number) => updateConfig('socialIconPadding', v)} icon={Ruler} />
                           <RangeControl label={t('المسافة بين الأيقونات', 'Gap')} min={4} max={40} value={template.config.socialIconGap || 12} onChange={(v: number) => updateConfig('socialIconGap', v)} icon={SlidersHorizontal} />
                           <RangeControl label={t('عدد الأعمدة', 'Columns')} min={0} max={6} value={template.config.socialIconColumns || 0} onChange={(v: number) => updateConfig('socialIconColumns', v)} icon={Grid} hint={t('0 للتوزيع المرن', '0 for Flex Wrap')} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.socialLinksOffsetY || 0} onChange={(v: number) => updateConfig('socialLinksOffsetY', v)} icon={Move} />
                        </div>
                     </div>
 
@@ -1361,8 +1367,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                             <ColorPicker label={t('لون خلفية الأيقونة', 'Icon Background')} value={template.config.socialIconBgColor} onChange={(v: string) => updateConfig('socialIconBgColor', v)} />
                             <ColorPicker label={t('لون رمز التواصل', 'Icon Color')} value={template.config.socialIconColor} onChange={(v: string) => updateConfig('socialIconColor', v)} />
                             <ColorPicker label={t('أيقونات التواصل', 'Social Icons Global Color')} value={template.config.socialIconsColor || '#3b82f6'} onChange={(v: string) => updateConfig('socialIconsColor', v)} />
-                            <ColorPicker label={t('لون حدود الأيقونة', 'Icon Border')} value={template.config.socialIconBorderColor} onChange={(v: string) => updateConfig('socialIconBorderColor', v)} />
-                            <RangeControl label={t('سمك الحدود', 'Border Width')} min={0} max={5} value={template.config.socialIconBorderWidth || 1} onChange={(v: number) => updateConfig('socialIconBorderWidth', v)} icon={Ruler} />
                         </div>
                        )}
                     </div>
@@ -1376,7 +1380,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <div className="flex items-center gap-3"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
                      <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} />
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
-                     <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-200} max={300} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
+                     <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
                      <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
                   </div>
                </div>
@@ -1398,18 +1402,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
 
                     <div className="bg-white/60 dark:bg-black/20 backdrop-blur-sm p-6 rounded-3xl border border-white dark:border-white/5 space-y-6">
-                       <div className="flex gap-4 items-start border-b dark:border-white/5 pb-6">
-                          <AlertTriangle size={24} className="text-amber-500 shrink-0" />
-                          <div className="space-y-1">
-                             <h4 className="text-xs font-black dark:text-white">{isRtl ? 'تحكم في الميزات خاصة للبطاقة' : 'Control Card Special Features'}</h4>
-                             <p className="text-[10px] font-bold text-gray-500 leading-relaxed">
-                                {isRtl 
-                                  ? 'هذا القسم يسمح لك بتفعيل ميزات مرئية إضافية تجعل القالب فريداً واحترافياً للغاية.' 
-                                  : 'This section allows you to enable extra visual features that make the template unique and highly professional.'}
-                             </p>
-                          </div>
-                       </div>
-
                        <div className="grid grid-cols-1 gap-4">
                           <ToggleSwitch 
                             label={isRtl ? 'إضافة نجوم التميز تحت الاسم' : 'Add Excellence Stars under name'} 
@@ -1445,17 +1437,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                           {template.config.showBodyFeatureByDefault && (
                              <div className="grid grid-cols-1 gap-6 animate-fade-in p-6 bg-blue-50/30 dark:bg-blue-900/10 rounded-[2.5rem] border border-blue-100 dark:border-blue-900/20">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                   <div className="space-y-2">
-                                      <label className={labelTextClasses}>{t('نص الميزة (AR)', 'Feature Text (AR)')}</label>
-                                      <input type="text" value={template.config.bodyFeatureTextAr || ''} onChange={e => updateConfig('bodyFeatureTextAr', e.target.value)} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border text-xs font-bold dark:text-white" />
-                                   </div>
-                                   <div className="space-y-2">
-                                      <label className={labelTextClasses}>{t('نص الميزة (EN)', 'Feature Text (EN)')}</label>
-                                      <input type="text" value={template.config.bodyFeatureTextEn || ''} onChange={e => updateConfig('bodyFeatureTextEn', e.target.value)} className="w-full px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border text-xs font-bold dark:text-white" />
-                                   </div>
-                                </div>
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                    <RangeControl 
                                       label={t('توسعة الميزة جانبياً', 'Side Expansion')} 
@@ -1466,7 +1447,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                    />
                                    <RangeControl 
                                       label={t('إزاحة الميزة رأسياً', 'Vertical Offset')} 
-                                      min={-100} max={150} 
+                                      min={-2000} max={2000} 
                                       value={template.config.bodyFeatureOffsetY ?? 0} 
                                       onChange={(v: number) => updateConfig('bodyFeatureOffsetY', v)} 
                                       icon={Move} 
@@ -1520,27 +1501,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <span className="text-[10px] font-black uppercase">{isRtl ? 'بطاقة في الوسط' : 'Boxed Card'}</span>
                              </button>
                           </div>
-                          <p className="text-[9px] font-bold text-gray-400 px-2 italic">
-                             {isRtl ? "* هذا الخيار يحدد ما إذا كانت صورة الترويسة ستغطي عرض الشاشة بالكامل أم ستبقى داخل إطار البطاقة على أجهزة الكمبيوتر." : "* This determines if the header covers full screen width or stays inside the card box on desktop."}
-                          </p>
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl 
                              label={isRtl ? 'سحب البطاقة للأعلى (سطح المكتب)' : 'Desktop Global Pull-up'} 
-                             min={-500} max={200} 
+                             min={-2000} max={1000} 
                              value={template.config.desktopBodyOffsetY ?? -60} 
                              onChange={(v: number) => updateConfig('desktopBodyOffsetY', v)} 
                              icon={Move} 
-                             hint={isRtl ? "سحب البطاقة كاملة للأعلى ليتداخل جسمها مع الترويسة الخارجية" : "Pull the whole card up to overlap external header"}
                           />
                           <RangeControl 
                              label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} 
-                             min={-200} max={200} 
+                             min={-2000} max={2000} 
                              value={template.config.mobileBodyOffsetY ?? 0} 
                              onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
                              icon={Smartphone} 
-                             hint={isRtl ? "إزاحة محتوى البطاقة فوق ترويستها الداخلية في الجوال" : "Offset internal body over card's header on mobile"}
                           />
                        </div>
 
@@ -1635,18 +1611,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           {template.config.defaultThemeType === 'color' && (
                             <div className="w-full h-full" style={{ backgroundColor: template.config.defaultThemeColor }} />
                           )}
-                          {template.config.headerPatternId && template.config.headerPatternId !== 'none' && (
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.2]" 
-                                style={{ 
-                                  backgroundImage: `url("data:image/svg+xml;base64,${window.btoa((PATTERN_PRESETS.find(p => p.id === template.config.headerPatternId)?.svg || '').replace('currentColor', template.config.defaultIsDark ? '#ffffff' : '#000000'))}")`,
-                                  backgroundSize: `${template.config.headerPatternScale || 100}%`,
-                                  opacity: (template.config.headerPatternOpacity || 20) / 100
-                                }} />
-                          )}
                         </div>
-                        {template.config.headerGlassy && (
-                          <div className="absolute inset-0 backdrop-blur-md" style={{ backgroundColor: template.config.defaultIsDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)' }} />
-                        )}
                       </div>
                    )}
                    
@@ -1732,7 +1697,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col lg:flex-row h-[90vh] lg:h-auto animate-zoom-in">
               
-              {/* القسم الأيسر: البحث عن عضو مخصص */}
               <div className="w-full lg:w-[400px] bg-indigo-50/30 dark:bg-black/20 p-8 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col space-y-6">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-lg"><UserCheck size={20} /></div>
@@ -1768,13 +1732,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           {selectedUser?.uid === user.uid ? <Check size={16} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-100 dark:border-gray-700 group-hover:border-indigo-300"></div>}
                        </button>
                     ))}
-
-                    {userQuery.length >= 3 && userSearchResults.length === 0 && !isSearchingUsers && (
-                       <div className="text-center py-10 opacity-30">
-                          <AlertTriangle size={32} className="mx-auto mb-2" />
-                          <p className="text-[10px] font-black uppercase">{isRtl ? 'لا يوجد نتائج' : 'No users found'}</p>
-                       </div>
-                    )}
                  </div>
 
                  {selectedUser && (
@@ -1785,13 +1742,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <X size={14} /> {isRtl ? 'إلغاء التخصيص' : 'Clear Restriction'}
                     </button>
                  )}
-
-                 <p className="text-[9px] font-bold text-gray-400 leading-relaxed italic border-t dark:border-gray-800 pt-4">
-                    {isRtl ? "* في حال اختيار عضو، لن يظهر هذا التصميم إلا له في صفحة (التصاميم الخاصة) ولن يظهر في المعرض العام." : "* If a member is selected, this design will only appear for them in the (Private Designs) page and won't show in the public gallery."}
-                 </p>
               </div>
 
-              {/* القسم الأيمن: بيانات القالب الأساسية */}
               <div className="flex-1 p-8 md:p-12 flex flex-col space-y-8 justify-center">
                  <div className="flex justify-between items-center">
                     <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'حفظ التصميم ونشره' : 'Publish Template'}</h3>

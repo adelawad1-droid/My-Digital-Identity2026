@@ -30,7 +30,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
   const [searchTerm, setSearching] = useState('');
   const [styleToDelete, setStyleToDelete] = useState<string | null>(null);
   
-  // إضافة إعدادات الرفع
   const [uploadConfig, setUploadConfig] = useState({ storageType: 'database', uploadUrl: '' });
 
   const t = (ar: string, en: string) => isRtl ? ar : en;
@@ -38,7 +37,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
   useEffect(() => {
     if (auth.currentUser && auth.currentUser.email === ADMIN_EMAIL) {
       fetchStyles();
-      // جلب إعدادات الموقع عند التحميل
       getSiteSettings().then(settings => {
         if (settings) {
           setUploadConfig({
@@ -152,7 +150,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
     if (!file) return;
     setUploadingBg(true);
     try {
-      // تمرير إعدادات الرفع هنا
       const b = await uploadImageToCloud(file, 'background', uploadConfig as any);
       if (b) {
         updateConfig('defaultBackgroundImage', b);
@@ -169,7 +166,15 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
            {Icon && <Icon size={14} className="text-indigo-600" />}
            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
         </div>
-        <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{value}{unit}</span>
+        <div className="flex items-center bg-indigo-50 dark:bg-indigo-900/20 rounded-full px-1 py-0.5 border border-indigo-100 dark:border-indigo-800/30">
+           <input 
+             type="number" 
+             value={value} 
+             onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+             className="w-12 bg-transparent text-center text-[10px] font-black text-indigo-600 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+           />
+           <span className="text-[8px] font-black text-indigo-400 pr-2 pointer-events-none">{unit}</span>
+        </div>
       </div>
       <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
     </div>
@@ -200,7 +205,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
     </div>
   );
 
-  const labelTextClasses = "text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1 block mb-1.5";
   const inputClasses = "w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/20 transition-all shadow-inner";
 
   if (loading && !editingStyle && !styleToDelete) return (
@@ -238,16 +242,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                 <Search className="text-indigo-600" size={20} />
                 <h4 className="text-sm font-black dark:text-white uppercase tracking-widest">{t('مكتبة الأنماط المبتكرة', 'Innovative Styles Library')}</h4>
               </div>
-              <div className="relative w-full md:w-80">
-                <Search className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                <input 
-                  type="text" 
-                  value={searchTerm} 
-                  onChange={(e) => setSearching(e.target.value)} 
-                  placeholder={t('ابحث في الأنماط...', 'Search lab...')} 
-                  className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm outline-none focus:ring-4 focus:ring-indigo-100 transition-all`} 
-                />
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
@@ -272,16 +266,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                      </div>
                   </div>
                   
-                  <div className="flex justify-between items-start mb-6 px-2">
-                    <div>
-                      <h3 className="text-lg font-black dark:text-white leading-none mb-1">{isRtl ? style.nameAr : style.nameEn}</h3>
-                      <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{style.config.headerType}</p>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase ${style.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}>
-                      {style.isActive ? t('نشط', 'Active') : t('معطل', 'Inactive')}
-                    </div>
-                  </div>
-
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setEditingStyle(style)}
@@ -302,7 +286,7 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
           </div>
         </>
       ) : (
-        <div className="max-w-[1400px] mx-auto space-y-8 animate-fade-in">
+        <div className="max-w-[1440px] mx-auto space-y-8 animate-fade-in">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                  <button onClick={() => setEditingStyle(null)} className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border hover:bg-red-50 hover:text-red-500 transition-colors"><X size={20}/></button>
@@ -322,7 +306,6 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
 
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               <div className="lg:col-span-8 space-y-8">
-                 {/* قسم هندسة الترويسات */}
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
                     <div className="flex items-center gap-4"><Shapes className="text-indigo-600" size={24}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('محرك هندسة الترويسات', 'Structural Shape Engine')}</h3></div>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -356,13 +339,12 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                     </div>
                  </div>
 
-                 {/* قسم هندسة إطار البيانات */}
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
                     <div className="flex items-center gap-4"><Box className="text-indigo-600" size={24}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('هندسة إطار البيانات', 'Body Geometry & Effects')}</h3></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <ToggleSwitch label={t('تأثير زجاجي فاخر للجسم', 'Glassmorphism Body')} value={editingStyle.config?.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} />
                        <RangeControl label={t('درجة شفافية الجسم', 'Body Transparency')} min={0} max={100} unit="%" value={editingStyle.config?.bodyOpacity ?? 100} onChange={(v: number) => updateConfig('bodyOpacity', v)} icon={Sun} />
-                       <RangeControl label={t('إزاحة منطقة البيانات', 'Overlap Y Offset')} min={-1000} max={500} value={editingStyle.config?.bodyOffsetY || 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} />
+                       <RangeControl label={t('إزاحة منطقة البيانات', 'Overlap Y Offset')} min={-2000} max={2000} value={editingStyle.config?.bodyOffsetY || 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} />
                        <RangeControl label={t('انحناء زوايا الجسم', 'Border Radius')} min={0} max={120} value={editingStyle.config?.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                     </div>
 
@@ -387,202 +369,18 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                                  />
                                  <RangeControl 
                                     label={t('إزاحة الميزة رأسياً', 'Vertical Offset')} 
-                                    min={-100} max={150} 
+                                    min={-2000} max={2000} 
                                     value={editingStyle.config?.bodyFeatureOffsetY ?? 0} 
                                     onChange={(v: number) => updateConfig('bodyFeatureOffsetY', v)} 
                                     icon={Move} 
                                  />
-                                 <RangeControl label={t('ارتفاع القسم', 'Height')} min={30} max={120} value={editingStyle.config?.bodyFeatureHeight ?? 45} onChange={(v: number) => updateConfig('bodyFeatureHeight', v)} icon={Maximize2} />
-                                 <RangeControl label={t('انحناء الحواف', 'Radius')} min={0} max={50} value={editingStyle.config?.bodyFeatureBorderRadius ?? 16} onChange={(v: number) => updateConfig('bodyFeatureBorderRadius', v)} icon={Ruler} />
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                 <ColorInput label={t('لون الخلفية', 'Background')} value={editingStyle.config?.bodyFeatureBgColor} onChange={(v: string) => updateConfig('bodyFeatureBgColor', v)} />
-                                 <ColorInput label={t('لون النص', 'Text Color')} value={editingStyle.config?.bodyFeatureTextColor} onChange={(v: string) => updateConfig('bodyFeatureTextColor', v)} />
-                                 <ToggleSwitch label={t('نمط زجاجي', 'Glassy')} value={editingStyle.config?.bodyFeatureGlassy} onChange={(v: boolean) => updateConfig('bodyFeatureGlassy', v)} icon={GlassWater} />
                               </div>
                            </div>
                         )}
                     </div>
                  </div>
-
-                 {/* قسم البصمة الوراثية للسمة */}
-                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                    <div className="flex items-center gap-4"><Sparkles className="text-indigo-600" size={24}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('البصمة الوراثية للسمة', 'Visual DNA')}</h3></div>
-                    <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-gray-800 p-1.5 rounded-2xl">
-                       {(['color', 'gradient', 'image'] as ThemeType[]).map(type => (
-                         <button key={type} onClick={() => updateConfig('defaultThemeType', type)} className={`py-3 rounded-xl transition-all flex flex-col items-center gap-1 ${editingStyle.config?.defaultThemeType === type ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
-                           {type === 'color' ? <Palette size={18}/> : type === 'gradient' ? <Sparkles size={18}/> : <ImageIcon size={18}/>}
-                           <span className="text-[9px] font-black uppercase tracking-widest">{t(type, type.toUpperCase())}</span>
-                         </button>
-                       ))}
-                    </div>
-
-                    {editingStyle.config?.defaultThemeType === 'color' && (
-                      <div className="space-y-6 animate-fade-in">
-                         <label className="text-[10px] font-black text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
-                         <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
-                            {THEME_COLORS.map((clr, i) => (
-                              <button key={i} onClick={() => updateConfig('defaultThemeColor', clr)} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${editingStyle.config?.defaultThemeColor === clr ? 'border-indigo-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
-                            ))}
-                         </div>
-                      </div>
-                    )}
-
-                    {editingStyle.config?.defaultThemeType === 'gradient' && (
-                      <div className="space-y-6 animate-fade-in">
-                         <label className="text-[10px] font-black text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
-                         <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                            {THEME_GRADIENTS.map((grad, i) => (
-                              <button key={i} onClick={() => updateConfig('defaultThemeGradient', grad)} className={`h-12 rounded-2xl border-2 transition-all ${editingStyle.config?.defaultThemeGradient === grad ? 'border-indigo-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
-                            ))}
-                         </div>
-                      </div>
-                    )}
-
-                    {editingStyle.config?.defaultThemeType === 'image' && (
-                      <div className="space-y-6 animate-fade-in">
-                         <div className="space-y-4">
-                            <label className="text-[10px] font-black text-gray-400 uppercase block tracking-widest">{t('رابط خلفية خاصة (URL)', 'Custom Background URL')}</label>
-                            <div className="relative">
-                               <LinkIcon className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-indigo-400`} size={16} />
-                               <input 
-                                 type="url" 
-                                 value={editingStyle.config?.defaultBackgroundImage || ''} 
-                                 onChange={e => updateConfig('defaultBackgroundImage', e.target.value)} 
-                                 placeholder="https://example.com/high-quality-bg.jpg" 
-                                 className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} !py-3.5 font-mono text-[11px]`}
-                               />
-                            </div>
-                            <p className="text-[9px] font-bold text-gray-400 italic px-2">
-                               {isRtl ? "* أدخل رابط مباشر لصورة عالية الجودة ليتم استخدامها كخلفية افتراضية للنمط." : "* Enter a direct link to a high-quality image to be used as the default background."}
-                            </p>
-                         </div>
-
-                         <div className="pt-4 space-y-4">
-                            <label className="text-[10px] font-black text-gray-400 uppercase">{t('أو اختر من المكتبة الجاهزة', 'Or choose from presets')}</label>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                               {BACKGROUND_PRESETS.map((url, i) => (
-                                 <button key={i} onClick={() => updateConfig('defaultBackgroundImage', url)} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${editingStyle.config?.defaultBackgroundImage === url ? 'border-indigo-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
-                                    <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
-                                 </button>
-                               ))}
-                            </div>
-                         </div>
-                         
-                         <div className="pt-4 border-t dark:border-gray-800">
-                            <input type="file" ref={bgInputRef} onChange={handleBgUpload} className="hidden" accept="image/*" />
-                            <button onClick={() => bgInputRef.current?.click()} className="w-full py-5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-indigo-100 dark:border-indigo-900/40 hover:bg-indigo-100 transition-all">
-                               {uploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
-                               {t('أو ارفع ملف من جهازك', 'Or upload from your device')}
-                            </button>
-                         </div>
-                      </div>
-                    )}
-
-                    <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                       <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('ألوان السمة والأرضية والخلفية', 'Base Theme, Card & Page Colors')}</h4>
-                       
-                       <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/20 mb-4">
-                          <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1 mb-3 flex items-center gap-2">
-                             <Repeat size={14} /> {t('استراتيجية خلفية الصفحة', 'Page BG Strategy')}
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                             <button 
-                                onClick={() => updateConfig('pageBgStrategy', 'solid')}
-                                className={`py-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${editingStyle.config?.pageBgStrategy !== 'mirror-header' ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
-                             >
-                                <Pipette size={16} />
-                                <span className="text-[9px] font-black uppercase">{t('لون ثابت', 'Solid')}</span>
-                             </button>
-                             <button 
-                                onClick={() => updateConfig('pageBgStrategy', 'mirror-header')}
-                                className={`py-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${editingStyle.config?.pageBgStrategy === 'mirror-header' ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
-                             >
-                                <Layers size={16} />
-                                <span className="text-[9px] font-black uppercase">{t('مطابقة ألوان الترويسة الخلفية', 'Mirror Header Background')}</span>
-                             </button>
-                          </div>
-                       </div>
-
-                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <ColorInput label={t('لون السمة الأساسي', 'Base Theme')} value={editingStyle.config?.defaultThemeColor} onChange={(v: string) => updateConfig('defaultThemeColor', v)} />
-                          <ColorInput label={t('لون أرضية البطاقة', 'Card Base Bg')} value={editingStyle.config?.cardBgColor || ''} onChange={(v: string) => updateConfig('cardBgColor', v)} />
-                          {editingStyle.config?.pageBgStrategy !== 'mirror-header' && (
-                            <ColorInput label={t('لون خلفية الصفحة', 'Page Bg Color')} value={editingStyle.config?.pageBgColor || ''} onChange={(v: string) => updateConfig('pageBgColor', v)} />
-                          )}
-                       </div>
-                       
-                       <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                          <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
-                          <button onClick={() => updateConfig('defaultIsDark', !editingStyle.config?.defaultIsDark)} className={`w-14 h-7 rounded-full relative transition-all ${editingStyle.config?.defaultIsDark ? 'bg-indigo-600 shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (editingStyle.config?.defaultIsDark ? 'right-8' : 'right-1') : (editingStyle.config?.defaultIsDark ? 'left-8' : 'left-1')}`} /></button>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-
-              {/* قسم المعاينة */}
-              <div className="lg:col-span-4 sticky top-[100px] self-start space-y-6">
-                 <div className="bg-white dark:bg-[#050507] p-5 rounded-[4rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden relative">
-                    <div className="mb-6 flex items-center justify-between px-4">
-                       <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span>
-                       </div>
-                       <Zap size={14} className="text-indigo-600" />
-                    </div>
-                    <div className="transition-all duration-500 border-[10px] border-gray-900 dark:border-gray-800 rounded-[3.5rem] shadow-2xl overflow-hidden mx-auto bg-white dark:bg-black w-full">
-                       <div className="h-[550px] themed-scrollbar scroll-smooth relative">
-                          <CardPreview 
-                            data={{ 
-                               name: isRtl ? 'معاينة النمط الزجاجي' : 'Glassy DNA Preview',
-                               title: t('تأثير شفاف مذهل', 'Stunning Transparency'),
-                               company: 'NEXT-ID PREMIUM',
-                               bio: t('تم تفعيل التأثير الزجاجي الفاخر. يمنح هذا التصميم البطاقة عمقاً استثنائياً وشفافية تجذب الأنظار.', 'Premium Glassmorphism activated. This design gives the card exceptional depth and eye-catching transparency.'),
-                               themeType: editingStyle.config?.defaultThemeType || 'gradient',
-                               themeColor: editingStyle.config?.defaultThemeColor || '#2563eb',
-                               themeGradient: editingStyle.config?.defaultThemeGradient || THEME_GRADIENTS[0],
-                               backgroundImage: editingStyle.config?.defaultBackgroundImage || BACKGROUND_PRESETS[1],
-                               isDark: editingStyle.config?.defaultIsDark || false,
-                               showBodyFeature: editingStyle.config?.showBodyFeatureByDefault,
-                               templateId: 'lab-preview'
-                            } as any} 
-                            lang={lang} 
-                            customConfig={editingStyle.config as TemplateConfig} 
-                            hideSaveButton={true} 
-                          />
-                       </div>
-                    </div>
-                 </div>
-
-                 {/* حقول معلومات النمط */}
-                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-5">
-                    <div className="space-y-2">
-                       <label className={labelTextClasses}>{t('اسم النمط (AR)', 'Style Name (AR)')}</label>
-                       <input type="text" value={editingStyle.nameAr || ''} onChange={e => setEditingStyle({...editingStyle, nameAr: e.target.value})} className={inputClasses} />
-                    </div>
-                    <div className="space-y-2">
-                       <label className={labelTextClasses}>{t('اسم النمط (EN)', 'Style Name (EN)')}</label>
-                       <input type="text" value={editingStyle.nameEn || ''} onChange={e => setEditingStyle({...editingStyle, nameEn: e.target.value})} className={inputClasses} />
-                    </div>
-                 </div>
               </div>
            </div>
-        </div>
-      )}
-
-      {/* مودال الحذف */}
-      {styleToDelete && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-[360px] rounded-[3.5rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-fade-in">
-             <Trash2 size={48} className="mx-auto text-red-500 mb-6" />
-             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تدمير النمط', 'Destroy DNA')}</h3>
-             <p className="text-sm font-bold text-gray-400 mb-10 leading-relaxed">{t('هل أنت متأكد من تدمير هذا النمط المبتكر؟', 'Are you sure you want to destroy this DNA?')}</p>
-             <div className="flex flex-col gap-3">
-               <button onClick={handleDelete} className="py-5 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl shadow-red-500/20 active:scale-95 transition-all">تأكيد الحذف</button>
-               <button onClick={() => setStyleToDelete(null)} className="py-5 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">تراجع</button>
-             </div>
-          </div>
         </div>
       )}
     </div>
