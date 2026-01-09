@@ -1,4 +1,5 @@
 
+
 export type Language = 'en' | 'ar' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'pt' | 'ru' | 'hi';
 
 export interface SocialLink {
@@ -252,6 +253,8 @@ export interface TemplateConfig {
   defaultNameSize?: number;
   defaultIsDark?: boolean;
   cardBodyColor?: string;
+  cardBodyBackgroundImage?: string;
+  cardBodyThemeType?: 'color' | 'image';
   cardBgColor?: string; 
   pageBgColor?: string; 
   pageBgStrategy?: PageBgStrategy; 
@@ -305,6 +308,9 @@ export interface CardData {
   linksShowText?: boolean;
   linksShowBg?: boolean;
   specialLinksCols?: number;
+  // Added missing special links config overrides for CardData
+  specialLinksOffsetY?: number;
+  specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
 
   // Membership & Subscription
   showMembership?: boolean;
@@ -382,6 +388,8 @@ export interface CardData {
   qrBorderColor?: string;
   qrBorderRadius?: number;
   cardBodyColor?: string;
+  cardBodyBackgroundImage?: string;
+  cardBodyThemeType?: 'color' | 'image';
   cardBgColor?: string; 
   pageBgColor?: string;
   pageBgStrategy?: PageBgStrategy;

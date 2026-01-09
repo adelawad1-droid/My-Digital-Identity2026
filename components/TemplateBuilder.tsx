@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -135,6 +136,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const inputClasses = "w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all shadow-inner";
 
   const bgInputRef = useRef<HTMLInputElement>(null);
+  const bodyBgInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const specialLinkInputRef = useRef<HTMLInputElement>(null);
   
@@ -149,6 +151,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [loading, setLoading] = useState(false);
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [uploadingBodyBg, setUploadingBodyBg] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingSpecialImg, setUploadingSpecialImg] = useState(false);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
@@ -316,6 +319,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       defaultCompany: '',
       defaultIsDark: false,
       cardBodyColor: '#ffffff',
+      cardBodyBackgroundImage: '',
+      cardBodyThemeType: 'color',
       cardBgColor: '#f1f5f9', 
       pageBgColor: '',
       pageBgStrategy: 'solid',
@@ -465,6 +470,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       }
     } finally {
       setUploadingBg(false);
+    }
+  };
+
+  const handleBodyBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBodyBg(true);
+    try {
+      const b = await uploadImageToCloud(file, 'background', uploadConfig as any);
+      if (b) {
+        updateConfig('cardBodyBackgroundImage', b);
+        updateConfig('cardBodyThemeType', 'image');
+      }
+    } finally {
+      setUploadingBodyBg(false);
     }
   };
 
@@ -674,7 +694,36 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                         
-                        <ColorPicker label={isRtl ? 'لون جسم البطاقة' : 'Card Body Color'} value={template.config.cardBodyColor || ''} onChange={(v: string) => updateConfig('cardBodyColor', v)} />
+                        <div className="md:col-span-2 space-y-4">
+                           <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
+                              {['color', 'image'].map(type => (
+                                <button type="button" key={type} onClick={() => updateConfig('cardBodyThemeType', type)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${template.config.cardBodyThemeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
+                                  {type === 'color' ? <Palette size={20}/> : <ImageIconLucide size={20}/>}
+                                  <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون' : 'صورة خلفية', type.toUpperCase())}</span>
+                                </button>
+                              ))}
+                           </div>
+
+                           {template.config.cardBodyThemeType === 'color' ? (
+                             <ColorPicker label={isRtl ? 'لون جسم البطاقة' : 'Card Body Color'} value={template.config.cardBodyColor || ''} onChange={(v: string) => updateConfig('cardBodyColor', v)} />
+                           ) : (
+                             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+                                <div className="w-full h-32 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 mb-4 flex items-center justify-center overflow-hidden relative">
+                                   {template.config.cardBodyBackgroundImage ? (
+                                     <img src={template.config.cardBodyBackgroundImage} className="w-full h-full object-cover" alt="Body BG" />
+                                   ) : (
+                                     <ImageIconLucide size={32} className="text-gray-200" />
+                                   )}
+                                   {uploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
+                                </div>
+                                <input type="file" ref={bodyBgInputRef} onChange={handleBodyBgUpload} className="hidden" accept="image/*" />
+                                <button type="button" onClick={() => checkAuthAndClick(bodyBgInputRef)} className="w-full py-4 bg-white dark:bg-gray-900 border rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-2 shadow-sm">
+                                   <UploadCloud size={16} className="text-blue-500" />
+                                   {t('رفع خلفية جسم البطاقة', 'Upload Body BG Image')}
+                                </button>
+                             </div>
+                           )}
+                        </div>
 
                         <RangeControl 
                            label={t('شفافية جسم البطاقة', 'Body Transparency')} 
@@ -1606,7 +1655,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <button 
                                    type="button"
                                    onClick={() => updateConfig('pageBgStrategy', 'mirror-header')}
-                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy === 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
+                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy === 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}
                                 >
                                    <Layers size={18} />
                                    <span className="text-[9px] font-black uppercase">{isRtl ? 'مطابقة ألوان الترويسة' : 'Mirror Header Colors'}</span>
@@ -1750,6 +1799,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          bioMaxWidth: template.config.bioMaxWidth,
                          bioTextAlign: template.config.bioTextAlign,
                          cardBodyColor: template.config.cardBodyColor,
+                         cardBodyBackgroundImage: template.config.cardBodyBackgroundImage,
+                         cardBodyThemeType: template.config.cardBodyThemeType,
                          cardBgColor: template.config.cardBgColor,
                          linksSectionPaddingV: template.config.linksSectionPaddingV
                        } as any} 

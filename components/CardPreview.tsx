@@ -323,6 +323,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const bodyOpacity = (data.bodyOpacity ?? config.bodyOpacity ?? 100) / 100;
   
   const bodyBaseColor = data.cardBodyColor || config.cardBodyColor || (isDark ? '#1a1a20' : '#ffffff');
+  const bodyBgImage = data.cardBodyBackgroundImage || config.cardBodyBackgroundImage;
+  const bodyThemeType = data.cardBodyThemeType || config.cardBodyThemeType || 'color';
   const rgbBody = hexToRgb(bodyBaseColor);
 
   const needsSideMargins = headerType.startsWith('side') || isBodyGlassy || bodyOpacity < 1 || config.headerType === 'floating' || hideHeader;
@@ -332,7 +334,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const bodyContentStyles: React.CSSProperties = {
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? `${headerHeight * 0.4}px` : (headerType.startsWith('side') ? '40px' : '-60px')),
     transform: `translateY(${finalBodyOffsetY}px)`, 
-    backgroundColor: `rgba(${rgbBody.string}, ${bodyOpacity})`,
     borderRadius: `${config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
     position: 'relative',
@@ -340,7 +341,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     width: needsSideMargins ? 'calc(100% - 32px)' : '100%',
     margin: needsSideMargins ? '0 auto' : '0',
     backdropFilter: isBodyGlassy ? 'blur(20px)' : 'none',
-    WebkitBackdropFilter: isBodyGlassy ? 'blur(20px)' : 'none',
+    WebkitBackdropFilter: isBodyGlassy ? 'blur(15px)' : 'none',
     border: needsSideMargins ? (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)') : 'none',
     textAlign: config.contentAlign || 'center',
     marginLeft: headerType === 'side-left' ? '28%' : (headerType === 'side-right' ? '2%' : (needsSideMargins ? 'auto' : '0')),
@@ -349,6 +350,14 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
     boxShadow: needsSideMargins ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none'
   };
+
+  if (bodyThemeType === 'image' && bodyBgImage) {
+    bodyContentStyles.backgroundImage = `url(${bodyBgImage})`;
+    bodyContentStyles.backgroundSize = 'cover';
+    bodyContentStyles.backgroundPosition = 'center';
+  } else {
+    bodyContentStyles.backgroundColor = `rgba(${rgbBody.string}, ${bodyOpacity})`;
+  }
 
   const finalCardBaseGroundColor = hideHeader ? 'transparent' : (data.cardBgColor || config.cardBgColor || (isDark ? '#0f0f12' : '#f1f5f9'));
 
@@ -417,11 +426,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     return inner ? 'rounded-[22%]' : 'rounded-[28%]';
   };
 
+  // إعدادات روابط الصور - منح الأولوية لبيانات المستخدم Overrides
   const slCols = data.specialLinksCols || config.specialLinksCols || 2;
   const slGap = config.specialLinksGap || 12;
   const slRadius = config.specialLinksRadius ?? 24;
-  const slAspect = config.specialLinksAspectRatio || 'square';
-  const slOffsetY = config.specialLinksAspectRatio === 'video' ? 0 : (config.specialLinksOffsetY || 0);
+  const slAspect = data.specialLinksAspectRatio || config.specialLinksAspectRatio || 'square';
+  const slOffsetY = data.specialLinksOffsetY || config.specialLinksOffsetY || 0;
 
   const finalEmails = data.emails && data.emails.length > 0 ? data.emails : (data.email ? [data.email] : []);
   const finalWebsites = data.websites && data.websites.length > 0 ? data.websites : (data.website ? [data.website] : []);
@@ -696,7 +706,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  >
                     <div className="text-center space-y-4">
                        <h3 className="text-sm font-black dark:text-white uppercase tracking-widest opacity-80">
-                          {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادمة') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
+                          {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادية') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
                        </h3>
                        <CountdownTimer 
                          targetDate={data.occasionDate || config.occasionDate || ''} 

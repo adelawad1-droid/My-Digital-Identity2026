@@ -10,8 +10,8 @@ import {
   RefreshCcw, FileText, Calendar, MapPin, PartyPopper, Move, Wind, 
   GlassWater, Link2, Sparkle, LayoutGrid, EyeOff, Ruler, Wand2, Building2, Timer,
   QrCode, Share2, Trash2, LogIn, Shapes, Navigation2, ImagePlus, Check, Search, AlertTriangle, Zap,
-  Type, Briefcase, ShieldCheck, Crown, ShoppingCart, Globe2, Star, ChevronRight, ChevronLeft,
-  Quote, PhoneCall
+  Briefcase, ShieldCheck, Crown, ShoppingCart, Globe2, Star, ChevronRight, ChevronLeft,
+  Quote, PhoneCall, MonitorDot, ArrowLeftRight, Box, SlidersHorizontal, Grid, Maximize2, ExternalLink
 } from 'lucide-react';
 import CardPreview from '../components/CardPreview';
 import SocialIcon, { BRAND_COLORS } from '../components/SocialIcon';
@@ -32,7 +32,7 @@ interface EditorProps {
   forcedTemplateId?: string; 
 }
 
-type EditorTab = 'identity' | 'contact_numbers' | 'social' | 'links' | 'membership' | 'event' | 'design';
+type EditorTab = 'identity' | 'contact_numbers' | 'social' | 'links' | 'special_links' | 'membership' | 'event' | 'theme' | 'design';
 
 const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, isAdminEdit, templates, forcedTemplateId }) => {
   const isRtl = lang === 'ar';
@@ -44,6 +44,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bgFileInputRef = useRef<HTMLInputElement>(null);
+  const bodyBgFileInputRef = useRef<HTMLInputElement>(null);
+  const specialLinkInputRef = useRef<HTMLInputElement>(null);
   const originalIdRef = useRef<string | null>(initialData?.id || null);
 
   const [activeTab, setActiveTab] = useState<EditorTab>('identity');
@@ -53,13 +55,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle' | 'available' | 'taken' | 'invalid'>('idle');
   const [isSlugVerified, setIsSlugVerified] = useState(true);
-  const [showValidationError, setShowValidationError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
+  const [isUploadingBodyBg, setIsUploadingBodyBg] = useState(false);
+  const [isUploadingSpecialImg, setIsUploadingSpecialImg] = useState(false);
   const [uploadConfig, setUploadConfig] = useState({ storageType: 'database' as const, uploadUrl: '' });
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
-  // تحريك المعاينة
+  // تحريك المعاينة في وضع الجوال العائم
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
 
   const tabs: {id: EditorTab, label: string, icon: any, color: string}[] = [
@@ -67,8 +71,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     { id: 'contact_numbers', label: t('contactNumbers'), icon: PhoneCall, color: 'text-indigo-600' },
     { id: 'social', label: t('التواصل', 'Social'), icon: Share2, color: 'text-emerald-600' },
     { id: 'links', label: t('الروابط', 'Links'), icon: LinkIcon, color: 'text-purple-600' },
+    { id: 'special_links', label: t('روابط الصور', 'Image Links'), icon: ImagePlus, color: 'text-pink-600' },
     { id: 'membership', label: t('العضوية', 'Membership'), icon: ShieldCheck, color: 'text-amber-600' },
     { id: 'event', label: t('المناسبة', 'Event'), icon: Calendar, color: 'text-rose-600' },
+    { id: 'theme', label: t('الألوان والسمة', 'Theme'), icon: Sparkles, color: 'text-blue-500' },
     { id: 'design', label: t('المظهر', 'Design'), icon: Palette, color: 'text-indigo-600' },
   ];
 
@@ -99,6 +105,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          themeGradient: selectedTmpl.config.defaultThemeGradient || baseData.themeGradient,
          backgroundImage: selectedTmpl.config.defaultBackgroundImage || baseData.backgroundImage,
          isDark: selectedTmpl.config.defaultIsDark ?? baseData.isDark,
+         cardBodyColor: selectedTmpl.config.cardBodyColor || '#ffffff',
+         cardBodyThemeType: selectedTmpl.config.cardBodyThemeType || 'color',
+         specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
+         showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
+         specialLinks: selectedTmpl.config.defaultSpecialLinks || []
        } as CardData;
     }
     return baseData;
@@ -145,6 +156,22 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     );
   };
 
+  const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px" }: any) => (
+    <div className="bg-white dark:bg-gray-900 p-5 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+           {Icon && <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Icon size={14} /></div>}
+           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+        </div>
+        <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-3 py-0.5 border border-blue-100 dark:border-blue-800/30">
+           <span className="text-xs font-black text-blue-600">{value}</span>
+           <span className="text-[8px] font-black text-blue-400 ml-1">{unit}</span>
+        </div>
+      </div>
+      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+    </div>
+  );
+
   const ColorPickerUI = ({ label, field, icon: Icon }: { label: string, field: keyof CardData, icon?: any }) => (
     <div className="bg-white dark:bg-gray-950 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
       <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-gray-400" />}<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span></div>
@@ -161,8 +188,57 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const inputClasses = "w-full px-5 py-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 transition-all font-bold text-sm shadow-none";
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
 
+  // إعدادات المعاينة الحية الافتراضية للجوال دائماً
+  const cardBodyOffset = currentTemplate?.config.mobileBodyOffsetY ?? 0;
+  
+  const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
+    ? (formData.themeType === 'color' ? formData.themeColor : '#f8fafc')
+    : (currentTemplate?.config.pageBgColor || (formData.isDark ? '#050507' : '#f8fafc'));
+
+  // دوال إدارة روابط الصور
+  const handleSpecialLinkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingSpecialImg(true);
+    try {
+      const b = await uploadImageToCloud(file, 'avatar', uploadConfig as any);
+      if (b) {
+        const newItem: SpecialLinkItem = {
+          id: Date.now().toString(),
+          imageUrl: b,
+          linkUrl: '',
+          titleAr: '',
+          titleEn: ''
+        };
+        handleChange('specialLinks', [...(formData.specialLinks || []), newItem]);
+      }
+    } finally {
+      setIsUploadingSpecialImg(false);
+    }
+  };
+
+  const updateSpecialLink = (id: string, field: keyof SpecialLinkItem, value: string) => {
+    const updated = (formData.specialLinks || []).map(l => l.id === id ? { ...l, [field]: value } : l);
+    handleChange('specialLinks', updated);
+  };
+
+  const removeSpecialLink = (id: string) => {
+    handleChange('specialLinks', (formData.specialLinks || []).filter(l => l.id !== id));
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40 md:pb-56">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
+      
+      {/* زر المعاينة العائم للجوال */}
+      <div className="lg:hidden fixed bottom-24 right-6 z-[2000]">
+         <button 
+           onClick={() => setShowMobilePreview(true)}
+           className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-2xl shadow-blue-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+         >
+            <Smartphone size={24} />
+         </button>
+      </div>
+
       {/* نافذة المعاينة في الجوال المحسنة */}
       {showMobilePreview && (
         <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-2xl animate-fade-in flex flex-col">
@@ -182,7 +258,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                   className="relative h-full max-h-[85vh] aspect-[9/19.5] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 overflow-hidden bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col cursor-ns-resize"
                 >
                     <div 
-                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top"
+                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-y-auto no-scrollbar"
                       style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
                     >
                         <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={true} />
@@ -195,13 +271,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
       {showAuthWarning && <AuthModal lang={lang} onClose={() => setShowAuthWarning(false)} onSuccess={() => { setShowAuthWarning(false); window.location.reload(); }} />}
 
-      <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
+        
+        {/* شريط التبويبات الجانبي لسطح المكتب */}
         <aside className="hidden lg:flex w-64 flex-col gap-2 shrink-0 sticky top-24 h-fit">
-           <div className="bg-white dark:bg-gray-900 p-4 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-1">
+           <div className="bg-white dark:bg-gray-900 p-4 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-1">
               {tabs.map((tab) => (
                 <button 
                   key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                  className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
                   <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-500'} />
                   <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
@@ -210,8 +288,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
            </div>
         </aside>
 
+        {/* منطقة المحتوى الرئيسية */}
         <main className="flex-1 animate-fade-in-up">
-            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-xl relative overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl relative overflow-hidden flex flex-col min-h-[700px]">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                     {(() => { const Icon = tabs[currentIndex].icon; return <Icon size={150} />; })()}
                 </div>
@@ -220,7 +299,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                   <div className="relative z-10 space-y-10">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className={`p-3.5 rounded-[1.2rem] bg-slate-50 dark:bg-gray-800 ${tabs[currentIndex].color} shadow-sm`}>
+                          <div className={`p-4 rounded-[1.2rem] bg-slate-50 dark:bg-gray-800 ${tabs[currentIndex].color} shadow-sm`}>
                               {React.createElement(tabs[currentIndex].icon, { size: 24 })}
                           </div>
                           <div>
@@ -233,7 +312,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         </div>
                     </div>
 
-                    <div className="min-h-[350px]">
+                    <div className="min-h-[450px]">
                         {activeTab === 'identity' && (
                           <div className="space-y-8 animate-fade-in">
                             <div className="space-y-3">
@@ -264,13 +343,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             <div className="pt-6 border-t dark:border-gray-800 space-y-6">
                                <div className="flex items-center gap-3"><Camera className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('صورتك الشخصية', 'Profile Image')}</h3></div>
                                <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50/50 dark:bg-gray-950 rounded-[2rem] border border-dashed border-gray-100 dark:border-gray-800">
-                                  <div className="w-24 h-24 rounded-[1.5rem] bg-white dark:bg-gray-900 shadow-xl border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
+                                  <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-xl border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
                                      {formData.profileImage ? <img src={formData.profileImage} className="w-full h-full object-cover" /> : <UserIcon size={32} className="text-gray-200" />}
                                      {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                   </div>
                                   <div className="flex-1 space-y-4 w-full">
                                      <input type="file" ref={fileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploading(true); try { const url = await uploadImageToCloud(f, 'avatar', uploadConfig as any); if (url) handleChange('profileImage', url); } finally { setIsUploading(false); } }} className="hidden" accept="image/*" />
-                                     <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else fileInputRef.current?.click(); }} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload Image')}</button>
+                                     <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else fileInputRef.current?.click(); }} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload Image')}</button>
                                      <div className="grid grid-cols-6 gap-2 overflow-x-auto no-scrollbar">
                                         {AVATAR_PRESETS.map((p, idx) => <button key={idx} onClick={() => handleChange('profileImage', p)} className="w-10 h-10 rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-600 transition-all shrink-0"><img src={p} className="w-full h-full object-cover" /></button>)}
                                      </div>
@@ -295,14 +374,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                   <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
                                   <div className="relative">
                                      <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                     <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={inputClasses + (isRtl ? " pr-12" : " pl-12")} placeholder="+966 5..." />
+                                     <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={inputClasses} placeholder="+966 5..." />
                                   </div>
-                               </div>
-                               <div className="space-y-3">
+                                </div>
+                                <div className="space-y-3">
                                   <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الواتساب', 'WhatsApp Number')}</label><VisibilityToggle field="showWhatsapp" label="" /></div>
                                   <div className="relative">
                                      <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                     <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={inputClasses + (isRtl ? " pr-12" : " pl-12")} placeholder="9665..." />
+                                     <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={inputClasses} placeholder="9665..." />
                                   </div>
                                </div>
                             </div>
@@ -342,20 +421,32 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         {activeTab === 'links' && (
                           <div className="space-y-8 animate-fade-in">
                              <div className="space-y-4">
-                                <div className="flex items-center justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('عناوين البريد الإلكتروني', 'Emails')}</label><button type="button" onClick={() => handleChange('emails', [...(formData.emails || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة بريد', 'Add Email')}</button></div>
+                                <div className="flex items-center justify-between px-2">
+                                  <div className="flex items-center gap-3">
+                                    <label className={labelClasses + " !mb-0"}>{t('عناوين البريد الإلكتروني', 'Emails')}</label>
+                                    <VisibilityToggle field="showEmail" label="" />
+                                  </div>
+                                  <button type="button" onClick={() => handleChange('emails', [...(formData.emails || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة بريد', 'Add Email')}</button>
+                                </div>
                                 {(formData.emails || []).map((email, idx) => (
                                    <div key={idx} className="flex gap-2">
-                                      <div className="relative flex-1"><Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={inputClasses + (isRtl ? " pr-12" : " pl-12")} placeholder="mail@example.com" /></div>
+                                      <div className="relative flex-1"><Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={inputClasses} placeholder="mail@example.com" /></div>
                                       <button type="button" onClick={() => { const l = [...(formData.emails || [])]; l.splice(idx, 1); handleChange('emails', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
                                    </div>
                                 ))}
                              </div>
 
                              <div className="space-y-4 pt-6 border-t dark:border-gray-800">
-                                <div className="flex items-center justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('المواقع والروابط', 'Websites')}</label><button type="button" onClick={() => handleChange('websites', [...(formData.websites || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رابط', 'Add Link')}</button></div>
+                                <div className="flex items-center justify-between px-2">
+                                  <div className="flex items-center gap-3">
+                                    <label className={labelClasses + " !mb-0"}>{t('المواقع والروابط', 'Websites')}</label>
+                                    <VisibilityToggle field="showWebsite" label="" />
+                                  </div>
+                                  <button type="button" onClick={() => handleChange('websites', [...(formData.websites || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رابط', 'Add Link')}</button>
+                                </div>
                                 {(formData.websites || []).map((web, idx) => (
                                    <div key={idx} className="flex gap-2">
-                                      <div className="relative flex-1"><Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={inputClasses + (isRtl ? " pr-12" : " pl-12")} placeholder="www.yoursite.com" /></div>
+                                      <div className="relative flex-1"><Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={inputClasses} placeholder="www.yoursite.com" /></div>
                                       <button type="button" onClick={() => { const l = [...(formData.websites || [])]; l.splice(idx, 1); handleChange('websites', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
                                    </div>
                                 ))}
@@ -371,10 +462,86 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                           </div>
                         )}
 
+                        {activeTab === 'special_links' && (
+                          <div className="space-y-8 animate-fade-in">
+                             <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-10">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-4">
+                                     <div className="p-3 bg-pink-50 dark:bg-pink-900/20 text-pink-600 rounded-2xl shadow-sm"><ImagePlus size={24} /></div>
+                                     <h2 className="text-xl font-black dark:text-white uppercase tracking-widest">{t('specialLinks')}</h2>
+                                  </div>
+                                  <VisibilityToggle field="showSpecialLinks" label="" />
+                                </div>
+
+                                <div className="space-y-6">
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      <RangeControl label={t('عدد الأعمدة', 'Columns')} min={1} max={3} value={formData.specialLinksCols || 2} onChange={(v: number) => handleChange('specialLinksCols', v)} icon={Grid} unit="" />
+                                   </div>
+
+                                   <div className="space-y-4 pt-4 border-t dark:border-white/5">
+                                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('نسبة العرض للارتفاع', 'Aspect Ratio Selection')}</label>
+                                      <div className="grid grid-cols-3 gap-3">
+                                         {[
+                                           { id: 'square', label: 'مربع' },
+                                           { id: 'video', label: 'بانورامي' },
+                                           { id: 'portrait', label: 'طولي' }
+                                         ].map(ratio => (
+                                            <button 
+                                              key={ratio.id} 
+                                              onClick={() => handleChange('specialLinksAspectRatio', ratio.id)} 
+                                              className={`py-4 rounded-2xl border-2 transition-all font-black text-[9px] uppercase ${formData.specialLinksAspectRatio === ratio.id ? 'bg-pink-600 text-white border-pink-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
+                                            >
+                                               {t(ratio.label, ratio.id.toUpperCase())}
+                                            </button>
+                                         ))}
+                                      </div>
+                                   </div>
+                                </div>
+
+                                <div className="pt-8 border-t dark:border-white/10 space-y-6">
+                                   <div className="flex items-center justify-between">
+                                      <h4 className="text-[12px] font-black dark:text-white uppercase tracking-widest">{t('إدارة الصور والروابط', 'Manage Items')}</h4>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => specialLinkInputRef.current?.click()}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-pink-600 text-white rounded-xl font-black text-[10px] uppercase shadow-lg hover:scale-105 transition-all"
+                                      >
+                                         <Plus size={14} />
+                                         {t('إضافة عنصر', 'Add Item')}
+                                      </button>
+                                      <input type="file" ref={specialLinkInputRef} className="hidden" onChange={handleSpecialLinkUpload} accept="image/*" />
+                                   </div>
+
+                                   <div className="grid grid-cols-1 gap-4">
+                                      {(formData.specialLinks || []).map((link) => (
+                                         <div key={link.id} className="flex flex-col md:flex-row gap-4 p-5 bg-gray-50 dark:bg-gray-800 rounded-[2rem] border border-gray-100 dark:border-gray-700 group">
+                                            <div className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-gray-900 relative">
+                                               <img src={link.imageUrl} className="w-full h-full object-cover" alt="Item" />
+                                               {isUploadingSpecialImg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 size={16} className="animate-spin text-white" /></div>}
+                                            </div>
+                                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                               <div className="space-y-1">
+                                                  <label className="text-[8px] font-black text-pink-600 uppercase px-1">{t('رابط الوجهة', 'Link URL')}</label>
+                                                  <input type="url" value={link.linkUrl} onChange={e => updateSpecialLink(link.id, 'linkUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" />
+                                               </div>
+                                               <div className="space-y-1">
+                                                  <label className="text-[8px] font-black text-pink-600 uppercase px-1">{t('العنوان', 'Title')}</label>
+                                                  <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
+                                               </div>
+                                            </div>
+                                            <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-400 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
+                                         </div>
+                                      ))}
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+                        )}
+
                         {activeTab === 'membership' && (
                           <div className="space-y-8 animate-fade-in">
                              {!isPremium && (
-                                <div className="p-8 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 text-center space-y-4">
+                                <div className="p-8 bg-amber-50 dark:bg-amber-900/10 rounded-[2.5rem] border border-amber-100 dark:border-amber-900/30 text-center space-y-4">
                                    <Crown size={40} className="text-amber-500 mx-auto" />
                                    <h3 className="text-xl font-black dark:text-white uppercase">{t('ميزة مخصصة للمحترفين', 'Pro Feature')}</h3>
                                    <p className="text-xs font-bold text-gray-400 max-w-sm mx-auto leading-relaxed">{t('نظام العضوية مخصص للحسابات المميزة فقط.', 'Membership system is for Premium accounts only.')}</p>
@@ -412,138 +579,242 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                           </div>
                         )}
 
+                        {activeTab === 'theme' && (
+                          <div className="space-y-8 animate-fade-in">
+                             <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                                <div className="flex items-center gap-3"><Palette className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تدرجات الألوان والسمة', 'Gradients & Theme')}</h4></div>
+                                
+                                <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
+                                     {['color', 'gradient', 'image'].map(type => (
+                                       <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
+                                         {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
+                                         <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
+                                       </button>
+                                     ))}
+                                </div>
+
+                                {formData.themeType === 'color' && (
+                                  <div className="space-y-6 animate-fade-in">
+                                     <label className="text-[10px] font-black text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
+                                     <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
+                                        {THEME_COLORS.map((clr, i) => (
+                                          <button type="button" key={i} onClick={() => handleChange('themeColor', clr)} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${formData.themeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
+                                        ))}
+                                     </div>
+                                  </div>
+                                )}
+
+                                {formData.themeType === 'gradient' && (
+                                  <div className="space-y-6 animate-fade-in">
+                                     <label className="text-[10px] font-black text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
+                                     <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                                        {THEME_GRADIENTS.map((grad, i) => (
+                                          <button type="button" key={i} onClick={() => handleChange('themeGradient', grad)} className={`h-12 rounded-2xl border-2 transition-all ${formData.themeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
+                                        ))}
+                                     </div>
+                                  </div>
+                                )}
+
+                                {formData.themeType === 'image' && (
+                                  <div className="space-y-6 animate-fade-in">
+                                     <label className="text-[10px] font-black text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
+                                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                        {BACKGROUND_PRESETS.map((url, i) => (
+                                          <button type="button" key={i} onClick={() => handleChange('backgroundImage', url)} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
+                                             <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
+                                          </button>
+                                        ))}
+                                     </div>
+                                     <div className="pt-4 border-t dark:border-gray-800">
+                                        <input type="file" ref={bgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('backgroundImage', url); handleChange('themeType', 'image'); } } finally { setIsUploadingBg(false); } }} className="hidden" accept="image/*" />
+                                        <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgFileInputRef.current?.click(); }} className="w-full py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
+                                           {isUploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
+                                           {t('رفع خلفية خاصة للبطاقة', 'Upload Custom Background')}
+                                        </button>
+                                     </div>
+                                  </div>
+                                )}
+
+                                <ColorPickerUI label={t('لون السمة الأساسي', 'Base Theme Color')} field="themeColor" icon={Pipette} />
+                                
+                                <div className="pt-4 border-t dark:border-gray-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
+                                    <button type="button" onClick={() => handleChange('isDark', !formData.isDark)} className={`w-14 h-7 rounded-full relative transition-all ${formData.isDark ? 'bg-blue-600 shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.isDark ? 'right-8' : 'right-1') : (formData.isDark ? 'left-8' : 'left-1')}`} /></button>
+                                </div>
+                             </div>
+                          </div>
+                        )}
+
                         {activeTab === 'design' && (
                           <div className="space-y-8 animate-fade-in">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-[1.5rem] border border-gray-800">
-                                   <div className="flex items-center gap-3"><Moon size={18} className="text-blue-400" /><p className="font-black text-white text-[10px] uppercase">{t('الوضع الليلي', 'Dark Mode')}</p></div>
-                                   <button type="button" onClick={() => handleChange('isDark', !formData.isDark)} className={`w-12 h-6 rounded-full relative transition-all ${formData.isDark ? 'bg-blue-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.isDark ? 'right-6' : 'right-0.5') : (formData.isDark ? 'left-6' : 'left-0.5')}`} /></button>
-                                </div>
                                 <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-[1.5rem] border border-indigo-100 dark:border-indigo-900/30">
                                    <div className="flex items-center gap-3"><GlassWater size={18} className="text-indigo-600" /><p className="font-black dark:text-white text-[10px] uppercase">{t('نمط زجاجي', 'Glassy Body')}</p></div>
                                    <button type="button" onClick={() => handleChange('bodyGlassy', !formData.bodyGlassy)} className={`w-12 h-6 rounded-full relative transition-all ${formData.bodyGlassy ? 'bg-indigo-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.bodyGlassy ? 'right-6' : 'right-0.5') : (formData.bodyGlassy ? 'left-6' : 'left-0.5')}`} /></button>
                                 </div>
                              </div>
+                             
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <ColorPickerUI label={t('لون الاسم', 'Name Color')} field="nameColor" icon={TypographyIcon} />
                                 <ColorPickerUI label={t('المسمى الوظيفي', 'Job Color')} field="titleColor" icon={Briefcase} />
                                 <ColorPickerUI label={t('أزرار التواصل', 'Links Color')} field="linksColor" icon={Link2} />
                                 <ColorPickerUI label={t('نصوص النبذة', 'Bio Text Color')} field="bioTextColor" icon={FileText} />
                              </div>
+                             
+                             {/* قسم تنسيق جسم البطاقة المتطور للمستخدم */}
                              <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                                <div className="flex items-center gap-3 px-2"><ImageIcon className="text-indigo-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('خلفية الصفحة والسمة', 'Page Background')}</h3></div>
-                                <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-gray-950 p-1.5 rounded-[1.5rem] border border-gray-100 dark:border-gray-800">
-                                   {['color', 'gradient', 'image'].map(type => (
-                                     <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400 border-transparent shadow-sm'}`}>
-                                       {type === 'color' ? <Palette size={16}/> : type === 'gradient' ? <Sparkles size={16}/> : <ImageIcon size={16}/>}
-                                       <span className="text-[8px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
-                                     </button>
-                                   ))}
+                                <div className="flex items-center gap-3 px-2">
+                                  <Box className="text-blue-600" size={20}/>
+                                  <h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('تنسيق جسم البطاقة', 'Card Body Style')}</h3>
                                 </div>
+                                
+                                <div className="bg-gray-50/50 dark:bg-gray-950 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 p-6 space-y-8">
+                                   {/* مفتاح التبديل بين اللون والصورة */}
+                                   <div className="grid grid-cols-2 gap-2 bg-white dark:bg-gray-900 p-1 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleChange('cardBodyThemeType', 'color')}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType !== 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                      >
+                                        <Palette size={14} /> {t('لون ثابت', 'Solid Color')}
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleChange('cardBodyThemeType', 'image')}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType === 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                      >
+                                        <ImageIcon size={14} /> {t('صورة خلفية', 'Background Image')}
+                                      </button>
+                                   </div>
 
-                                {formData.themeType === 'color' && (
-                                  <div className="space-y-6 animate-fade-in">
-                                     <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
-                                        {THEME_COLORS.map((clr, i) => (
-                                          <button 
-                                            key={i} 
-                                            type="button"
-                                            onClick={() => handleChange('themeColor', clr)} 
-                                            className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-125 ${formData.themeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-700'}`} 
-                                            style={{ backgroundColor: clr }} 
-                                          />
-                                        ))}
-                                     </div>
-                                     <ColorPickerUI label={t('لون مخصص', 'Custom Color')} field="themeColor" icon={Pipette} />
-                                  </div>
-                                )}
-
-                                {formData.themeType === 'gradient' && <div className="grid grid-cols-6 gap-2 animate-fade-in">{THEME_GRADIENTS.map((g, i) => <button type="button" key={i} onClick={() => handleChange('themeGradient', g)} className={`h-10 rounded-xl border-2 transition-all ${formData.themeGradient === g ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`} style={{ background: g }} />)}</div>}
-                                {formData.themeType === 'image' && (
-                                  <div className="space-y-4 animate-fade-in">
-                                     <div className="grid grid-cols-5 gap-2">{BACKGROUND_PRESETS.map((url, i) => <button type="button" key={i} onClick={() => handleChange('backgroundImage', url)} className={`aspect-video rounded-xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105' : 'border-transparent opacity-60'}`}><img src={url} className="w-full h-full object-cover" /></button>)}</div>
-                                     <input type="file" ref={bgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('backgroundImage', url); handleChange('themeType', 'image'); } } finally { setIsUploadingBg(false); } }} className="hidden" accept="image/*" />
-                                     <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgFileInputRef.current?.click(); }} disabled={isUploadingBg} className="w-full py-4 bg-white dark:bg-gray-950 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-xl font-black text-[9px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">{isUploadingBg ? <Loader2 className="animate-spin" /> : <UploadCloud size={16}/>} {t('رفع خلفية فنية', 'Upload BG')}</button>
-                                  </div>
-                                )}
+                                   {/* خيار اللون الثابت */}
+                                   {formData.cardBodyThemeType !== 'image' ? (
+                                      <div className="space-y-6 animate-fade-in">
+                                         <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
+                                            {THEME_COLORS.slice(0, 20).map((clr, idx) => (
+                                               <button 
+                                                 key={idx} 
+                                                 type="button"
+                                                 onClick={() => handleChange('cardBodyColor', clr)}
+                                                 className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-125 ${formData.cardBodyColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-800'}`}
+                                                 style={{ backgroundColor: clr }}
+                                               />
+                                            ))}
+                                         </div>
+                                         <ColorPickerUI label={t('لون مخصص', 'Custom Color')} field="cardBodyColor" icon={Pipette} />
+                                      </div>
+                                   ) : (
+                                      /* خيار الصورة الخلفية */
+                                      <div className="space-y-6 animate-fade-in">
+                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="w-full h-32 rounded-2xl bg-white dark:bg-gray-900 shadow-inner overflow-hidden flex items-center justify-center relative border border-gray-100 dark:border-gray-800">
+                                               {formData.cardBodyBackgroundImage ? <img src={formData.cardBodyBackgroundImage} className="w-full h-full object-cover" /> : <ImageIcon size={32} className="text-gray-200" />}
+                                               {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
+                                            </div>
+                                            <div className="space-y-3">
+                                              <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
+                                              <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
+                                                <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
+                                              </button>
+                                              <button type="button" onClick={() => { handleChange('cardBodyBackgroundImage', ''); handleChange('cardBodyThemeType', 'color'); }} className="w-full py-2 text-red-400 font-bold text-[9px] uppercase hover:underline">{t('إزالة وإلغاء', 'Remove Image')}</button>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   )}
+                                </div>
                              </div>
                           </div>
                         )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Integrated Navigation Bar inside the frame */}
-                <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-950/20 flex items-center justify-between">
-                    <button 
-                      type="button"
-                      onClick={handlePrev} 
-                      disabled={currentIndex === 0}
-                      className={`p-4 bg-white dark:bg-gray-800 text-gray-400 rounded-2xl border dark:border-gray-700 shadow-sm transition-all ${currentIndex === 0 ? 'opacity-20' : 'hover:bg-gray-50'}`}
-                    >
-                      <ChevronLeft size={20} className={isRtl ? 'rotate-180' : ''} />
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                      <button 
-                          type="button"
-                          onClick={() => setShowMobilePreview(true)}
-                          className="lg:hidden flex items-center gap-2 px-6 py-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl font-black text-[10px] uppercase shadow-sm"
-                      >
-                          <Eye size={18} />
-                          <span>{t('معاينة', 'Preview')}</span>
-                      </button>
-                      
-                      <button 
-                        type="button"
-                        onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else if (!isSlugVerified) setShowValidationError(isRtl ? "رابط البطاقة غير متوفر" : "URL is unavailable"); else onSave(formData, originalIdRef.current || undefined); }}
-                        className="flex items-center gap-3 px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all"
-                      >
-                          <Save size={20} />
-                          <span className="hidden sm:inline">{currentIndex === tabs.length - 1 ? t('نشر البطاقة', 'Publish Card') : t('حفظ و نشر', 'Save & Publish')}</span>
-                      </button>
+                    <div className="flex items-center justify-between pt-10 border-t dark:border-gray-800">
+                        <button type="button" onClick={handlePrev} disabled={currentIndex === 0} className="px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-2xl font-black text-xs uppercase disabled:opacity-30 transition-all flex items-center gap-2">
+                           {isRtl ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>} {t('السابق', 'Previous')}
+                        </button>
+                        {currentIndex < tabs.length - 1 ? (
+                          <button type="button" onClick={handleNext} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                             {t('التالي', 'Next')} {isRtl ? <ChevronLeft size={18}/> : <ChevronRight size={18}/>}
+                          </button>
+                        ) : (
+                          <button type="button" onClick={() => setShowSaveModal(true)} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                             {t('حفظ ومشاركة', 'Save & Share')} <Check size={18}/>
+                          </button>
+                        )}
                     </div>
-
-                    <button 
-                      type="button"
-                      onClick={handleNext}
-                      disabled={currentIndex === tabs.length - 1}
-                      className={`p-4 rounded-2xl border dark:border-gray-700 shadow-sm transition-all ${currentIndex === tabs.length - 1 ? 'bg-white dark:bg-gray-800 text-gray-400 opacity-20' : 'bg-white dark:bg-gray-800 text-blue-600 hover:border-blue-200'}`}
-                    >
-                      <ChevronRight size={20} className={isRtl ? 'rotate-180' : ''} />
-                    </button>
+                  </div>
                 </div>
             </div>
         </main>
 
-        <aside className="hidden lg:block w-[380px] shrink-0">
-           <div className="sticky top-24 space-y-4">
-              <div 
-                onMouseMove={handlePreviewMouseMove}
-                onMouseLeave={() => setMouseYPercentage(0)}
-                className="bg-white dark:bg-gray-900 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-800 aspect-[9/19.5] w-full cursor-ns-resize"
-              >
-                  <div 
-                    className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top"
-                    style={{ transform: `translateY(-${mouseYPercentage * 0.5}%)` }}
-                  >
-                    <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={true} />
-                  </div>
-                  {/* Notch mockup */}
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
-                  {/* Home indicator */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-white/20 rounded-full z-20"></div>
+        {/* نظام المعاينة الحية المتقدم المحدث لمطابقة الجوال فقط دائماً */}
+        <aside className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
+           <div className="flex flex-col items-center w-full">
+              <div className="mb-6 w-full flex items-center justify-between px-4">
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية (جوال)', 'Live Preview (Mobile)')}</span></div>
+                {/* تم إزالة أزرار التبديل لتبسيط الواجهة */}
               </div>
-              <p className="text-center text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">{t('معاينة حية للمتصفح', 'Real-time Preview')}</p>
+              
+              {/* محاكي الجوال الثابت */}
+              <div className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-800 bg-white dark:bg-black w-[340px] aspect-[9/18.5]" 
+                   style={{ 
+                     isolation: 'isolate', 
+                     backgroundColor: previewPageBg
+                   }}>
+                
+                {/* Dynamic Island Mockup */}
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-50 border border-white/5 shadow-inner"></div>
+
+                <div className="themed-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0">
+                   <div 
+                     style={{ 
+                        maxWidth: '100%',
+                        marginRight: 'auto',
+                        marginLeft: 'auto',
+                        position: 'relative',
+                        zIndex: 10
+                     }}
+                   >
+                     <CardPreview 
+                       data={formData} 
+                       lang={lang} 
+                       customConfig={currentTemplate?.config} 
+                       hideSaveButton={true} 
+                       isFullFrame={true}
+                       bodyOffsetYOverride={cardBodyOffset}
+                     />
+                   </div>
+                </div>
+              </div>
            </div>
         </aside>
       </div>
-
-      {showValidationError && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[3000] w-[80%] max-w-sm p-4 bg-red-600 text-white rounded-2xl shadow-2xl animate-shake flex items-center gap-3">
-          <AlertCircle size={20} />
-          <p className="text-[9px] font-black uppercase tracking-widest flex-1">{showValidationError}</p>
-          <button onClick={() => setShowValidationError(null)} className="p-1 hover:bg-white/20 rounded-full"><X size={14}/></button>
+      
+      {/* Save Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 z-[4000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-10 text-center space-y-6 animate-zoom-in">
+              <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                 <Save size={40} />
+              </div>
+              <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{t('حفظ التغيير؟', 'Save Changes?')}</h3>
+              <p className="text-sm font-bold text-gray-400 leading-relaxed px-6">
+                 {isRtl ? 'هل تريد حفظ كافة التعديلات التي قمت بها على بطاقتك الرقمية؟' : 'Do you want to save all the changes you made to your digital card?'}
+              </p>
+              <div className="flex flex-col gap-3 pt-4">
+                 <button 
+                   onClick={() => onSave(formData, originalIdRef.current || undefined)}
+                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all"
+                 >
+                    {t('تأكيد الحفظ', 'Confirm Save')}
+                 </button>
+                 <button 
+                   onClick={() => setShowSaveModal(false)}
+                   className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase transition-all"
+                 >
+                    {t('إلغاء', 'Cancel')}
+                 </button>
+              </div>
+           </div>
         </div>
       )}
     </div>
