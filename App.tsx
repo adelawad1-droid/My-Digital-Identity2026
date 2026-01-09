@@ -18,7 +18,7 @@ import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle } from 'lucide-react';
+import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare } from 'lucide-react';
 
 const getBrowserLanguage = (): Language => {
   const supportedLanguages = Object.keys(LANGUAGES_CONFIG);
@@ -47,6 +47,7 @@ const AppContent: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [sharingData, setSharingData] = useState<CardData | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [siteConfig, setSiteConfig] = useState({ 
@@ -66,12 +67,12 @@ const AppContent: React.FC = () => {
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  // تحديد ما إذا كان يجب إظهار التذييل (يظهر في كل مكان عدا المحرر والبروفايل العام)
   const shouldShowFooter = !location.pathname.includes('/editor') && !publicCard && !isCardDeleted;
 
   const navigateWithLang = (path: string) => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     navigate(`/${lang}${cleanPath}`);
+    setIsSidebarOpen(false);
   };
 
   const handleCloseShare = () => {
@@ -107,7 +108,6 @@ const AppContent: React.FC = () => {
             const profile = await getUserProfile(user.uid);
             setIsAdmin(profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           } catch (e) {
-            console.warn("Registry sync failed during auth change", e);
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
           if (!slug) {
@@ -167,9 +167,9 @@ const AppContent: React.FC = () => {
   const BottomNav = () => {
     const navItems = [
       { id: 'home', path: '/', icon: HomeIcon, label: t('home') },
-      { id: 'howToStart', path: '/how-to-start', icon: HelpCircle, label: t('howToStart') },
       { id: 'templates', path: '/templates', icon: LayoutGrid, label: t('templates') },
       { id: 'my-cards', path: '/my-cards', icon: CreditCard, label: t('myCards'), private: true },
+      ...(isAdmin ? [{ id: 'admin', path: '/admin', icon: ShieldCheck, label: t('admin'), private: true }] : []),
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
     return (
@@ -203,25 +203,101 @@ const AppContent: React.FC = () => {
     );
   };
 
+  const Sidebar = () => (
+    <>
+      <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[1100] transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
+      <div className={`fixed top-0 bottom-0 ${isRtl ? 'right-0' : 'left-0'} w-72 bg-white dark:bg-[#0a0a0c] z-[1200] shadow-2xl transition-transform duration-500 ease-out border-l border-gray-100 dark:border-gray-800 flex flex-col ${isSidebarOpen ? 'translate-x-0' : (isRtl ? 'translate-x-full' : '-translate-x-full')}`}>
+        <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-[10px]">ID</div>
+             <span className="font-black dark:text-white uppercase tracking-tighter">Menu</span>
+          </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X size={24} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-2">
+           <SidebarItem icon={HomeIcon} label={t('home')} onClick={() => navigateWithLang('/')} active={location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`)} />
+           <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
+           <SidebarItem icon={LayoutGrid} label={t('templates')} onClick={() => navigateWithLang('/templates')} active={location.pathname.includes('/templates')} />
+           <SidebarItem icon={MessageSquare} label={t('customOrders')} onClick={() => navigateWithLang('/custom-orders')} active={location.pathname.includes('/custom-orders')} />
+           {currentUser && (
+             <>
+               <div className="pt-4 pb-2"><span className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-4">{t('myAccount', 'My Account')}</span></div>
+               <SidebarItem icon={CreditCard} label={t('myCards')} onClick={() => navigateWithLang('/my-cards')} active={location.pathname.includes('/my-cards')} />
+               <SidebarItem icon={UserIcon} label={t('account')} onClick={() => navigateWithLang('/account')} active={location.pathname.includes('/account')} />
+               {isAdmin && <SidebarItem icon={ShieldCheck} label={t('admin')} onClick={() => navigateWithLang('/admin')} active={location.pathname.includes('/admin')} color="text-amber-600" />}
+             </>
+           )}
+        </div>
+        <div className="p-6 border-t border-gray-50 dark:border-gray-800 space-y-4">
+           {!currentUser ? (
+              <button onClick={() => { setShowAuthModal(true); setIsSidebarOpen(false); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">{t('login')}</button>
+           ) : (
+              <button onClick={() => signOut(auth)} className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs uppercase hover:bg-red-100 transition-all">{t('logout')}</button>
+           )}
+        </div>
+      </div>
+    </>
+  );
+
+  const SidebarItem = ({ icon: Icon, label, onClick, active, color }: any) => (
+    <button onClick={onClick} className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${active ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
+       <div className="flex items-center gap-4">
+          <Icon size={20} className={color || (active ? 'text-blue-600' : 'text-gray-400')} />
+          <span className="text-sm font-black uppercase tracking-tight">{label}</span>
+       </div>
+       <ChevronRight size={16} className={`${isRtl ? 'rotate-180' : ''} opacity-30`} />
+    </button>
+  );
+
   return (
     <div className={`min-h-screen flex flex-col ${isRtl ? 'rtl' : 'ltr'}`} style={{ fontFamily: 'var(--site-font), sans-serif' }}>
+      <Sidebar />
       <header className="sticky top-0 z-[100] w-full bg-white/90 dark:bg-[#0a0a0c]/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateWithLang('/')}><div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs">ID</div><span className="text-lg font-black dark:text-white">{displaySiteName}</span></div>
-            <nav className="hidden md:flex items-center gap-2">
-              <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('home')}</button>
-              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
-              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
-              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
-              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
-              {isAdmin && <button onClick={() => navigateWithLang('/admin')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/admin') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('admin')}</button>}
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="xl:hidden p-2 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-gray-100 transition-all"><Menu size={22} /></button>
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigateWithLang('/')}>
+              <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0 group-hover:rotate-6 transition-transform shadow-lg shadow-blue-600/20">ID</div>
+              <div className="flex flex-col leading-none">
+                <span className="text-lg font-black dark:text-white">{displaySiteName}</span>
+                <span className="hidden sm:block text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter mt-1">
+                  {isRtl ? 'منصة متكاملة للهويات الرقمية' : 'Integrated Digital Identity Platform'}
+                </span>
+              </div>
+            </div>
+            <nav className="hidden xl:flex items-center gap-1 ml-4 mr-4">
+              <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('home')}</button>
+              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
+              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
+              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
+              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
             </nav>
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageToggle currentLang={lang} /><button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm">{isDarkMode ? <Sun size={18} /> : <Moon size={18} />}</button>
-            {currentUser ? (<div className="hidden md:flex items-center gap-2"><button onClick={() => navigateWithLang('/account')} className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-2"><UserIcon size={14} />{t('account')}</button><button onClick={() => signOut(auth)} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase">{t('logout')}</button></div>) 
-            : (<button onClick={() => setShowAuthModal(true)} className="hidden md:block px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition-all">{t('login')}</button>)}
+          <div className="flex items-center gap-2">
+            <LanguageToggle currentLang={lang} /><button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm hover:text-blue-500 transition-colors">{isDarkMode ? <Sun size={18} /> : <Moon size={18} />}</button>
+            {currentUser ? (
+              <div className="hidden md:flex items-center gap-2">
+                {isAdmin && (
+                  <button 
+                    onClick={() => navigateWithLang('/admin')} 
+                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/admin') ? 'bg-amber-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                  >
+                    <ShieldCheck size={14} />
+                    {t('admin')}
+                  </button>
+                )}
+                <button 
+                  onClick={() => navigateWithLang('/account')} 
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/account') ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                >
+                  <UserIcon size={14} />
+                  {t('account')}
+                </button>
+                <button onClick={() => signOut(auth)} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-100 transition-all">{t('logout')}</button>
+              </div>
+            ) : (
+              <button onClick={() => setShowAuthModal(true)} className="hidden md:block px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition-all">{t('login')}</button>
+            )}
           </div>
         </div>
       </header>
@@ -231,10 +307,12 @@ const AppContent: React.FC = () => {
           <Route path="/how-to-start" element={<HowToStart lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
-          <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard(uid, id).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
+          {/* Updated deleteUserCard call to pass an object argument on line 224 */}
+          <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
-          <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard(uid, id).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
+          {/* Updated deleteUserCard call to pass an object argument on line 227 */}
+          <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>
       </main>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CardData, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -6,9 +7,7 @@ import {
   Plus, Trash2, ExternalLink, Edit2, User as UserIcon, 
   Share2, AlertTriangle, X, Eye, Calendar, ShieldCheck, 
   Clock, TrendingUp, Sparkles, Crown, Zap, ArrowUpRight,
-  // Fix: Added missing Loader2 import from lucide-react
   Loader2,
-  // Added missing imports
   CreditCard, Star
 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
@@ -229,7 +228,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
 
       {cardToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 text-center space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
                  <AlertTriangle size={40} />
               </div>
@@ -239,11 +238,11 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                     {isRtl ? `هل أنت متأكد من حذف البطاقة "${cardToDelete.name}"؟ لا يمكن التراجع عن هذا الإجراء.` : `Are you sure you want to delete "${cardToDelete.name}"? This action cannot be undone.`}
                  </p>
               </div>
-              <div className="flex flex-col gap-3 pt-4">
-                 <button onClick={handleDeleteConfirm} className="w-full py-5 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+              <div className="flex flex-col gap-3 pt-4 items-center">
+                 <button onClick={handleDeleteConfirm} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
                     <Trash2 size={18} /> {isRtl ? "نعم، حذف البطاقة" : "Yes, Delete Card"}
                  </button>
-                 <button onClick={() => setCardToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                 <button onClick={() => setCardToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
                     <X size={16} /> {isRtl ? "تراجع" : "Cancel"}
                  </button>
               </div>

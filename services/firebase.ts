@@ -167,7 +167,7 @@ export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => 
     case 'auth/invalid-credential':
       return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
     case 'auth/email-already-in-use':
-      return isAr ? 'هذا البريد الإلكتروني مستخدم بالفعل.' : 'This email is already in use.';
+      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
     case 'auth/weak-password':
       return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
     default:
@@ -255,7 +255,8 @@ export const getUserCards = async (userId: string) => {
   } catch (error) { return []; }
 };
 
-export const deleteUserCard = async (ownerId: string, cardId: string) => {
+// Refactored to take an object to resolve argument count errors in App.tsx
+export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, cardId: string }) => {
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
     deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase()))

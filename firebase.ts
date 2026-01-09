@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  updateEmail, 
+  verifyBeforeUpdateEmail, 
   updatePassword, 
   reauthenticateWithCredential, 
   EmailAuthProvider,
@@ -239,7 +239,8 @@ export const getUserCards = async (userId: string) => {
   } catch (error) { return []; }
 };
 
-export const deleteUserCard = async (ownerId: string, cardId: string) => {
+// Refactored to take an object argument instead of two strings for consistency
+export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, cardId: string }) => {
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
     deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase()))
@@ -329,6 +330,7 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   if (!user || !user.email) throw new Error("auth/no-user");
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
-  if (newEmail && newEmail !== user.email) await updateEmail(user, newEmail);
+  // Using verifyBeforeUpdateEmail for better security and to avoid deprecation warnings
+  if (newEmail && newEmail !== user.email) await verifyBeforeUpdateEmail(user, newEmail);
   if (newPassword) await updatePassword(user, newPassword);
 };
