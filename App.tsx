@@ -8,6 +8,7 @@ import PublicProfile from './pages/PublicProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import UserAccount from './pages/UserAccount';
 import Home from './pages/Home';
+import HowToStart from './pages/HowToStart';
 import MyCards from './pages/MyCards';
 import TemplatesGallery from './pages/TemplatesGallery';
 import CustomRequest from './pages/CustomRequest';
@@ -17,7 +18,7 @@ import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase } from 'lucide-react';
+import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle } from 'lucide-react';
 
 const getBrowserLanguage = (): Language => {
   const supportedLanguages = Object.keys(LANGUAGES_CONFIG);
@@ -65,7 +66,8 @@ const AppContent: React.FC = () => {
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  const isHomePage = location.pathname === `/${lang}` || location.pathname === `/${lang}/`;
+  // تحديد ما إذا كان يجب إظهار التذييل (يظهر في كل مكان عدا المحرر والبروفايل العام)
+  const shouldShowFooter = !location.pathname.includes('/editor') && !publicCard && !isCardDeleted;
 
   const navigateWithLang = (path: string) => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
@@ -102,7 +104,6 @@ const AppContent: React.FC = () => {
         if (user) {
           try {
             await syncUserProfile(user); 
-            // بعد المزامنة، جلب الملف الشخصي للتأكد من رتبة الأدمن
             const profile = await getUserProfile(user.uid);
             setIsAdmin(profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           } catch (e) {
@@ -166,8 +167,8 @@ const AppContent: React.FC = () => {
   const BottomNav = () => {
     const navItems = [
       { id: 'home', path: '/', icon: HomeIcon, label: t('home') },
+      { id: 'howToStart', path: '/how-to-start', icon: HelpCircle, label: t('howToStart') },
       { id: 'templates', path: '/templates', icon: LayoutGrid, label: t('templates') },
-      { id: 'create', path: '/templates', icon: Plus, label: t('createBtn') },
       { id: 'my-cards', path: '/my-cards', icon: CreditCard, label: t('myCards'), private: true },
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
@@ -177,20 +178,6 @@ const AppContent: React.FC = () => {
           {navItems.map((item) => {
             const isActive = location.pathname.endsWith(`/${lang}${item.path === '/' ? '' : item.path}`) || (item.path === '/' && location.pathname.endsWith(`/${lang}/`));
             
-            if (item.id === 'create') {
-              return (
-                <button 
-                  key={item.id} 
-                  onClick={() => navigateWithLang(item.path)} 
-                  className="flex flex-col items-center justify-center -translate-y-4"
-                >
-                  <div className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-[0_10px_25px_rgba(37,99,235,0.4)] flex items-center justify-center group active:scale-95 transition-all border-4 border-white dark:border-[#0a0a0c]">
-                    <Plus size={28} strokeWidth={3} />
-                  </div>
-                </button>
-              );
-            }
-
             if (item.private && !currentUser) {
               return (
                 <button key={item.id} onClick={() => setShowAuthModal(true)} className="flex flex-col items-center gap-1 p-2 text-gray-400">
@@ -224,6 +211,7 @@ const AppContent: React.FC = () => {
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateWithLang('/')}><div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs">ID</div><span className="text-lg font-black dark:text-white">{displaySiteName}</span></div>
             <nav className="hidden md:flex items-center gap-2">
               <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('home')}</button>
+              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
               <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
               <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
               {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
@@ -240,6 +228,7 @@ const AppContent: React.FC = () => {
       <main className="flex-1 p-4 md:p-8">
         <Routes>
           <Route path="/" element={<Home lang={lang} onStart={() => navigateWithLang('/templates')} />} />
+          <Route path="/how-to-start" element={<HowToStart lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard(uid, id).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
@@ -250,7 +239,7 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
       
-      {isHomePage && <Footer lang={lang} />}
+      {shouldShowFooter && <Footer lang={lang} />}
       
       <BottomNav />
       {showAuthModal && <AuthModal lang={lang} onClose={() => setShowAuthModal(false)} onSuccess={() => { setShowAuthModal(false); navigateWithLang('/my-cards'); }} />}
