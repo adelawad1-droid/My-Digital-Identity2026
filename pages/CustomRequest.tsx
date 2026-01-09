@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getSiteSettings } from '../services/firebase';
+import { uploadImageToCloud } from '../services/uploadService';
 import { 
   Send, Users, Zap, ShieldCheck, Mail, Building2, 
   Palette, LayoutGrid, CheckCircle2, 
@@ -28,12 +29,15 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
     message: '',
     website: '',
     social: '',
-    logo: ''
+    logoFile: null as File | null,
+    logoPreview: ''
   });
+
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  const [uploadConfig, setUploadConfig] = useState({ storageType: 'firebase', uploadUrl: '' });
   const [contactInfo, setContactInfo] = useState({
     email: 'info@nextid.my',
     phone: '966560817601'
@@ -46,6 +50,10 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
           email: settings.siteContactEmail || 'info@nextid.my',
           phone: settings.siteContactPhone || '966560817601'
         });
+        setUploadConfig({
+          storageType: (settings.imageStorageType as any) || 'firebase',
+          uploadUrl: settings.serverUploadUrl || ''
+        });
       }
     });
   }, []);
@@ -53,11 +61,11 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, logo: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      setFormData({ 
+        ...formData, 
+        logoFile: file, 
+        logoPreview: URL.createObjectURL(file) 
+      });
     }
   };
 
@@ -67,18 +75,44 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
     setError(null);
     
     try {
-      // هنا يتم إرسال البيانات بما فيها الحقول الجديدة
+      let finalLogoUrl = '';
+
+      // 1. رفع الشعار أولاً إذا وجد والحصول على رابط
+      if (formData.logoFile) {
+        const uploadedUrl = await uploadImageToCloud(formData.logoFile, 'logo', uploadConfig as any);
+        if (uploadedUrl) {
+          finalLogoUrl = uploadedUrl;
+        }
+      }
+
+      // 2. تجهيز البيانات النهائية للإرسال
+      const payload = {
+        fullName: formData.name,
+        companyName: formData.company,
+        email: formData.email,
+        phone: formData.phone,
+        staffCount: formData.count,
+        details: formData.message,
+        website: formData.website,
+        socialMedia: formData.social,
+        logoUrl: finalLogoUrl // نرسل الرابط بدلاً من الـ Base64
+      };
+
+      // 3. إرسال الطلب إلى السيرفر
       const response = await fetch('./contact.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         setSubmitted(true);
-        setFormData({ name: '', company: '', email: '', phone: '', count: '', message: '', website: '', social: '', logo: '' });
+        setFormData({ 
+          name: '', company: '', email: '', phone: '', count: '', 
+          message: '', website: '', social: '', logoFile: null, logoPreview: '' 
+        });
       } else {
         throw new Error('Server returned error');
       }
@@ -256,12 +290,12 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
                           {t('uploadAction')}
                         </button>
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
-                        {formData.logo && (
+                        {formData.logoPreview && (
                           <div className="relative w-14 h-14 rounded-xl bg-white p-1 border shadow-sm">
-                            <img src={formData.logo} className="w-full h-full object-contain" alt="Logo preview" />
+                            <img src={formData.logoPreview} className="w-full h-full object-contain" alt="Logo preview" />
                             <button 
                               type="button"
-                              onClick={() => setFormData({ ...formData, logo: '' })}
+                              onClick={() => setFormData({ ...formData, logoFile: null, logoPreview: '' })}
                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:scale-110 transition-all"
                             >
                               <X size={10} />
