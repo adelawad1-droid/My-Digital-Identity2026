@@ -915,14 +915,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       )}
 
       {templateToDelete && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
-              <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف القالب؟', 'Delete Template?')}</h3>
-              <p className="text-xs font-bold text-gray-400 mb-8">{t('سيختفي القالب من قائمة الاختيار للمستخدمين.', 'Users will no longer be able to select this template.')}</p>
-              <div className="flex flex-col gap-3">
-                 <button onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} className="py-5 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف</button>
-                 <button onClick={() => setTemplateToDelete(null)} className="py-5 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">تراجع</button>
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-xl rounded-[2.5rem] p-8 md:p-12 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trash2 size={40} />
+              </div>
+              <h3 className="text-2xl font-black mb-3 dark:text-white">
+                {t('حذف القالب؟', 'Delete Template?')}
+              </h3>
+              <p className="text-sm font-bold text-gray-400 mb-10 leading-relaxed px-4">
+                {isRtl 
+                  ? 'سيتم حذف هذا القالب نهائياً من قاعدة البيانات ولا يمكن استرجاعه أبداً. سيختفي من قائمة اختيار المستخدمين فوراً.' 
+                  : 'This template will be permanently deleted and cannot be recovered. It will disappear from the users selection list immediately.'}
+              </p>
+              <div className="flex flex-col gap-4">
+                 <button 
+                    onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} 
+                    className="w-full py-5 bg-red-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl shadow-red-600/20 hover:brightness-110 active:scale-95 transition-all"
+                 >
+                    {isRtl ? 'تأكيد الحذف النهائي' : 'Confirm Permanent Delete'}
+                 </button>
+                 <button 
+                    onClick={() => setTemplateToDelete(null)} 
+                    className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 rounded-[1.5rem] font-black text-sm uppercase hover:bg-gray-100 transition-all"
+                 >
+                    {isRtl ? 'تراجع' : 'Cancel'}
+                 </button>
               </div>
            </div>
         </div>
