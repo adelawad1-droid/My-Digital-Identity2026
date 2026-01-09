@@ -178,7 +178,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
           <div className="flex flex-col items-center lg:items-start gap-6">
             <button onClick={onStart} className="group relative px-16 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-xl shadow-[0_20px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_25px_50_px_rgba(37,99,235,0.5)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-4 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <span>{isRtl ? 'أنشئ بطاقتك الآن' : 'Create Card Now'}</span>
+              <span>{isRtl ? 'أنشئ بطاقتك الآن مجاناً' : 'Create Your Card for Free'}</span>
               <ArrowRight size={22} className={`transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-2' : 'group-hover:translate-x-2'}`} />
             </button>
             <div className="flex items-center gap-4 text-slate-400">
