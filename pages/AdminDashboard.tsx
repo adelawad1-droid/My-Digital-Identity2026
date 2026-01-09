@@ -26,7 +26,7 @@ import {
   Lock, CheckCircle2, Image as ImageIcon, UploadCloud, X, Layout, User as UserIcon,
   Plus, Palette, ShieldAlert, Key, Star, Hash, AlertTriangle, Pin, PinOff, ArrowUpAZ,
   MoreVertical, ToggleLeft, ToggleRight, MousePointer2, TrendingUp, Filter, ListFilter, Activity, Type, FolderEdit, Check, FolderOpen, Tag, PlusCircle, Zap, HardDrive, Database, Link as LinkIcon, FolderSync, Server,
-  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2
+  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -75,6 +75,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     siteNameEn: '', 
     siteLogo: '', 
     siteIcon: '',
+    siteContactEmail: 'info@nextid.my',
+    siteContactPhone: '966560817601',
     maintenanceMode: false,
     primaryColor: '#3b82f6',
     secondaryColor: '#8b5cf6',
@@ -120,6 +122,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
           siteNameEn: stData.siteNameEn || '',
           siteLogo: stData.siteLogo || '',
           siteIcon: stData.siteIcon || '',
+          siteContactEmail: stData.siteContactEmail || 'info@nextid.my',
+          siteContactPhone: stData.siteContactPhone || '966560817601',
           maintenanceMode: stData.maintenanceMode || false,
           primaryColor: stData.primaryColor || '#3b82f6',
           secondaryColor: stData.secondaryColor || '#8b5cf6',
@@ -476,6 +480,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                      {/* Fix: Cannot find name 'updatePlanData'. Replaced with direct setPlanData call. */}
                       <div><label className={labelTextClasses}>{t('الترتيب', 'Order')}</label><input type="number" value={planData.order} onChange={e => setPlanData({...planData, order: parseInt(e.target.value) || 0})} className={inputClasses} /></div>
                       <div><label className={labelTextClasses}>{t('الأيقونة (Lucide Name)', 'Icon')}</label><input type="text" value={planData.iconName} onChange={e => setPlanData({...planData, iconName: e.target.value})} className={inputClasses} placeholder="Crown, Star, Shield" /></div>
                       <div className="flex items-center gap-4 h-14 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
@@ -762,6 +767,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                  </div>
 
                  <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
+                    <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Contact2 size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{isRtl ? 'بيانات التواصل الرسمية' : 'Official Contact DNA'}</h3></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div className="space-y-2">
+                          <label className={labelTextClasses}>{isRtl ? 'بريد التواصل (يظهر في طلبات خاصة)' : 'Contact Email (Shows in Custom Request)'}</label>
+                          <div className="relative">
+                            <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                            <input type="email" value={settings.siteContactEmail} onChange={e => setSettings({...settings, siteContactEmail: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="info@domain.com" />
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className={labelTextClasses}>{isRtl ? 'رقم هاتف التواصل' : 'Contact Phone Number'}</label>
+                          <div className="relative">
+                            <PhoneCall className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                            <input type="text" value={settings.siteContactPhone} onChange={e => setSettings({...settings, siteContactPhone: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
                     <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><HardDrive size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{t('إعدادات تخزين الملفات', 'Media Storage DNA')}</h3></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 space-y-4">
@@ -888,12 +913,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {cardToDelete && (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف البطاقة نهائياً؟', 'Permanent Delete?')}</h3>
               <p className="text-xs font-bold text-gray-400 mb-8">{t('سيتم مسح كافة البيانات من السيرفر فوراً ولا يمكن استرجاعها.', 'All data will be wiped and cannot be recovered.')}</p>
               <div className="flex flex-col gap-3 items-center">
-                 {/* Updated deleteUserCard call to pass an object argument on line 269 */}
+                 {/* Fix: Passed ownerId and cardId inside an object as expected by deleteUserCard. */}
                  <button onClick={async () => { await deleteUserCard({ ownerId: cardToDelete.ownerId, cardId: cardToDelete.id }); setCardToDelete(null); await fetchData(true); }} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف النهائي</button>
                  <button onClick={() => setCardToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">تراجع</button>
               </div>
@@ -903,7 +928,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {planToDelete && (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف الباقة؟', 'Delete Plan?')}</h3>
               <p className="text-xs font-bold text-gray-400 mb-8">{isRtl ? 'هل أنت متأكد من حذف هذه الباقة؟ سيؤثر هذا على ما يظهر للمستخدمين في الصفحة الرئيسية.' : 'Are you sure? This will affect the landing page pricing section.'}</p>
@@ -917,7 +942,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {templateToDelete && (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[2.5rem] p-8 md:p-12 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[2.5rem] p-8 md:p-12 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={40} />
               </div>
@@ -938,7 +963,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                  </button>
                  <button 
                     onClick={() => setTemplateToDelete(null)} 
-                    className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 rounded-[1.5rem] font-black text-sm uppercase hover:bg-gray-100 transition-all"
+                    className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-[1.5rem] font-black text-sm uppercase hover:bg-gray-100 transition-all"
                  >
                     {isRtl ? 'تراجع' : 'Cancel'}
                  </button>
@@ -949,7 +974,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {categoryToDelete && (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف القسم؟', 'Delete Category?')}</h3>
               <p className="text-xs font-bold text-gray-400 mb-8">{t('تأكد من عدم وجود قوالب مرتبطة بهذا القسم أولاً.', 'Ensure no templates are linked to this category.')}</p>

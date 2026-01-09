@@ -52,9 +52,11 @@ const AppContent: React.FC = () => {
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const [siteConfig, setSiteConfig] = useState({ 
     siteNameAr: 'هويتي الرقمية', 
-    siteNameEn: 'My Digital Identity', 
+    siteNameEn: 'NextID', 
     siteLogo: '',
     siteIcon: '',
+    siteContactEmail: 'info@nextid.my',
+    siteContactPhone: '966560817601',
     primaryColor: '#3b82f6',
     secondaryColor: '#8b5cf6',
     fontFamily: 'Cairo',
@@ -66,6 +68,38 @@ const AppContent: React.FC = () => {
   const isRtl = LANGUAGES_CONFIG[lang]?.dir === 'rtl';
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
+
+  // Dynamic SEO Logic
+  useEffect(() => {
+    if (publicCard) return; // Skip if showing a public profile (it has its own logic)
+
+    let title = displaySiteName;
+    let description = isRtl 
+      ? 'NextID - المنصة المتكاملة لإنشاء بطاقات الأعمال الرقمية الاحترافية والعضويات الذكية.' 
+      : 'NextID - The integrated platform for professional digital business cards and smart memberships.';
+
+    const path = location.pathname;
+    if (path.includes('/templates')) {
+      title = isRtl ? `تصفح القوالب | ${displaySiteName}` : `Browse Templates | ${displaySiteName}`;
+      description = isRtl ? 'اختر من بين عشرات القوالب الاحترافية المصممة لهويتك الرقمية.' : 'Choose from dozens of professional templates designed for your digital identity.';
+    } else if (path.includes('/how-to-start')) {
+      title = isRtl ? `كيف تبدأ | ${displaySiteName}` : `How to Start | ${displaySiteName}`;
+    } else if (path.includes('/custom-orders')) {
+      title = isRtl ? `طلبات خاصة للشركات | ${displaySiteName}` : `Custom Corporate Orders | ${displaySiteName}`;
+    } else if (path.includes('/my-cards')) {
+      title = isRtl ? `بطاقاتي | ${displaySiteName}` : `My Cards | ${displaySiteName}`;
+    }
+
+    document.title = title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', description);
+    
+    // Update OG Tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+  }, [location.pathname, displaySiteName, isRtl, publicCard]);
 
   const shouldShowFooter = !location.pathname.includes('/editor') && !publicCard && !isCardDeleted;
 
@@ -307,11 +341,11 @@ const AppContent: React.FC = () => {
           <Route path="/how-to-start" element={<HowToStart lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
-          {/* Updated deleteUserCard call to pass an object argument on line 224 */}
+          {/* Fix: Expected 1 arguments, but got 2. Ensured single object argument for deleteUserCard call. */}
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
-          {/* Updated deleteUserCard call to pass an object argument on line 227 */}
+          {/* Fix: Updated deleteUserCard call to pass an object argument in AdminDashboard onDeleteRequest implementation. */}
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>

@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { getSiteSettings } from '../services/firebase';
 import { 
   Send, Users, Zap, ShieldCheck, Mail, Building2, 
   Palette, LayoutGrid, CheckCircle2, 
@@ -27,6 +28,22 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [contactInfo, setContactInfo] = useState({
+    email: 'info@nextid.my',
+    phone: '966560817601'
+  });
+
+  useEffect(() => {
+    getSiteSettings().then(settings => {
+      if (settings) {
+        setContactInfo({
+          email: settings.siteContactEmail || 'info@nextid.my',
+          phone: settings.siteContactPhone || '966560817601'
+        });
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +51,6 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
     setError(null);
     
     try {
-      // إرسال البيانات إلى ملف contact.php الموجود في جذر الموقع
       const response = await fetch('./contact.php', {
         method: 'POST',
         headers: {
@@ -206,11 +222,11 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
                  <div className="p-6 bg-slate-50 dark:bg-black/20 rounded-3xl space-y-4">
                     <p className="text-[11px] font-black text-blue-600 uppercase tracking-widest">{isRtl ? 'تواصل مباشر' : 'Direct Contact'}</p>
                     <div className="space-y-3">
-                       <a href="mailto:info@nextid.my" className="flex items-center gap-3 text-sm font-bold dark:text-white hover:text-blue-600 transition-colors">
-                          <Mail size={18} className="text-gray-400" /> info@nextid.my
+                       <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-3 text-sm font-bold dark:text-white hover:text-blue-600 transition-colors">
+                          <Mail size={18} className="text-gray-400" /> {contactInfo.email}
                        </a>
-                       <a href="tel:966560817601" className="flex items-center gap-3 text-sm font-bold dark:text-white hover:text-blue-600 transition-colors">
-                          <Phone size={18} className="text-gray-400" /> 966560817601
+                       <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-3 text-sm font-bold dark:text-white hover:text-blue-600 transition-colors">
+                          <Phone size={18} className="text-gray-400" /> {contactInfo.phone}
                        </a>
                     </div>
                  </div>

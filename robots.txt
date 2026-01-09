@@ -1,6 +1,12 @@
+
 User-agent: *
 Allow: /
+Allow: /ar/
+Allow: /en/
 Allow: /?u=*
+Disallow: /admin
+Disallow: /account
 
-# Sitemaps
+# SEO Improvements
 Sitemap: https://nextid.my/sitemap.xml
+Host: https://nextid.my
