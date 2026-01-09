@@ -13,7 +13,7 @@ import {
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CardPreview from '../components/CardPreview';
-import SocialIcon from '../components/SocialIcon';
+import SocialIcon, { BRAND_COLORS } from '../components/SocialIcon';
 import AuthModal from '../components/AuthModal';
 import { BACKGROUND_PRESETS, AVATAR_PRESETS, SAMPLE_DATA, SOCIAL_PLATFORMS, THEME_COLORS, THEME_GRADIENTS, TRANSLATIONS } from '../constants';
 import { isSlugAvailable, auth, getSiteSettings, getUserProfile } from '../services/firebase';
@@ -459,6 +459,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   return (
     <div className="max-w-[1440px] mx-auto">
+      {/* Auth & Other Modals Remain Unchanged */}
       {showAuthWarning && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-[#121215] w-full max-w-4xl rounded-[4rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-12 md:p-16 text-center space-y-8 animate-zoom-in">
@@ -530,35 +531,30 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
             <div className="space-y-8 mt-4 animate-fade-in">
               {activeTab === 'identity' && (
-                <div className="space-y-6 animate-fade-in relative z-10">
-                  <div className="p-8 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/10 dark:to-[#121215] rounded-[3.5rem] border-2 border-emerald-100 dark:border-emerald-900/20 shadow-xl shadow-emerald-500/5 space-y-6 relative overflow-hidden group">
-                     <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:rotate-12 transition-transform duration-700 pointer-events-none">
-                        <Zap size={140} className="text-emerald-600" />
-                     </div>
-                     
-                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20">
-                             <Link2 size={24} />
-                          </div>
-                          <div>
-                            <h4 className="text-xl font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter leading-none mb-1">
-                               {isRtl ? 'احجز رابطك الخاص الآن' : 'Reserve Your Custom Link'}
-                            </h4>
-                            <p className="text-[10px] font-bold text-emerald-600/60 dark:text-emerald-400/40 uppercase tracking-widest">
-                               {isRtl ? 'اختر اسماً مميزاً يعبر عن هويتك' : 'Choose a unique name for your identity'}
-                            </p>
-                          </div>
+                <div className="space-y-10 animate-fade-in relative z-10">
+                  {/* Clean Integrated Link Reservation Section */}
+                  <div className="space-y-6">
+                     <div className="flex items-center gap-4">
+                        <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20">
+                           <Link2 size={24} />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-tighter leading-none mb-1">
+                             {isRtl ? 'احجز رابطك الخاص الآن' : 'Reserve Your Custom Link'}
+                          </h4>
+                          <p className="text-[10px] font-bold text-emerald-600/60 dark:text-emerald-400/40 uppercase tracking-widest">
+                             {isRtl ? 'اختر اسماً مميزاً يعبر عن هويتك' : 'Choose a unique name for your identity'}
+                          </p>
                         </div>
                      </div>
 
-                     <div className="relative z-10">
+                     <div className="relative group">
                         <div className={`absolute ${isRtl ? 'left-6' : 'right-6'} top-1/2 -translate-y-1/2 text-[11px] font-black text-emerald-300 dark:text-emerald-900 uppercase tracking-widest pointer-events-none opacity-60`}>.nextid.my</div>
                         <input 
                           type="text" 
                           value={formData.id} 
                           onChange={e => handleChange('id', e.target.value)} 
-                          className={`w-full px-8 py-5 rounded-3xl border-2 bg-white/90 dark:bg-gray-950/80 text-xl font-black outline-none transition-all ${isRtl ? 'pl-24 pr-8' : 'pr-24 pl-8'} ${slugStatus === 'available' ? 'border-emerald-500 ring-8 ring-emerald-500/10 bg-emerald-50/20' : slugStatus === 'taken' || slugStatus === 'invalid' ? 'border-red-500 ring-8 ring-red-500/10 bg-red-50/20' : 'border-emerald-100 focus:border-emerald-300'}`} 
+                          className={`w-full px-8 py-5 rounded-[2rem] border-2 bg-gray-50/50 dark:bg-gray-900/50 text-xl font-black outline-none transition-all ${isRtl ? 'pl-24 pr-8' : 'pr-24 pl-8'} ${slugStatus === 'available' ? 'border-emerald-500 ring-8 ring-emerald-500/10 bg-emerald-50/20' : slugStatus === 'taken' || slugStatus === 'invalid' ? 'border-red-500 ring-8 ring-red-500/10 bg-red-50/20' : 'border-gray-100 dark:border-gray-800 focus:border-emerald-400 dark:focus:border-emerald-500'}`} 
                           placeholder={isRtl ? 'اكتب اسمك هنا...' : 'Type your link...'}
                         />
                         
@@ -574,11 +570,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                      </div>
 
                      {slugStatus !== 'idle' && (
-                       <div className={`flex items-center gap-3 px-6 py-4 rounded-3xl animate-zoom-in border relative z-10 ${slugStatus === 'available' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200/50' : 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-200/50'}`}>
-                          <div className={`p-2 rounded-xl shadow-sm ${slugStatus === 'available' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
-                             {slugStatus === 'available' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-                          </div>
-                          <span className="text-xs font-black uppercase tracking-tight">
+                       <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl animate-zoom-in border transition-colors ${slugStatus === 'available' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/10 dark:text-emerald-400 border-emerald-200/50' : 'bg-red-50 text-red-700 dark:bg-red-900/10 dark:text-red-400 border-red-200/50'}`}>
+                          {slugStatus === 'available' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                          <span className="text-[10px] font-black uppercase tracking-tight">
                              {slugStatus === 'available' ? t('هذا الرابط متاح للاستخدام الآن ✓', 'This link is available for use now ✓') : 
                               slugStatus === 'taken' ? t('للأسف، هذا الرابط محجوز مسبقاً ✗', 'Sorry, this link is already taken ✗') : 
                               t('الرابط غير صالح أو قصير جداً ⚠', 'Link is invalid or too short ⚠')}
@@ -587,7 +581,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                      )}
                   </div>
 
-                  <div className="flex flex-col md:flex-row gap-6 items-center">
+                  <div className="pt-8 border-t dark:border-gray-800 flex flex-col md:flex-row gap-6 items-center">
                      <div className="relative shrink-0 group">
                         <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-2 border-white dark:border-gray-800 shadow-md bg-gray-50 dark:bg-gray-900 flex items-center justify-center relative">
                           {formData.profileImage ? <img src={formData.profileImage} className="w-full h-full object-cover" alt="Profile" /> : <UserIcon size={32} className="text-gray-300" />}
