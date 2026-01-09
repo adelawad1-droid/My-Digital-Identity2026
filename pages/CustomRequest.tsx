@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getSiteSettings } from '../services/firebase';
 import { 
   Send, Users, Zap, ShieldCheck, Mail, Building2, 
   Palette, LayoutGrid, CheckCircle2, 
-  Loader2, ArrowRight, MessageSquare, Phone, AlertCircle, Tag
+  Loader2, ArrowRight, MessageSquare, Phone, AlertCircle, Tag,
+  Globe, Share2, ImagePlus, X, Briefcase
 } from 'lucide-react';
 
 interface CustomRequestProps {
@@ -16,6 +17,7 @@ interface CustomRequestProps {
 const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -23,7 +25,10 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
     email: '',
     phone: '',
     count: '',
-    message: ''
+    message: '',
+    website: '',
+    social: '',
+    logo: ''
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -45,12 +50,24 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
     });
   }, []);
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, logo: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
     try {
+      // هنا يتم إرسال البيانات بما فيها الحقول الجديدة
       const response = await fetch('./contact.php', {
         method: 'POST',
         headers: {
@@ -61,7 +78,7 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
 
       if (response.ok) {
         setSubmitted(true);
-        setFormData({ name: '', company: '', email: '', phone: '', count: '', message: '' });
+        setFormData({ name: '', company: '', email: '', phone: '', count: '', message: '', website: '', social: '', logo: '' });
       } else {
         throw new Error('Server returned error');
       }
@@ -93,6 +110,10 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
       color: 'bg-emerald-50 text-emerald-600'
     }
   ];
+
+  const inputGroupClasses = "p-6 bg-gray-50/50 dark:bg-white/[0.02] rounded-[2.5rem] border border-gray-100 dark:border-white/5 space-y-6";
+  const inputLabelClasses = "text-[10px] font-black text-gray-400 uppercase tracking-widest px-1 block mb-2";
+  const inputFieldClasses = "w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all shadow-sm";
 
   return (
     <div className={`min-h-screen bg-slate-50 dark:bg-[#050507] pb-24 ${isRtl ? 'rtl' : 'ltr'}`}>
@@ -151,37 +172,109 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('fullName')}</label>
-                    <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Identity Group */}
+                <div className={inputGroupClasses}>
+                  <div className="flex items-center gap-2 mb-2 text-blue-600">
+                    <Building2 size={16} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{isRtl ? 'بيانات الجهة' : 'Organization Details'}</span>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('companyName')}</label>
-                    <input type="text" required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('email')}</label>
-                    <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('phone')}</label>
-                    <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('fullName')}</label>
+                      <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={inputFieldClasses} placeholder={isRtl ? 'أدخل اسمك الكامل' : 'Full Name'} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('companyName')}</label>
+                      <input type="text" required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} className={inputFieldClasses} placeholder={isRtl ? 'اسم الشركة / المؤسسة' : 'Company Name'} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('staffCount')}</label>
-                  <input type="number" required value={formData.count} onChange={e => setFormData({...formData, count: e.target.value})} placeholder="Ex: 50" className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                {/* Contact Group */}
+                <div className={inputGroupClasses}>
+                  <div className="flex items-center gap-2 mb-2 text-indigo-600">
+                    <Phone size={16} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{isRtl ? 'بيانات التواصل' : 'Contact Details'}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('email')}</label>
+                      <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className={inputFieldClasses} placeholder="example@mail.com" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('phone')}</label>
+                      <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className={inputFieldClasses} placeholder="9665..." />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('messageSubject')}</label>
-                  <textarea rows={4} required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none" />
+                {/* Digital Presence Group */}
+                <div className={inputGroupClasses}>
+                  <div className="flex items-center gap-2 mb-2 text-emerald-600">
+                    <Globe size={16} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{isRtl ? 'الحضور الرقمي' : 'Digital Presence'}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('websiteLink')}</label>
+                      <div className="relative">
+                        <Globe size={18} className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-300`} />
+                        <input type="url" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} className={`${inputFieldClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('socialLink')}</label>
+                      <div className="relative">
+                        <Share2 size={18} className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-300`} />
+                        <input type="text" value={formData.social} onChange={e => setFormData({...formData, social: e.target.value})} className={`${inputFieldClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="@username" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project Details & Media */}
+                <div className={inputGroupClasses}>
+                  <div className="flex items-center gap-2 mb-2 text-purple-600">
+                    <Tag size={16} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{isRtl ? 'تفاصيل إضافية ووسائط' : 'Project Details & Media'}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('staffCount')}</label>
+                      <input type="number" required value={formData.count} onChange={e => setFormData({...formData, count: e.target.value})} placeholder="Ex: 50" className={inputFieldClasses} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={inputLabelClasses}>{t('logoLabel')}</label>
+                      <div className="flex items-center gap-4">
+                        <button 
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 py-4 bg-white dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase text-gray-400 hover:border-blue-500 hover:text-blue-600 transition-all"
+                        >
+                          <ImagePlus size={18} />
+                          {t('uploadAction')}
+                        </button>
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoChange} />
+                        {formData.logo && (
+                          <div className="relative w-14 h-14 rounded-xl bg-white p-1 border shadow-sm">
+                            <img src={formData.logo} className="w-full h-full object-contain" alt="Logo preview" />
+                            <button 
+                              type="button"
+                              onClick={() => setFormData({ ...formData, logo: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:scale-110 transition-all"
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className={inputLabelClasses}>{t('messageSubject')}</label>
+                    <textarea rows={4} required value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} className={`${inputFieldClasses} resize-none`} placeholder={isRtl ? 'أخبرنا المزيد عن رؤيتك للكروت...' : 'Tell us more about your vision...'} />
+                  </div>
                 </div>
 
                 <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all">

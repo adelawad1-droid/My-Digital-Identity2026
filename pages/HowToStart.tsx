@@ -5,7 +5,7 @@ import { TRANSLATIONS } from '../constants';
 import { 
   Zap, MessageCircle, Link, LayoutDashboard, ShieldCheck, 
   ArrowRight, CreditCard, Sparkles, Wand2, Star, CheckCircle2,
-  Package, LayoutGrid, Heart, Coffee
+  Package, LayoutGrid, Heart, Coffee, Palette
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -179,20 +179,16 @@ const HowToStart: React.FC<HowToStartProps> = ({ lang }) => {
             <h2 className="text-3xl md:text-5xl font-black dark:text-white">{isRtl ? 'ابدأ هويتك الرقمية اليوم' : 'Launch Your Identity Today'}</h2>
             <p className="text-gray-400 font-bold">{isRtl ? 'فريقنا جاهز لمساعدتك في كل خطوة.' : 'Our team is ready to help you every step of the way.'}</p>
          </div>
-         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+         <div className="flex items-center justify-center pt-4">
             <button 
               onClick={() => navigate(`/${lang}/custom-orders`)}
-              className="px-12 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-2xl shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4"
+              className="group relative px-16 py-7 bg-red-600 text-white rounded-[2.5rem] font-black text-xl shadow-[0_20px_60px_-10px_rgba(220,38,38,0.4)] hover:shadow-[0_30px_70px_-10px_rgba(220,38,38,0.6)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 overflow-hidden"
             >
-               {isRtl ? 'اطلب بطاقتك الآن' : 'Order Your Card'}
-               <ArrowRight size={22} className={isRtl ? 'rotate-180' : ''} />
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+               <Palette size={26} className="group-hover:rotate-12 transition-transform" />
+               <span>{isRtl ? 'أطلب تصميم بطاقتك الخاصة مجاناً' : 'Request Your Custom Design for Free'}</span>
+               <ArrowRight size={24} className={`transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-2' : 'group-hover:translate-x-2'}`} />
             </button>
-            <a 
-              href="mailto:info@nextid.my" 
-              className="px-12 py-6 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-[2.5rem] font-black text-lg hover:bg-gray-200 transition-all"
-            >
-               {isRtl ? 'تحدث معنا' : 'Chat with Us'}
-            </a>
          </div>
          <div className="flex items-center justify-center gap-8 opacity-40 grayscale">
             <div className="flex items-center gap-2"><CreditCard size={20}/> <span className="font-black text-xs uppercase">Pay Smart</span></div>

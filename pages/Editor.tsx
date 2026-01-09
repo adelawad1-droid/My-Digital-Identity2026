@@ -179,17 +179,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 <div 
                   onMouseMove={handlePreviewMouseMove}
                   onMouseLeave={() => setMouseYPercentage(0)}
-                  className="relative h-full max-h-[80vh] aspect-[9/18.5] rounded-[3rem] border-[8px] border-gray-800 dark:border-gray-700 overflow-hidden bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col cursor-ns-resize"
+                  className="relative h-full max-h-[85vh] aspect-[9/19.5] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 overflow-hidden bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col cursor-ns-resize"
                 >
                     <div 
-                      className="flex-1 transition-transform duration-500 ease-out origin-top"
-                      style={{ transform: `translateY(-${mouseYPercentage * 0.5}%)` }}
+                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top"
+                      style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
                     >
                         <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={true} />
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-6 bg-gray-800 dark:bg-gray-700 flex items-center justify-center shrink-0 z-20">
-                        <div className="w-20 h-1 bg-white/20 rounded-full"></div>
-                    </div>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-20 pointer-events-none"></div>
                 </div>
             </div>
         </div>
@@ -523,14 +521,18 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               <div 
                 onMouseMove={handlePreviewMouseMove}
                 onMouseLeave={() => setMouseYPercentage(0)}
-                className="bg-white dark:bg-gray-900 p-6 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden relative border-[10px] border-gray-950 dark:border-gray-800 aspect-[9/16] w-full cursor-ns-resize"
+                className="bg-white dark:bg-gray-900 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-800 aspect-[9/19.5] w-full cursor-ns-resize"
               >
                   <div 
                     className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top"
-                    style={{ transform: `translateY(-${mouseYPercentage * 0.4}%)` }}
+                    style={{ transform: `translateY(-${mouseYPercentage * 0.5}%)` }}
                   >
                     <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={true} />
                   </div>
+                  {/* Notch mockup */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
+                  {/* Home indicator */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-white/20 rounded-full z-20"></div>
               </div>
               <p className="text-center text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">{t('معاينة حية للمتصفح', 'Real-time Preview')}</p>
            </div>

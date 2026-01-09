@@ -322,5 +322,9 @@ export const TRANSLATIONS: TranslationStrings = {
   unitHours: { ar: 'ساعة', en: 'HRS' },
   unitMinutes: { ar: 'دقيقة', en: 'MIN' },
   unitSeconds: { ar: 'ثانية', en: 'SEC' },
-  contactNumbers: { ar: 'أرقام التواصل', en: 'Direct Contact' }
+  contactNumbers: { ar: 'أرقام التواصل', en: 'Direct Contact' },
+  websiteLink: { ar: 'رابط الموقع الإلكتروني (إن وجد)', en: 'Website URL (if any)' },
+  socialLink: { ar: 'رابط منصات التواصل (إنستقرام/لينكدإن)', en: 'Social Media Link (IG/LinkedIn)' },
+  logoLabel: { ar: 'شعار الجهة / الشركة', en: 'Company Logo' },
+  uploadAction: { ar: 'اختيار الشعار', en: 'Select Logo' }
 };
