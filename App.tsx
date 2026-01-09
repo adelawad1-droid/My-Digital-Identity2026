@@ -15,7 +15,7 @@ import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
-import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile } from './services/firebase';
+import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase } from 'lucide-react';
 
@@ -37,6 +37,7 @@ const AppContent: React.FC = () => {
   ) as Language;
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userCards, setUserCards] = useState<CardData[]>([]);
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [publicCard, setPublicCard] = useState<CardData | null>(null);
@@ -60,12 +61,10 @@ const AppContent: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const initFlag = useRef(false);
 
-  const isAdmin = currentUser?.email === ADMIN_EMAIL;
   const isRtl = LANGUAGES_CONFIG[lang]?.dir === 'rtl';
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  // تحديد ما إذا كنا في الصفحة الرئيسية (Home)
   const isHomePage = location.pathname === `/${lang}` || location.pathname === `/${lang}/`;
 
   const navigateWithLang = (path: string) => {
@@ -103,8 +102,12 @@ const AppContent: React.FC = () => {
         if (user) {
           try {
             await syncUserProfile(user); 
+            // بعد المزامنة، جلب الملف الشخصي للتأكد من رتبة الأدمن
+            const profile = await getUserProfile(user.uid);
+            setIsAdmin(profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           } catch (e) {
             console.warn("Registry sync failed during auth change", e);
+            setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
           if (!slug) {
             try {
@@ -112,6 +115,8 @@ const AppContent: React.FC = () => {
               setUserCards(cards as CardData[]);
             } catch (e) {}
           }
+        } else {
+          setIsAdmin(false);
         }
         setIsInitializing(false);
       });
@@ -245,7 +250,6 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
       
-      {/* ظهور التذييل فقط في الصفحة الرئيسية */}
       {isHomePage && <Footer lang={lang} />}
       
       <BottomNav />

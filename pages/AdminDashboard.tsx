@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   getAdminStats, ADMIN_EMAIL, deleteUserCard, 
@@ -7,7 +8,8 @@ import {
   getAllCategories, saveTemplateCategory, deleteTemplateCategory,
   auth, getAuthErrorMessage, toggleCardStatus, getAllVisualStyles,
   getAllUsersWithStats, updateUserSubscription, toggleUserStatus,
-  getAllPricingPlans, savePricingPlan, deletePricingPlan
+  getAllPricingPlans, savePricingPlan, deletePricingPlan,
+  getUserProfile
 } from '../services/firebase';
 import { uploadImageToCloud } from '../services/uploadService';
 import { Language, CardData, CustomTemplate, TemplateCategory, VisualStyle, PricingPlan } from '../types';
@@ -80,7 +82,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     imageStorageType: 'database' as 'database' | 'server', 
     serverUploadUrl: '',
     analyticsCode: '',
-    // Stripe Settings
     stripeLiveMode: false,
     stripeTestPublishableKey: '',
     stripeTestSecretKey: '',
@@ -90,7 +91,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   });
 
   const fetchData = async (quiet = false) => {
-    if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) return;
+    if (!auth.currentUser) return;
     if (!quiet) setLoading(true);
     else setIsRefreshing(true);
     
@@ -166,31 +167,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     
     setIsPlanSubmitting(true);
     try {
-      const finalFeaturesAr = planData.featuresAr || [];
-      const finalFeaturesEn = planData.featuresEn || [];
-
       await savePricingPlan({ 
         ...planData, 
-        id: editingPlanId || undefined,
-        featuresAr: finalFeaturesAr,
-        featuresEn: finalFeaturesEn
+        id: editingPlanId || undefined
       });
-
       alert(isRtl ? "تم حفظ الباقة بنجاح" : "Plan saved successfully");
-      
-      setPlanData({ 
-        id: '', nameAr: '', nameEn: '', price: '0', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
-        featuresAr: [], featuresEn: [], isPopular: false, isActive: true, order: pricingPlans.length + 1, iconName: 'Shield',
-        buttonTextAr: 'اشترك الآن', buttonTextEn: 'Subscribe Now', stripeLink: ''
-      });
       setEditingPlanId(null);
       await fetchData(true);
     } catch (e: any) { 
-      if (e.code === 'permission-denied') {
-        alert(isRtl ? "خطأ: ليس لديك صلاحية الكتابة في قاعدة البيانات (تحقق من Rules)" : "Error: Permission denied (Check Firestore Rules)");
-      } else {
-        alert(isRtl ? `حدث خطأ أثناء الحفظ: ${e.message}` : `Error during save: ${e.message}`); 
-      }
+      alert(isRtl ? `حدث خطأ أثناء الحفظ: ${e.message}` : `Error during save: ${e.message}`); 
     } finally { 
       setIsPlanSubmitting(false); 
     }
@@ -296,8 +281,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
         </div>
       )}
 
+      {permissionError && (
+        <div className="p-10 bg-red-50 dark:bg-red-900/10 rounded-[3rem] border border-red-100 dark:border-red-900/30 text-center space-y-4 animate-shake">
+           <AlertTriangle size={48} className="text-red-500 mx-auto" />
+           <h3 className="text-2xl font-black text-red-600 uppercase">خطأ في الصلاحيات</h3>
+           <p className="text-gray-500 dark:text-gray-400 font-bold max-w-md mx-auto leading-relaxed">
+             لا تملك صلاحية الوصول إلى هذه البيانات. تأكد من أن بريدك الإلكتروني مسجل كمسؤول في قاعدة البيانات أو اتصل بالمطور الرئيسي.
+           </p>
+           <button onClick={() => fetchData()} className="px-8 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">إعادة المحاولة</button>
+        </div>
+      )}
+
       <div className="min-h-[400px]">
-        {activeTab === 'stats' && (
+        {activeTab === 'stats' && !permissionError && (
            <div className="space-y-8 animate-fade-in">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                  <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
@@ -358,7 +354,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
            </div>
         )}
 
-        {activeTab === 'users' && (
+        {activeTab === 'users' && !permissionError && (
           <div className="space-y-8 animate-fade-in">
              <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
                 <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -519,7 +515,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                         <p className="font-black dark:text-white leading-none">{isRtl ? plan.nameAr : plan.nameEn}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                            <p className="text-[10px] font-bold text-gray-400 uppercase">ID: {plan.id}</p>
-                                           {/* Fix: Wrap Link2 in a span because Lucide icons do not support the 'title' prop directly */}
                                            {plan.stripeLink && <span title="Has Stripe Link"><Link2 size={10} className="text-blue-500" /></span>}
                                         </div>
                                      </div>
@@ -572,7 +567,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                  <div className="grid grid-cols-1 gap-10">
                     <div className="space-y-6">
                        <div className="flex items-center gap-2 mb-4">
-                          {/* Fix: Use TestIcon instead of Beaker as it was imported with an alias */}
                           <TestIcon size={16} className="text-amber-500" />
                           <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{t('مفاتيح الاختبار', 'Test Mode Credentials')}</h4>
                        </div>
@@ -618,7 +612,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
            </div>
         )}
 
-        {activeTab === 'templates' && (
+        {activeTab === 'templates' && !permissionError && (
            <div className="space-y-10 animate-fade-in">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
@@ -811,7 +805,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
            </div>
         )}
 
-        {activeTab === 'builder' && <TemplateBuilder lang={lang} initialTemplate={editingTemplate} onSave={async (tmpl) => { await saveCustomTemplate(tmpl); setEditingTemplate(undefined); setActiveTab('templates'); await fetchData(true); }} onCancel={() => { setEditingTemplate(undefined); setActiveTab('templates'); }} />}
+        {activeTab === 'builder' && (
+           <TemplateBuilder 
+             lang={lang} 
+             initialTemplate={editingTemplate} 
+             onSave={async (tmpl) => { 
+                try {
+                   await saveCustomTemplate(tmpl); 
+                   setEditingTemplate(undefined); 
+                   setActiveTab('templates'); 
+                   await fetchData(true); 
+                } catch (e: any) {
+                   console.error("Template save error:", e);
+                   alert(isRtl ? "فشل حفظ القالب. تأكد من صلاحيات الأدمن." : "Failed to save template. Verify admin permissions.");
+                }
+             }} 
+             onCancel={() => { setEditingTemplate(undefined); setActiveTab('templates'); }} 
+           />
+        )}
       </div>
 
       {subEditUser && (

@@ -48,7 +48,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
-export const ADMIN_EMAIL = "adelawad1@gmail.com";
+
+export const ADMIN_EMAIL = "adelawad1@gmail.com"; 
 
 const sanitizeData = (data: any) => {
   const clean: any = {};
@@ -64,34 +65,15 @@ const sanitizeData = (data: any) => {
   return clean;
 };
 
-// --- User Management ---
-
-export const searchUsersByEmail = async (emailSearch: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) return [];
-  if (!emailSearch || emailSearch.length < 3) return [];
-  
-  try {
-    const q = query(
-      collection(db, "users_registry"),
-      where("email", ">=", emailSearch.toLowerCase()),
-      where("email", "<=", emailSearch.toLowerCase() + "\uf8ff"),
-      limit(5)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
-  } catch (e) {
-    console.error("Search error:", e);
-    return [];
-  }
-};
-
 export const syncUserProfile = async (user: User) => {
   if (!user) return;
   try {
     const userRef = doc(db, "users_registry", user.uid);
     const snap = await getDoc(userRef);
     
-    const userData = {
+    const isCurrentAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    
+    const userData: any = {
       uid: user.uid,
       email: user.email?.toLowerCase(),
       lastLogin: new Date().toISOString(),
@@ -102,17 +84,16 @@ export const syncUserProfile = async (user: User) => {
       await setDoc(userRef, {
         ...userData,
         createdAt: userData.lastLogin,
-        role: user.email === ADMIN_EMAIL ? 'admin' : 'user',
+        role: isCurrentAdmin ? 'admin' : 'user',
         planId: null,
         premiumUntil: null,
         isActive: true
       });
     } else {
-      // التأكد من تحديث الصلاحية إذا كان بريد الأدمن قد تغير
-      const updates: any = { ...userData };
-      if (user.email === ADMIN_EMAIL) updates.role = 'admin';
-      
-      await updateDoc(userRef, updates);
+      if (isCurrentAdmin) {
+        userData.role = 'admin';
+      }
+      await updateDoc(userRef, userData);
     }
   } catch (error) {
     console.warn("Registry sync failed:", error);
@@ -137,28 +118,7 @@ export const getUserProfile = async (uid: string) => {
   } catch (e) { return null; }
 };
 
-export const updateUserSubscription = async (uid: string, role: 'user' | 'premium' | 'admin', planId: string | null, premiumUntil: string | null) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
-  const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    role, 
-    planId,
-    premiumUntil,
-    updatedAt: serverTimestamp()
-  });
-};
-
-export const toggleUserStatus = async (uid: string, isActive: boolean) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
-  const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    isActive,
-    updatedAt: serverTimestamp()
-  });
-};
-
 export const getAllUsersWithStats = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   try {
     const usersSnap = await getDocs(query(collection(db, "users_registry"), orderBy("createdAt", "desc")));
     const users = usersSnap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
@@ -179,8 +139,6 @@ export const getAllUsersWithStats = async () => {
   }
 };
 
-// --- Pricing Plans Management ---
-
 export const getAllPricingPlans = async () => {
   try {
     const snap = await getDocs(query(collection(db, "pricing_plans"), orderBy("order", "asc")));
@@ -189,7 +147,6 @@ export const getAllPricingPlans = async () => {
 };
 
 export const savePricingPlan = async (plan: Partial<PricingPlan>) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const planId = plan.id || `plan_${Date.now()}`;
   await setDoc(doc(db, "pricing_plans", planId), { 
     ...sanitizeData(plan), 
@@ -200,11 +157,8 @@ export const savePricingPlan = async (plan: Partial<PricingPlan>) => {
 };
 
 export const deletePricingPlan = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "pricing_plans", id));
 };
-
-// --- Auth Helpers ---
 
 export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
   const isAr = lang === 'ar';
@@ -221,8 +175,6 @@ export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => 
   }
 };
 
-// --- App Core ---
-
 export const getSiteSettings = async () => {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));
@@ -231,12 +183,10 @@ export const getSiteSettings = async () => {
 };
 
 export const updateSiteSettings = async (settings: any) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await setDoc(doc(db, "settings", "global"), { ...sanitizeData(settings), updatedAt: new Date().toISOString() }, { merge: true });
 };
 
 export const saveCustomTemplate = async (template: any) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const templateId = template.id || `custom_${Date.now()}`;
   await setDoc(doc(db, "custom_templates", templateId), {
     ...sanitizeData(template),
@@ -257,7 +207,6 @@ export const getAllTemplates = async () => {
 };
 
 export const deleteTemplate = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "custom_templates", id));
 };
 
@@ -323,7 +272,6 @@ export const isSlugAvailable = async (slug: string, currentUserId?: string): Pro
 };
 
 export const getAdminStats = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   try {
     const totalSnap = await getCountFromServer(collection(db, "public_cards"));
     const viewSumSnap = await getAggregateFromServer(collection(db, "public_cards"), { totalViews: sum('viewCount') });
@@ -347,14 +295,12 @@ export const getAllCategories = async () => {
 };
 
 export const saveTemplateCategory = async (category: Partial<TemplateCategory>) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const catId = category.id || `cat_${Date.now()}`;
   await setDoc(doc(db, "template_categories", catId), { ...sanitizeData(category), id: catId }, { merge: true });
   return catId;
 };
 
 export const deleteTemplateCategory = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "template_categories", id));
 };
 
@@ -366,7 +312,6 @@ export const getAllVisualStyles = async () => {
 };
 
 export const saveVisualStyle = async (style: Partial<VisualStyle>) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const styleId = style.id || `style_${Date.now()}`;
   await setDoc(doc(db, "visual_styles", styleId), { 
     ...sanitizeData(style), 
@@ -378,12 +323,10 @@ export const saveVisualStyle = async (style: Partial<VisualStyle>) => {
 };
 
 export const deleteVisualStyle = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "visual_styles", id));
 };
 
 export const toggleCardStatus = async (cardId: string, ownerId: string, isActive: boolean) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await Promise.all([
     updateDoc(doc(db, "public_cards", cardId.toLowerCase()), { isActive }),
     updateDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase()), { isActive })
@@ -403,8 +346,42 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
   if (newEmail && newEmail !== user.email) {
-    // Modern Firebase requires verifyBeforeUpdateEmail
     await verifyBeforeUpdateEmail(user, newEmail);
   }
   if (newPassword) await updatePassword(user, newPassword);
+};
+
+export const searchUsersByEmail = async (emailSearch: string) => {
+  if (!auth.currentUser) return [];
+  try {
+    const q = query(
+      collection(db, "users_registry"),
+      where("email", ">=", emailSearch.toLowerCase()),
+      where("email", "<=", emailSearch.toLowerCase() + "\uf8ff"),
+      limit(5)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
+  } catch (e) {
+    console.error("Search error:", e);
+    return [];
+  }
+};
+
+export const updateUserSubscription = async (uid: string, role: string, planId: string | null, premiumUntil: string | null) => {
+  const userRef = doc(db, "users_registry", uid);
+  await updateDoc(userRef, { 
+    role, 
+    planId,
+    premiumUntil,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const toggleUserStatus = async (uid: string, isActive: boolean) => {
+  const userRef = doc(db, "users_registry", uid);
+  await updateDoc(userRef, { 
+    isActive,
+    updatedAt: serverTimestamp()
+  });
 };

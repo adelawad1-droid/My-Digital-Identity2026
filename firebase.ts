@@ -69,7 +69,7 @@ const sanitizeData = (data: any) => {
 // --- User Management ---
 
 export const searchUsersByEmail = async (emailSearch: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) return [];
+  if (!auth.currentUser) return [];
   if (!emailSearch || emailSearch.length < 3) return [];
   
   try {
@@ -93,7 +93,9 @@ export const syncUserProfile = async (user: User) => {
     const userRef = doc(db, "users_registry", user.uid);
     const snap = await getDoc(userRef);
     
-    const userData = {
+    const isCurrentAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+    const userData: any = {
       uid: user.uid,
       email: user.email?.toLowerCase(),
       lastLogin: new Date().toISOString(),
@@ -104,9 +106,12 @@ export const syncUserProfile = async (user: User) => {
       await setDoc(userRef, {
         ...userData,
         createdAt: userData.lastLogin,
-        role: user.email === ADMIN_EMAIL ? 'admin' : 'user'
+        role: isCurrentAdmin ? 'admin' : 'user'
       });
     } else {
+      if (isCurrentAdmin) {
+        userData.role = 'admin';
+      }
       await updateDoc(userRef, userData);
     }
   } catch (error) {
@@ -115,10 +120,9 @@ export const syncUserProfile = async (user: User) => {
 };
 
 export const getAllUsersWithStats = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   try {
     const usersSnap = await getDocs(query(collection(db, "users_registry"), orderBy("createdAt", "desc")));
-    const users = usersSnap.docs.map(doc => doc.data());
+    const users = usersSnap.docs.map(doc => ({...doc.data(), uid: doc.id}));
     const cardsSnap = await getDocs(collection(db, "public_cards"));
     const allCards = cardsSnap.docs.map(doc => doc.data());
 
@@ -145,7 +149,7 @@ export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => 
     case 'auth/invalid-credential':
       return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
     case 'auth/email-already-in-use':
-      return isAr ? 'هذا البريد الإلكتروني مستخدم بالفعل.' : 'This email is already in use.';
+      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
     case 'auth/weak-password':
       return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
     default:
@@ -163,12 +167,10 @@ export const getSiteSettings = async () => {
 };
 
 export const updateSiteSettings = async (settings: any) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await setDoc(doc(db, "settings", "global"), { ...sanitizeData(settings), updatedAt: new Date().toISOString() }, { merge: true });
 };
 
 export const saveCustomTemplate = async (template: any) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const templateId = template.id || `custom_${Date.now()}`;
   await setDoc(doc(db, "custom_templates", templateId), {
     ...sanitizeData(template),
@@ -189,7 +191,6 @@ export const getAllTemplates = async () => {
 };
 
 export const deleteTemplate = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "custom_templates", id));
 };
 
@@ -255,7 +256,6 @@ export const isSlugAvailable = async (slug: string, currentUserId?: string): Pro
 };
 
 export const getAdminStats = async () => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   try {
     const totalSnap = await getCountFromServer(collection(db, "public_cards"));
     const viewSumSnap = await getAggregateFromServer(collection(db, "public_cards"), { totalViews: sum('viewCount') });
@@ -279,14 +279,12 @@ export const getAllCategories = async () => {
 };
 
 export const saveTemplateCategory = async (category: Partial<TemplateCategory>) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const catId = category.id || `cat_${Date.now()}`;
   await setDoc(doc(db, "template_categories", catId), { ...sanitizeData(category), id: catId }, { merge: true });
   return catId;
 };
 
 export const deleteTemplateCategory = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "template_categories", id));
 };
 
@@ -298,7 +296,6 @@ export const getAllVisualStyles = async () => {
 };
 
 export const saveVisualStyle = async (style: Partial<VisualStyle>) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   const styleId = style.id || `style_${Date.now()}`;
   await setDoc(doc(db, "visual_styles", styleId), { 
     ...sanitizeData(style), 
@@ -310,12 +307,10 @@ export const saveVisualStyle = async (style: Partial<VisualStyle>) => {
 };
 
 export const deleteVisualStyle = async (id: string) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await deleteDoc(doc(db, "visual_styles", id));
 };
 
 export const toggleCardStatus = async (cardId: string, ownerId: string, isActive: boolean) => {
-  if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) throw new Error("Admin only");
   await Promise.all([
     updateDoc(doc(db, "public_cards", cardId.toLowerCase()), { isActive }),
     updateDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase()), { isActive })
