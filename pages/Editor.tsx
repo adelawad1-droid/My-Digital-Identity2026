@@ -61,7 +61,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [isUploadingSpecialImg, setIsUploadingSpecialImg] = useState(false);
   const [uploadConfig, setUploadConfig] = useState({ storageType: 'database' as const, uploadUrl: '' });
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
-  const [showSaveModal, setShowSaveModal] = useState(false);
 
   // تحريك المعاينة في وضع الجوال العائم
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
@@ -224,6 +223,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const removeSpecialLink = (id: string) => {
     handleChange('specialLinks', (formData.specialLinks || []).filter(l => l.id !== id));
+  };
+
+  const handleSaveDirect = () => {
+    onSave(formData, originalIdRef.current || undefined);
   };
 
   return (
@@ -736,7 +739,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                              {t('التالي', 'Next')} {isRtl ? <ChevronLeft size={18}/> : <ChevronRight size={18}/>}
                           </button>
                         ) : (
-                          <button type="button" onClick={() => setShowSaveModal(true)} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
                              {t('حفظ ومشاركة', 'Save & Share')} <Check size={18}/>
                           </button>
                         )}
@@ -788,35 +791,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
            </div>
         </aside>
       </div>
-      
-      {/* Save Modal */}
-      {showSaveModal && (
-        <div className="fixed inset-0 z-[4000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-10 text-center space-y-6 animate-zoom-in">
-              <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                 <Save size={40} />
-              </div>
-              <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{t('حفظ التغيير؟', 'Save Changes?')}</h3>
-              <p className="text-sm font-bold text-gray-400 leading-relaxed px-6">
-                 {isRtl ? 'هل تريد حفظ كافة التعديلات التي قمت بها على بطاقتك الرقمية؟' : 'Do you want to save all the changes you made to your digital card?'}
-              </p>
-              <div className="flex flex-col gap-3 pt-4">
-                 <button 
-                   onClick={() => onSave(formData, originalIdRef.current || undefined)}
-                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all"
-                 >
-                    {t('تأكيد الحفظ', 'Confirm Save')}
-                 </button>
-                 <button 
-                   onClick={() => setShowSaveModal(false)}
-                   className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase transition-all"
-                 >
-                    {t('إلغاء', 'Cancel')}
-                 </button>
-              </div>
-           </div>
-        </div>
-      )}
     </div>
   );
 };
