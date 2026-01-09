@@ -69,6 +69,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const [permissionError, setPermissionError] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSavingSub, setIsSavingSub] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
 
   const [settings, setSettings] = useState({ 
     siteNameAr: '', 
@@ -205,6 +206,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       await fetchData(true);
     } catch (e) {
       alert(isRtl ? "فشل تغيير حالة القالب" : "Failed to toggle template status");
+    }
+  };
+
+  const handleDuplicateTemplate = async (tmpl: CustomTemplate) => {
+    setIsDuplicating(tmpl.id);
+    try {
+      const newTmpl = {
+        ...tmpl,
+        id: `tmpl_${Date.now()}_copy`,
+        nameAr: `${tmpl.nameAr} (نسخة)`,
+        nameEn: `${tmpl.nameEn} (Copy)`,
+        isActive: false, // يبدأ كغير نشط للتعديل
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        usageCount: 0
+      };
+      await saveCustomTemplate(newTmpl);
+      await fetchData(true);
+      alert(isRtl ? "تم نسخ القالب بنجاح" : "Template duplicated successfully");
+    } catch (e) {
+      alert(isRtl ? "فشل نسخ القالب" : "Failed to duplicate template");
+    } finally {
+      setIsDuplicating(null);
     }
   };
 
@@ -645,7 +669,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                          </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                         {customTemplates.filter(t => (isRtl ? t.nameAr : t.nameEn).toLowerCase().includes(templateSearchTerm.toLowerCase())).map((tmpl) => (
+                         {customTemplates.filter(t => (isRtl ? t.nameAr : t.nameEn).toLowerCase().includes(templateSearchTerm.toLowerCase())).map((tmpl) => {
+                            const category = categories.find(c => c.id === tmpl.categoryId);
+                            const categoryName = category ? (isRtl ? category.nameAr : category.nameEn) : tmpl.categoryId;
+                            
+                            return (
                             <tr key={tmpl.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                <td className="px-8 py-6">
                                   <div className="flex items-center gap-4">
@@ -663,7 +691,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                <td className="px-8 py-6">
                                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg text-[9px] font-black uppercase">
                                      <Tag size={10} />
-                                     {tmpl.categoryId}
+                                     {categoryName}
                                   </div>
                                </td>
                                <td className="px-8 py-6">
@@ -692,12 +720,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                      >
                                         <Power size={18}/>
                                      </button>
+                                     <button 
+                                        onClick={() => handleDuplicateTemplate(tmpl)} 
+                                        disabled={isDuplicating === tmpl.id}
+                                        className="p-2.5 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+                                        title={t('نسخ القالب', 'Duplicate Template')}
+                                     >
+                                        {isDuplicating === tmpl.id ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18}/>}
+                                     </button>
                                      <button onClick={() => { setEditingTemplate(tmpl); setActiveTab('builder'); }} className="p-2.5 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={18}/></button>
                                      <button onClick={() => setTemplateToDelete(tmpl.id)} className="p-2.5 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={18}/></button>
                                   </div>
                                </td>
                             </tr>
-                         ))}
+                         )})}
                       </tbody>
                    </table>
                 </div>
@@ -749,7 +785,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                        <div><label className={labelTextClasses}>{t('الخط المستخدم', 'Primary Font')}</label><select value={settings.fontFamily} onChange={e => setSettings({...settings, fontFamily: e.target.value})} className={inputClasses}>{AVAILABLE_FONTS.map(f => <option key={f.id} value={f.id}>{isRtl ? f.nameAr : f.name}</option>)}</select></div>
                        <div className="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                           <div className="flex items-center gap-3"><Power className="text-red-500" size={18}/><span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('وضع الصيانة', 'Maintenance Mode')}</span></div>
-                          <button onClick={() => setSettings({...settings, maintenanceMode: !settings.maintenanceMode})} className={`w-12 h-6 rounded-full relative transition-all ${settings.maintenanceMode ? 'bg-red-500 shadow-md' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (settings.maintenanceMode ? 'right-7' : 'right-1') : (settings.maintenanceMode ? 'left-7' : 'left-1')}`} /></button>
+                          <button onClick={() => setSettings({...settings, maintenanceMode: !settings.maintenanceMode})} className={`w-12 h-6 rounded-full relative transition-all ${settings.maintenanceMode ? 'bg-red-50 shadow-md' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (settings.maintenanceMode ? 'right-7' : 'right-1') : (settings.maintenanceMode ? 'left-7' : 'left-1')}`} /></button>
                        </div>
                     </div>
                     <div className="space-y-6">
@@ -921,7 +957,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                  </div>
 
-                 <button onClick={async () => { setIsSavingSub(true); try { await updateUserSubscription(subEditUser.uid, subEditUser.role, subEditUser.planId || null, subEditUser.role === 'premium' ? subEditUser.premiumUntil : null); alert(isRtl ? "تم تحديث اشتراك العضو بنجاح" : "User subscription updated"); setSubEditUser(null); await fetchData(true); } finally { setIsSavingSub(false); } }} disabled={isSavingSub} className="w-full mt-10 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+                 <button onClick={async () => { setIsSavingSub(true); try { await updateUserSubscription(subEditUser.uid, subEditUser.role, subEditUser.planId || null, subEditUser.role === 'premium' ? subEditUser.premiumUntil : null); alert(isRtl ? "تم تحديث اشتراك العضو بنجاح" : "User subscription updated"); setSubEditUser(null); await fetchData(true); } finally { setIsSavingSub(false); } }} disabled={isSavingSub} className="w-full mt-10 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-102 active:scale-95 transition-all disabled:opacity-50">
                     {isSavingSub ? <Loader2 className="animate-spin" /> : <Save size={24}/>} {t('اعتماد وحفظ الاشتراك', 'Commit & Save Subscription')}
                  </button>
               </div>
