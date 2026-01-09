@@ -401,6 +401,30 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                         {activeTab === 'social' && (
                           <div className="space-y-8 animate-fade-in">
+                             {/* قسم تنسيق الأيقونات الجديد */}
+                             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
+                                <div className="flex items-center gap-3">
+                                   <Palette className="text-emerald-600" size={20} />
+                                   <h4 className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق الأيقونات', 'Icon Styling')}</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                   <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
+                                      <div className="flex items-center gap-3">
+                                         <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
+                                         <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
+                                      </div>
+                                      <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
+                                      </button>
+                                   </div>
+
+                                   {!formData.useSocialBrandColors && (
+                                      <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
+                                   )}
+                                </div>
+                             </div>
+
                              <div className="flex flex-col md:flex-row gap-3 items-end">
                                 <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
                                 <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
