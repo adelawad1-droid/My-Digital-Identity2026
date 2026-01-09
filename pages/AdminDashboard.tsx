@@ -26,7 +26,7 @@ import {
   Lock, CheckCircle2, Image as ImageIcon, UploadCloud, X, Layout, User as UserIcon,
   Plus, Palette, ShieldAlert, Key, Star, Hash, AlertTriangle, Pin, PinOff, ArrowUpAZ,
   MoreVertical, ToggleLeft, ToggleRight, MousePointer2, TrendingUp, Filter, ListFilter, Activity, Type, FolderEdit, Check, FolderOpen, Tag, PlusCircle, Zap, HardDrive, Database, Link as LinkIcon, FolderSync, Server,
-  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud
+  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud, MonitorDot
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -789,10 +789,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                        </div>
                     </div>
                     <div className="space-y-6">
-                       <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 text-center">
-                          <label className={labelTextClasses}>{t('شعار الموقع', 'Site Logo')}</label>
-                          <div className="w-24 h-24 bg-white dark:bg-gray-900 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-gray-700 mx-auto mb-4 flex items-center justify-center overflow-hidden">{settings.siteLogo ? <img src={settings.siteLogo} className="w-full h-full object-contain p-2" /> : <ImageIcon className="text-gray-300" size={32}/>}</div>
-                          <input type="file" ref={logoInputRef} onChange={e => handleLogoUpload(e, 'siteLogo')} className="hidden" accept="image/*" /><button onClick={() => logoInputRef.current?.click()} className="px-6 py-2 bg-white dark:bg-gray-900 border rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center justify-center gap-2 mx-auto hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الشعار', 'Upload')}</button>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 text-center">
+                             <label className={labelTextClasses}>{t('شعار الموقع', 'Site Logo')}</label>
+                             <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-[1.5rem] border-2 border-dashed border-gray-200 dark:border-gray-700 mx-auto mb-4 flex items-center justify-center overflow-hidden">{settings.siteLogo ? <img src={settings.siteLogo} className="w-full h-full object-contain p-2" /> : <ImageIcon className="text-gray-300" size={24}/>}</div>
+                             <input type="file" ref={logoInputRef} onChange={e => handleLogoUpload(e, 'siteLogo')} className="hidden" accept="image/*" /><button onClick={() => logoInputRef.current?.click()} className="w-full py-2 bg-white dark:bg-gray-900 border rounded-xl text-[9px] font-black uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الشعار', 'Upload')}</button>
+                          </div>
+                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 text-center">
+                             <label className={labelTextClasses}>{isRtl ? 'أيقونة المتصفح' : 'Favicon'}</label>
+                             <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-[1.5rem] border-2 border-dashed border-gray-200 dark:border-gray-700 mx-auto mb-4 flex items-center justify-center overflow-hidden">{settings.siteIcon ? <img src={settings.siteIcon} className="w-full h-full object-contain p-4" /> : <MonitorDot className="text-gray-300" size={24}/>}</div>
+                             <input type="file" ref={iconInputRef} onChange={e => handleLogoUpload(e, 'siteIcon')} className="hidden" accept="image/*" /><button onClick={() => iconInputRef.current?.click()} className="w-full py-2 bg-white dark:bg-gray-900 border rounded-xl text-[9px] font-black uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الأيقونة', 'Upload')}</button>
+                          </div>
                        </div>
                        <div className="grid grid-cols-2 gap-4">
                           <ColorPicker label={t('اللون الأساسي', 'Primary Color')} value={settings.primaryColor} onChange={(v: string) => setSettings({...settings, primaryColor: v})} />

@@ -86,7 +86,13 @@ const AppContent: React.FC = () => {
     document.title = title;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', description);
-  }, [location.pathname, displaySiteName, isRtl, publicCard]);
+
+    // تحديث أيقونة المتصفح بناءً على إعدادات الموقع
+    const favicon = document.getElementById('site-favicon') as HTMLLinkElement;
+    if (siteConfig.siteIcon && favicon) {
+      favicon.href = siteConfig.siteIcon;
+    }
+  }, [location.pathname, displaySiteName, isRtl, publicCard, siteConfig.siteIcon]);
 
   const isEditorActive = location.pathname.includes('/editor');
   const shouldShowFooter = !isEditorActive && !publicCard && !isCardDeleted;
