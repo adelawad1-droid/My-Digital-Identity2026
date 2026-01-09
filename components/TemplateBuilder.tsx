@@ -18,7 +18,7 @@ import {
   CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search
 } from 'lucide-react';
 
-// --- المكونات المساعدة (خارج المكون الرئيسي لمنع إعادة التركيب remounting) ---
+// --- المكونات المساعدة ---
 
 type BuilderTab = 
   | 'header' 
@@ -356,8 +356,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   });
 
   const [currentSpecialLinks, setCurrentSpecialLinks] = useState<SpecialLinkItem[]>(initialTemplate?.config.defaultSpecialLinks || (SAMPLE_DATA[lang]?.specialLinks as SpecialLinkItem[]) || []);
-  const [defaultEmails, setDefaultEmails] = useState<string[]>([]);
-  const [defaultWebsites, setDefaultWebsites] = useState<string[]>([]);
 
   useEffect(() => {
     getAllCategories().then(setCategories);
@@ -535,12 +533,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
+  // mobileBodyOffsetY هو إزاحة العناصر الداخلية في كل الأجهزة
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet') 
     ? (template.config.mobileBodyOffsetY ?? 0) 
     : 0;
 
-  const previewDesktopPullUp = (previewDevice === 'desktop' && template.config.desktopLayout === 'full-width-header')
-    ? (template.config.desktopBodyOffsetY ?? -60)
+  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط
+  const previewDesktopPullUp = (previewDevice === 'desktop')
+    ? (template.config.desktopBodyOffsetY ?? 0)
     : 0;
 
   const previewPageBg = template.config.pageBgStrategy === 'mirror-header' 
@@ -737,7 +737,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "تزامن مع خيار إزاحة الجوال" : "Synced with mobile offset option"} />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal boxed desktop"} />
                         </div>
                      </div>
 
@@ -1621,18 +1621,20 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl 
-                             label={isRtl ? 'سحب البطاقة للأعلى (سطح المكتب)' : 'Desktop Global Pull-up'} 
-                             min={-2000} max={1000} 
-                             value={template.config.desktopBodyOffsetY ?? -60} 
+                             label={isRtl ? 'إزاحة البطاقة (سطح المكتب)' : 'Desktop Card Offset'} 
+                             min={-2000} max={2000} 
+                             value={template.config.desktopBodyOffsetY ?? 0} 
                              onChange={(v: number) => updateConfig('desktopBodyOffsetY', v)} 
                              icon={Move} 
+                             hint={isRtl ? "يسحب البطاقة كاملة للأعلى أو الأسفل" : "Pulls the whole card up or down"}
                           />
                           <RangeControl 
-                             label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} 
+                             label={isRtl ? 'إزاحة المحتوى الداخلي' : 'Internal Content Offset'} 
                              min={-2000} max={2000} 
                              value={template.config.mobileBodyOffsetY ?? 0} 
                              onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
                              icon={Smartphone} 
+                             hint={isRtl ? "يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal content overlap"}
                           />
                        </div>
 
@@ -1734,12 +1736,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    <div 
                      style={{ 
                         transform: previewDevice === 'desktop' ? `translateY(${previewDesktopPullUp}px)` : 'none',
-                        maxWidth: isFullHeaderPreview ? `${template.config.cardMaxWidth || 500}px` : '100%',
+                        maxWidth: previewDevice === 'desktop' ? `${template.config.cardMaxWidth || 500}px` : '100%',
                         marginRight: 'auto',
                         marginLeft: 'auto',
+                        paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
                         position: 'relative',
                         zIndex: 10,
-                        transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                      }}
                    >
                      <CardPreview 
@@ -1787,8 +1790,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          locationUrl: 'https://maps.google.com',
                          linksShowText: template.config.linksShowText,
                          linksShowBg: template.config.linksShowBg,
-                         emails: defaultEmails.length > 0 ? defaultEmails : sampleCardData.emails,
-                         websites: defaultWebsites.length > 0 ? defaultWebsites : sampleCardData.websites,
+                         emails: sampleCardData.emails,
+                         websites: sampleCardData.websites,
                          bioBorderRadius: template.config.bioBorderRadius,
                          bioBorderWidth: template.config.bioBorderWidth,
                          bioBorderColor: template.config.bioBorderColor,

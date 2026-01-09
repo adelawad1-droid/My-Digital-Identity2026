@@ -142,8 +142,13 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
   
   const isDesktop = windowWidth >= 1024;
   const isFullHeaderEnabled = customConfig?.desktopLayout === 'full-width-header' && isDesktop;
+  
+  // نستخدم mobileBodyOffsetY لجميع الأجهزة كإزاحة داخلية لبيانات البطاقة
   const cardBodyOffset = isDesktop ? 0 : (customConfig?.mobileBodyOffsetY ?? 0);
-  const containerMarginTop = isFullHeaderEnabled ? (customConfig?.desktopBodyOffsetY ?? -60) : 0;
+  
+  // إزاحة سحب البطاقة للأعلى في سطح المكتب
+  const containerMarginTop = isDesktop ? (customConfig?.desktopBodyOffsetY ?? 0) : 0;
+  const verticalPadding = isDesktop ? '100px' : '40px';
 
   return (
     <article className={`min-h-screen flex flex-col items-center relative transition-colors duration-1000 ${data.isDark ? 'dark' : ''}`}>
@@ -157,9 +162,15 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
         </div>
       )}
 
-      <main className="w-full z-10 animate-fade-in-up pb-32 transition-all duration-700 mx-auto flex justify-center" 
-        style={{ maxWidth: isFullHeaderEnabled ? '100%' : `${customConfig?.cardMaxWidth || 500}px`, marginTop: `${containerMarginTop}px` }}>
-        <div className="w-full" style={{ maxWidth: `${customConfig?.cardMaxWidth || 500}px` }}>
+      {/* الحاوية الرئيسية التي تضمن تطبيق cardMaxWidth وتوسيط المحتوى */}
+      <main className="w-full z-10 animate-fade-in-up transition-all duration-700 mx-auto flex flex-col items-center" 
+        style={{ 
+          maxWidth: isFullHeaderEnabled ? '100%' : `${customConfig?.cardMaxWidth || 500}px`, 
+          marginTop: `${containerMarginTop}px`,
+          paddingTop: verticalPadding,
+          paddingBottom: '160px'
+        }}>
+        <div className="w-full px-4" style={{ maxWidth: `${customConfig?.cardMaxWidth || 500}px` }}>
            <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} hideHeader={isFullHeaderEnabled} bodyOffsetYOverride={cardBodyOffset} />
            <div className="mt-12 text-center flex flex-col items-center gap-8 px-6">
               <nav><a href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl font-black text-sm shadow-2xl hover:scale-105 transition-all border group">
