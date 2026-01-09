@@ -32,6 +32,7 @@ import {
   startAt,
   endAt
 } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { CardData, TemplateCategory, VisualStyle } from "./types";
 
 export { doc, getDoc };
@@ -49,6 +50,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 export const ADMIN_EMAIL = "adelawad1@gmail.com";
 
@@ -239,7 +241,6 @@ export const getUserCards = async (userId: string) => {
   } catch (error) { return []; }
 };
 
-// Refactored to take an object argument instead of two strings for consistency
 export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, cardId: string }) => {
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
@@ -330,7 +331,6 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   if (!user || !user.email) throw new Error("auth/no-user");
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
-  // Using verifyBeforeUpdateEmail for better security and to avoid deprecation warnings
   if (newEmail && newEmail !== user.email) await verifyBeforeUpdateEmail(user, newEmail);
   if (newPassword) await updatePassword(user, newPassword);
 };

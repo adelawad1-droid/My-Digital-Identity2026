@@ -26,7 +26,7 @@ import {
   Lock, CheckCircle2, Image as ImageIcon, UploadCloud, X, Layout, User as UserIcon,
   Plus, Palette, ShieldAlert, Key, Star, Hash, AlertTriangle, Pin, PinOff, ArrowUpAZ,
   MoreVertical, ToggleLeft, ToggleRight, MousePointer2, TrendingUp, Filter, ListFilter, Activity, Type, FolderEdit, Check, FolderOpen, Tag, PlusCircle, Zap, HardDrive, Database, Link as LinkIcon, FolderSync, Server,
-  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall
+  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -81,7 +81,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     primaryColor: '#3b82f6',
     secondaryColor: '#8b5cf6',
     fontFamily: 'Cairo',
-    imageStorageType: 'database' as 'database' | 'server', 
+    imageStorageType: 'firebase' as 'database' | 'server' | 'firebase', 
     serverUploadUrl: '',
     analyticsCode: '',
     stripeLiveMode: false,
@@ -128,7 +128,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
           primaryColor: stData.primaryColor || '#3b82f6',
           secondaryColor: stData.secondaryColor || '#8b5cf6',
           fontFamily: stData.fontFamily || 'Cairo',
-          imageStorageType: stData.imageStorageType || 'database',
+          imageStorageType: stData.imageStorageType || 'firebase',
           serverUploadUrl: stData.serverUploadUrl || '',
           analyticsCode: stData.analyticsCode || '',
           stripeLiveMode: stData.stripeLiveMode || false,
@@ -433,7 +433,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
              <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl">
                 <div className="flex items-center gap-4 mb-8">
                    <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><CardIcon size={24} /></div>
-                   <h2 className="text-2xl font-black dark:text-white uppercase leading-none">{editingPlanId ? t('تعديل باقة', 'Edit Plan') : t('إضافة باقة جديدة', 'New Pricing Plan')}</h2>
+                   <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{editingPlanId ? t('تعديل باقة', 'Edit Plan') : t('إضافة باقة جديدة', 'New Pricing Plan')}</h2>
                 </div>
 
                 <form onSubmit={handleSavePlan} className="space-y-8">
@@ -480,7 +480,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                      {/* Fix: Cannot find name 'updatePlanData'. Replaced with direct setPlanData call. */}
                       <div><label className={labelTextClasses}>{t('الترتيب', 'Order')}</label><input type="number" value={planData.order} onChange={e => setPlanData({...planData, order: parseInt(e.target.value) || 0})} className={inputClasses} /></div>
                       <div><label className={labelTextClasses}>{t('الأيقونة (Lucide Name)', 'Icon')}</label><input type="text" value={planData.iconName} onChange={e => setPlanData({...planData, iconName: e.target.value})} className={inputClasses} placeholder="Crown, Star, Shield" /></div>
                       <div className="flex items-center gap-4 h-14 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
@@ -713,7 +712,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl">
                  <div className="flex items-center gap-4 mb-8">
                     <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><FolderEdit size={24}/></div>
-                    <h2 className="text-2xl font-black dark:text-white uppercase leading-none">{editingCategoryId ? t('تعديل قسم', 'Edit Category') : t('إضافة قسم جديد', 'New Category')}</h2>
+                    <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{editingCategoryId ? t('تعديل قسم', 'Edit Category') : t('إضافة قسم جديد', 'New Category')}</h2>
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
                     <div><label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label><input type="text" value={categoryData.nameAr} onChange={e => setCategoryData({...categoryData, nameAr: e.target.value})} className={inputClasses} /></div>
@@ -788,16 +787,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
                  <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
                     <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><HardDrive size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{t('إعدادات تخزين الملفات', 'Media Storage DNA')}</h3></div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 space-y-4">
-                          <label className={labelTextClasses}>{t('نوع التخزين', 'Storage Strategy')}</label>
-                          <div className="grid grid-cols-2 gap-2">
-                             <button onClick={() => setSettings({...settings, imageStorageType: 'database'})} className={`py-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.imageStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}><Database size={18}/> <span className="text-[9px] font-black uppercase">Firebase</span></button>
-                             <button onClick={() => setSettings({...settings, imageStorageType: 'server'})} className={`py-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.imageStorageType === 'server' ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}><Server size={18}/> <span className="text-[9px] font-black uppercase">Private Server</span></button>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 space-y-4 md:col-span-3">
+                          <label className={labelTextClasses}>{t('نوع التخزين المفضل', 'Preferred Storage Strategy')}</label>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                             <button onClick={() => setSettings({...settings, imageStorageType: 'firebase'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'firebase' ? 'bg-blue-600 border-blue-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
+                                <Cloud size={28}/> 
+                                <div className="text-center">
+                                   <p className="text-[10px] font-black uppercase">Firebase Storage</p>
+                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'تخزين سحابي (موصى به)' : 'Cloud Storage (Recommended)'}</p>
+                                </div>
+                             </button>
+                             <button onClick={() => setSettings({...settings, imageStorageType: 'database'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
+                                <Database size={28}/> 
+                                <div className="text-center">
+                                   <p className="text-[10px] font-black uppercase">Firestore (Base64)</p>
+                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'داخل قاعدة البيانات' : 'Inside DB records'}</p>
+                                </div>
+                             </button>
+                             <button onClick={() => setSettings({...settings, imageStorageType: 'server'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'server' ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
+                                <Server size={28}/> 
+                                <div className="text-center">
+                                   <p className="text-[10px] font-black uppercase">Private Server</p>
+                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'سيرفر خارجي (PHP)' : 'Via External Script'}</p>
+                                </div>
+                             </button>
                           </div>
                        </div>
                        {settings.imageStorageType === 'server' && (
-                         <div className="space-y-4 animate-fade-in">
+                         <div className="space-y-4 animate-fade-in md:col-span-3">
                             <label className={labelTextClasses}>{t('رابط ملف الرفع (PHP URL)', 'PHP Upload Script URL')}</label>
                             <div className="relative">
                                <LinkIcon className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
@@ -884,7 +902,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                 className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 text-center ${isSelected ? 'bg-amber-600 border-amber-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
                              >
                                 <Icon size={32} />
-                                <div>
+                                <div className="text-center">
                                    <p className="font-black text-sm uppercase">{isRtl ? plan.nameAr : plan.nameEn}</p>
                                    <p className="text-xl font-black mt-1">${plan.price}</p>
                                 </div>
@@ -918,7 +936,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف البطاقة نهائياً؟', 'Permanent Delete?')}</h3>
               <p className="text-xs font-bold text-gray-400 mb-8">{t('سيتم مسح كافة البيانات من السيرفر فوراً ولا يمكن استرجاعها.', 'All data will be wiped and cannot be recovered.')}</p>
               <div className="flex flex-col gap-3 items-center">
-                 {/* Fix: Passed ownerId and cardId inside an object as expected by deleteUserCard. */}
                  <button onClick={async () => { await deleteUserCard({ ownerId: cardToDelete.ownerId, cardId: cardToDelete.id }); setCardToDelete(null); await fetchData(true); }} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف النهائي</button>
                  <button onClick={() => setCardToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">تراجع</button>
               </div>

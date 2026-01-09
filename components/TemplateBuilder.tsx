@@ -30,6 +30,7 @@ type BuilderTab =
   | 'membership-lab' 
   | 'contact-lab' 
   | 'special-links' 
+  | 'occasion-lab'
   | 'location' 
   | 'social-lab' 
   | 'qrcode' 
@@ -230,6 +231,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       showSocialLinksByDefault: true,
       showButtonsByDefault: true,
       showOccasionByDefault: false,
+      occasionTitleAr: 'مناسبة قادمة',
+      occasionTitleEn: 'Upcoming Occasion',
+      occasionDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+      occasionOffsetY: 0,
+      occasionPrimaryColor: '#3b82f6',
+      occasionBgColor: '',
+      occasionGlassy: false,
       showSpecialLinksByDefault: true,
       specialLinksCols: 2,
       specialLinksGap: 12,
@@ -408,6 +416,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       bodyFeatureOffsetY: 0,
       bodyFeaturePaddingX: 0,
       specialLinksOffsetY: 0,
+      occasionOffsetY: 0,
       locationOffsetY: 0,
       linksSectionOffsetY: 0,
       membershipOffsetY: 0,
@@ -588,6 +597,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('membershipSection')} icon={ShieldCheck} />
           <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('قسم الاتصال', 'Contact Section')} icon={Phone} />
           <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={t('روابط صور (عروض/منتجات)', 'Image Links (Offers/Products)')} icon={ImagePlus} />
+          <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('occasionSection')} icon={PartyPopper} />
           <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={t('الموقع الجغرافي', 'Geographical Location')} icon={MapIcon} />
           <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={t('أيقونات التواصل', 'Social Icons')} icon={Share2} />
           <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={t('رمز الـ QR', 'QR Code Style')} icon={QrCode} />
@@ -703,66 +713,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      </div>
                   </div>
                </div>
-            )}
-
-            {activeTab === 'membership-lab' && (
-              <div className="space-y-8 animate-fade-in">
-                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
-                    <div className="flex items-center gap-4">
-                       <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl shadow-sm"><ShieldCheck size={24} /></div>
-                       <div>
-                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('membershipSection')}</h2>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'إدارة تواريخ العضوية والاشتراكات وشريط الإنجاز' : 'Manage membership dates and subscription progress bar'}</p>
-                       </div>
-                    </div>
-
-                    <div className="space-y-10">
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('عنون العضوية (AR)', 'Membership Title (AR)')}</label>
-                             <input type="text" value={template.config.membershipTitleAr || ''} onChange={e => updateConfig('membershipTitleAr', e.target.value)} className={inputClasses} placeholder="اشتراك مفعل" />
-                          </div>
-                          <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('عنون العضوية (EN)', 'Membership Title (EN)')}</label>
-                             <input type="text" value={template.config.membershipTitleEn || ''} onChange={e => updateConfig('membershipTitleEn', e.target.value)} className={inputClasses} placeholder="Active Subscription" />
-                          </div>
-                       </div>
-
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('تاريخ البدء', 'Start Date')}</label>
-                             <input type="date" value={template.config.membershipStartDate || ''} onChange={e => updateConfig('membershipStartDate', e.target.value)} className={inputClasses} />
-                          </div>
-                          <div className="space-y-2">
-                             <label className={labelTextClasses}>{t('تاريخ الانتهاء', 'Expiry Date')}</label>
-                             <input type="date" value={template.config.membershipExpiryDate || ''} onChange={e => updateConfig('membershipExpiryDate', e.target.value)} className={inputClasses} />
-                          </div>
-                       </div>
-
-                       <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
-                          <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم العضوية والاشتراك' : 'Membership Section Colors'}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <ColorPicker label={t('لون خلفية (المربع)', 'Box Background')} value={template.config.membershipBgColor} onChange={(v: string) => updateConfig('membershipBgColor', v)} />
-                             <ColorPicker label={t('لون الإطار (الفريم)', 'Border/Frame Color')} value={template.config.membershipBorderColor} onChange={(v: string) => updateConfig('membershipBorderColor', v)} />
-                             <ColorPicker label={t('لون النصوص', 'Text Color')} value={template.config.membershipTextColor} onChange={(v: string) => updateConfig('membershipTextColor', v)} />
-                             <ColorPicker label={t('اللون المميز (ACCENT)', 'Accent Color')} value={template.config.membershipAccentColor} onChange={(v: string) => updateConfig('membershipAccentColor', v)} />
-                          </div>
-                          <p className="text-[9px] font-bold text-gray-400 mt-4 italic px-2">
-                             {isRtl ? "* اللون المميز يتحكم في الأيقونة وشريط الإنجاز ونص الأيام المتبقية." : "* Accent color controls icon, progress bar, and remaining days text."}
-                          </p>
-                       </div>
-
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800 items-center">
-                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
-                          <RangeControl label={t('الإزاحة الرأسية')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
-                       </div>
-
-                       <div className="pt-4 flex justify-end">
-                          <ToggleSwitch label={t('إظهار قسم العضوية', 'Show Section')} value={template.config.showMembershipByDefault} onChange={(v: boolean) => updateConfig('showMembershipByDefault', v)} icon={Eye} color="bg-emerald-600" isRtl={isRtl} />
-                       </div>
-                    </div>
-                 </div>
-              </div>
             )}
 
             {activeTab === 'avatar' && (
@@ -1138,6 +1088,66 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               </div>
             )}
 
+            {activeTab === 'membership-lab' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl shadow-sm"><ShieldCheck size={24} /></div>
+                       <div>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('membershipSection')}</h2>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'إدارة تواريخ العضوية والاشتراكات وشريط الإنجاز' : 'Manage membership dates and subscription progress bar'}</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-10">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('عنون العضوية (AR)', 'Membership Title (AR)')}</label>
+                             <input type="text" value={template.config.membershipTitleAr || ''} onChange={e => updateConfig('membershipTitleAr', e.target.value)} className={inputClasses} placeholder="اشتراك مفعل" />
+                          </div>
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('عنون العضوية (EN)', 'Membership Title (EN)')}</label>
+                             <input type="text" value={template.config.membershipTitleEn || ''} onChange={e => updateConfig('membershipTitleEn', e.target.value)} className={inputClasses} placeholder="Active Subscription" />
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('تاريخ البدء', 'Start Date')}</label>
+                             <input type="date" value={template.config.membershipStartDate || ''} onChange={e => updateConfig('membershipStartDate', e.target.value)} className={inputClasses} />
+                          </div>
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('تاريخ الانتهاء', 'Expiry Date')}</label>
+                             <input type="date" value={template.config.membershipExpiryDate || ''} onChange={e => updateConfig('membershipExpiryDate', e.target.value)} className={inputClasses} />
+                          </div>
+                       </div>
+
+                       <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                          <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم العضوية والاشتراك' : 'Membership Section Colors'}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <ColorPicker label={t('لون خلفية (المربع)', 'Box Background')} value={template.config.membershipBgColor} onChange={(v: string) => updateConfig('membershipBgColor', v)} />
+                             <ColorPicker label={t('لون الإطار (الفريم)', 'Border/Frame Color')} value={template.config.membershipBorderColor} onChange={(v: string) => updateConfig('membershipBorderColor', v)} />
+                             <ColorPicker label={t('لون النصوص', 'Text Color')} value={template.config.membershipTextColor} onChange={(v: string) => updateConfig('membershipTextColor', v)} />
+                             <ColorPicker label={t('اللون المميز (ACCENT)', 'Accent Color')} value={template.config.membershipAccentColor} onChange={(v: string) => updateConfig('membershipAccentColor', v)} />
+                          </div>
+                          <p className="text-[9px] font-bold text-gray-400 mt-4 italic px-2">
+                             {isRtl ? "* اللون المميز يتحكم في الأيقونة وشريط الإنجاز ونص الأيام المتبقية." : "* Accent color controls icon, progress bar, and remaining days text."}
+                          </p>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800 items-center">
+                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <RangeControl label={t('الإزاحة الرأسية')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
+                       </div>
+
+                       <div className="pt-4 flex justify-end">
+                          <ToggleSwitch label={t('إظهار قسم العضوية', 'Show Section')} value={template.config.showMembershipByDefault} onChange={(v: boolean) => updateConfig('showMembershipByDefault', v)} icon={Eye} color="bg-emerald-600" isRtl={isRtl} />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
             {activeTab === 'contact-lab' && (
               <div className="space-y-8 animate-fade-in">
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
@@ -1285,6 +1295,52 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
                   </div>
                </div>
+            )}
+
+            {activeTab === 'occasion-lab' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-2xl shadow-sm"><PartyPopper size={24} /></div>
+                       <div>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('occasionSection')}</h2>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'إدارة مؤقت المناسبات والعد التنازلي' : 'Manage occasion timer and countdown'}</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-6">
+                       <ToggleSwitch label={t('إظهار قسم المناسبة', 'Show Occasion Section')} value={template.config.showOccasionByDefault} onChange={(v: boolean) => updateConfig('showOccasionByDefault', v)} icon={Eye} color="bg-rose-600" isRtl={isRtl} />
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('occasionTitleAr')}</label>
+                             <input type="text" value={template.config.occasionTitleAr || ''} onChange={e => updateConfig('occasionTitleAr', e.target.value)} className={inputClasses} placeholder="مناسبة قادمة" />
+                          </div>
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('occasionTitleEn')}</label>
+                             <input type="text" value={template.config.occasionTitleEn || ''} onChange={e => updateConfig('occasionTitleEn', e.target.value)} className={inputClasses} placeholder="Upcoming Occasion" />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                             <label className={labelTextClasses}>{t('occasionDate')}</label>
+                             <input type="datetime-local" value={template.config.occasionDate || ''} onChange={e => updateConfig('occasionDate', e.target.value)} className={inputClasses} />
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.occasionOffsetY || 0} onChange={(v: number) => updateConfig('occasionOffsetY', v)} icon={Move} />
+                          <ToggleSwitch label={t('تأثير زجاجي شفاف', 'Glassy Effect')} value={template.config.occasionGlassy} onChange={(v: boolean) => updateConfig('occasionGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                       </div>
+
+                       <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                          <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم المناسبة' : 'Occasion Section Colors'}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <ColorPicker label={t('اللون المميز (المؤقت)', 'Accent Color (Timer)')} value={template.config.occasionPrimaryColor} onChange={(v: string) => updateConfig('occasionPrimaryColor', v)} />
+                             <ColorPicker label={t('لون خلفية القسم', 'Section Background Color')} value={template.config.occasionBgColor} onChange={(v: string) => updateConfig('occasionBgColor', v)} />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
             )}
 
             {activeTab === 'location' && (
@@ -1492,7 +1548,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
 
                     <div className="space-y-8">
-                       <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-900/20 space-y-6">
+                       <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-900/30 space-y-6">
                           <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1 flex items-center gap-2">
                              <MonitorDot size={14} /> {isRtl ? 'نمط العرض على سطح المكتب' : 'Desktop Display Strategy'}
                           </label>
@@ -1542,7 +1598,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                 <button 
                                    type="button"
                                    onClick={() => updateConfig('pageBgStrategy', 'solid')}
-                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy !== 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
+                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy !== 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}
                                 >
                                    <Pipette size={18} />
                                    <span className="text-[9px] font-black uppercase">{t('لون ثابت', 'Solid')}</span>
@@ -1647,6 +1703,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          profileImage: template.config.defaultProfileImage || sampleCardData.profileImage || '',
                          isDark: template.config.defaultIsDark,
                          showOccasion: template.config.showOccasionByDefault,
+                         occasionTitleAr: template.config.occasionTitleAr,
+                         occasionTitleEn: template.config.occasionTitleEn,
+                         occasionDate: template.config.occasionDate,
+                         occasionPrimaryColor: template.config.occasionPrimaryColor,
+                         occasionBgColor: template.config.occasionBgColor,
+                         occasionGlassy: template.config.occasionGlassy,
+                         occasionOffsetY: template.config.occasionOffsetY,
                          showBodyFeature: template.config.showBodyFeatureByDefault,
                          showQrCode: template.config.showQrCodeByDefault,
                          showStars: template.config.showStarsByDefault,
@@ -1833,7 +1896,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 </button>
                 <button 
                   onClick={() => setShowResetConfirm(false)}
-                  className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase transition-all"
+                  className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-[10px] uppercase transition-all"
                 >
                   {t('إلغاء', 'Cancel')}
                 </button>

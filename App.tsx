@@ -69,10 +69,8 @@ const AppContent: React.FC = () => {
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  // Dynamic SEO Logic
   useEffect(() => {
-    if (publicCard) return; // Skip if showing a public profile (it has its own logic)
-
+    if (publicCard) return;
     let title = displaySiteName;
     let description = isRtl 
       ? 'NextID - المنصة المتكاملة لإنشاء بطاقات الأعمال الرقمية الاحترافية والعضويات الذكية.' 
@@ -81,11 +79,6 @@ const AppContent: React.FC = () => {
     const path = location.pathname;
     if (path.includes('/templates')) {
       title = isRtl ? `تصفح القوالب | ${displaySiteName}` : `Browse Templates | ${displaySiteName}`;
-      description = isRtl ? 'اختر من بين عشرات القوالب الاحترافية المصممة لهويتك الرقمية.' : 'Choose from dozens of professional templates designed for your digital identity.';
-    } else if (path.includes('/how-to-start')) {
-      title = isRtl ? `كيف تبدأ | ${displaySiteName}` : `How to Start | ${displaySiteName}`;
-    } else if (path.includes('/custom-orders')) {
-      title = isRtl ? `طلبات خاصة للشركات | ${displaySiteName}` : `Custom Corporate Orders | ${displaySiteName}`;
     } else if (path.includes('/my-cards')) {
       title = isRtl ? `بطاقاتي | ${displaySiteName}` : `My Cards | ${displaySiteName}`;
     }
@@ -93,15 +86,11 @@ const AppContent: React.FC = () => {
     document.title = title;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', description);
-    
-    // Update OG Tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', title);
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute('content', description);
   }, [location.pathname, displaySiteName, isRtl, publicCard]);
 
-  const shouldShowFooter = !location.pathname.includes('/editor') && !publicCard && !isCardDeleted;
+  const isEditorActive = location.pathname.includes('/editor');
+  const shouldShowFooter = !isEditorActive && !publicCard && !isCardDeleted;
+  const shouldShowBottomNav = !publicCard && !isCardDeleted;
 
   const navigateWithLang = (path: string) => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
@@ -171,10 +160,6 @@ const AppContent: React.FC = () => {
     root.style.setProperty('--brand-primary', siteConfig.primaryColor);
     root.style.setProperty('--brand-secondary', siteConfig.secondaryColor);
     root.style.setProperty('--site-font', siteConfig.fontFamily);
-    if (siteConfig.siteIcon) {
-      const link = document.getElementById('site-favicon') as HTMLLinkElement;
-      if (link) link.href = siteConfig.siteIcon;
-    }
   }, [isDarkMode, lang, siteConfig]);
 
   if (isInitializing) return (
@@ -199,6 +184,7 @@ const AppContent: React.FC = () => {
   }
 
   const BottomNav = () => {
+    if (!shouldShowBottomNav) return null;
     const navItems = [
       { id: 'home', path: '/', icon: HomeIcon, label: t('home') },
       { id: 'templates', path: '/templates', icon: LayoutGrid, label: t('templates') },
@@ -207,32 +193,35 @@ const AppContent: React.FC = () => {
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
     return (
-      <div className="xl:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-[1000] animate-fade-in-up">
-        <div className="bg-white/90 dark:bg-[#0a0a0c]/90 backdrop-blur-xl border border-white/20 dark:border-gray-800 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-around relative">
+      <div className="xl:hidden fixed bottom-0 left-0 w-full z-[1000] animate-fade-in-up">
+        <div className="bg-white/95 dark:bg-[#0a0a0c]/95 backdrop-blur-2xl border-t border-gray-100 dark:border-gray-800 p-1 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] flex items-center justify-around relative safe-area-bottom">
           {navItems.map((item) => {
             const isActive = location.pathname.endsWith(`/${lang}${item.path === '/' ? '' : item.path}`) || (item.path === '/' && location.pathname.endsWith(`/${lang}/`));
-            
             if (item.private && !currentUser) {
               return (
-                <button key={item.id} onClick={() => setShowAuthModal(true)} className="flex flex-col items-center gap-1 p-2 text-gray-400">
-                  <item.icon size={22} />
-                  <span className="text-[10px] font-black">{item.label}</span>
+                <button key={item.id} onClick={() => setShowAuthModal(true)} className="flex flex-col items-center gap-1.5 py-3 px-2 text-gray-400">
+                  <item.icon size={20} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">{item.label}</span>
                 </button>
               );
             }
-
             return (
               <button 
                 key={item.id} 
                 onClick={() => navigateWithLang(item.path)} 
-                className={`flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500'}`}
+                className={`flex flex-col items-center gap-1.5 py-3 px-2 transition-all relative ${isActive ? 'text-blue-600' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'}`}
               >
-                <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-black">{item.label}</span>
+                {isActive && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-b-full shadow-[0_2px_10px_rgba(37,99,235,0.4)]" />
+                )}
+                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className={`text-[10px] font-black uppercase tracking-tighter ${isActive ? 'scale-105' : ''}`}>{item.label}</span>
               </button>
             );
           })}
         </div>
+        {/* حشوة إضافية لدعم هواتف آيفون الحديثة (Home Indicator) */}
+        <div className="h-[env(safe-area-inset-bottom)] bg-white/95 dark:bg-[#0a0a0c]/95" />
       </div>
     );
   };
@@ -255,7 +244,7 @@ const AppContent: React.FC = () => {
            <SidebarItem icon={MessageSquare} label={t('customOrders')} onClick={() => navigateWithLang('/custom-orders')} active={location.pathname.includes('/custom-orders')} />
            {currentUser && (
              <>
-               <div className="pt-4 pb-2"><span className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-4">{t('myAccount', 'My Account')}</span></div>
+               <div className="pt-4 pb-2"><span className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-4">My Account</span></div>
                <SidebarItem icon={CreditCard} label={t('myCards')} onClick={() => navigateWithLang('/my-cards')} active={location.pathname.includes('/my-cards')} />
                <SidebarItem icon={UserIcon} label={t('account')} onClick={() => navigateWithLang('/account')} active={location.pathname.includes('/account')} />
                {isAdmin && <SidebarItem icon={ShieldCheck} label={t('admin')} onClick={() => navigateWithLang('/admin')} active={location.pathname.includes('/admin')} color="text-amber-600" />}
@@ -341,18 +330,14 @@ const AppContent: React.FC = () => {
           <Route path="/how-to-start" element={<HowToStart lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
-          {/* Fix: Expected 1 arguments, but got 2. Ensured single object argument for deleteUserCard call. */}
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
-          {/* Fix: Updated deleteUserCard call to pass an object argument in AdminDashboard onDeleteRequest implementation. */}
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>
       </main>
-      
       {shouldShowFooter && <Footer lang={lang} />}
-      
       <BottomNav />
       {showAuthModal && <AuthModal lang={lang} onClose={() => setShowAuthModal(false)} onSuccess={() => { setShowAuthModal(false); navigateWithLang('/my-cards'); }} />}
       {showShareModal && sharingData && <ShareModal data={sharingData} lang={lang} onClose={handleCloseShare} isNewSave={true} />}

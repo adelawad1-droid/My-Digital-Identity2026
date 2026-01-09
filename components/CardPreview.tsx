@@ -49,7 +49,6 @@ const MembershipBar = ({
   const progress = Math.max(0, Math.min(100, (remaining / total) * 100));
   const daysLeft = Math.ceil(remaining / (1000 * 60 * 60 * 24));
 
-  // Default color logic if no accentColor is provided
   let dynamicColor = accentColor;
   if (!dynamicColor) {
     const r = Math.floor(239 - (239 - 34) * (progress / 100));
@@ -95,7 +94,7 @@ const MembershipBar = ({
   );
 };
 
-const CountdownTimer = ({ targetDate, isDark, primaryColor }: { targetDate: string, isDark: boolean, primaryColor: string }) => {
+const CountdownTimer = ({ targetDate, isDark, primaryColor, lang }: { targetDate: string, isDark: boolean, primaryColor: string, lang: Language }) => {
   const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
 
   useEffect(() => {
@@ -120,6 +119,8 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor }: { targetDate: stri
 
   if (!timeLeft) return null;
 
+  const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
+
   const Unit = ({ val, label }: { val: number, label: string }) => (
     <div className={`flex flex-col items-center justify-center flex-1 p-3 rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} border shadow-sm transition-all duration-500 hover:scale-105`}>
       <span className="text-xl font-black leading-none" style={{ color: primaryColor }}>{val}</span>
@@ -129,10 +130,10 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor }: { targetDate: stri
 
   return (
     <div className="flex gap-2 justify-between w-full mt-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-      <Unit val={timeLeft.s} label="SEC" />
-      <Unit val={timeLeft.m} label="MIN" />
-      <Unit val={timeLeft.h} label="HRS" />
-      <Unit val={timeLeft.d} label="DAYS" />
+      <Unit val={timeLeft.s} label={t('unitSeconds')} />
+      <Unit val={timeLeft.m} label={t('unitMinutes')} />
+      <Unit val={timeLeft.h} label={t('unitHours')} />
+      <Unit val={timeLeft.d} label={t('unitDays')} />
     </div>
   );
 };
@@ -167,7 +168,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     return { r, g, b, string: `${r}, ${g}, ${b}` };
   };
 
-  // --- Bio Styling Logic ---
   const bTextColor = data.bioTextColor || config.bioTextColor || (isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)');
   let bBgColor = data.bioBgColor || config.bioBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
   const bGlassy = data.bioGlassy ?? config.bioGlassy;
@@ -258,6 +258,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const showButtons = isVisible(data.showButtons, config.showButtonsByDefault);
   const showQrCode = isVisible(data.showQrCode, config.showQrCodeByDefault);
   const showSpecialLinks = isVisible(data.showSpecialLinks, config.showSpecialLinksByDefault);
+  const showOccasion = isVisible(data.showOccasion, config.showOccasionByDefault);
   const showLocation = isVisible(data.showLocation, config.showLocationByDefault);
   const showMembership = isVisible(data.showMembership, config.showMembershipByDefault);
 
@@ -678,6 +679,33 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     textColor={data.membershipTextColor || config.membershipTextColor}
                     accentColor={data.membershipAccentColor || config.membershipAccentColor}
                  />
+              </div>
+           )}
+
+           {showOccasion && (data.occasionDate || config.occasionDate) && (
+              <div 
+                className="w-full px-2 mt-4"
+                style={{ transform: `translateY(${data.occasionOffsetY ?? config.occasionOffsetY ?? 0}px)` }}
+              >
+                 <div 
+                   className={`w-full p-6 rounded-[2.5rem] border transition-all duration-500 ${data.occasionGlassy ?? config.occasionGlassy ? 'backdrop-blur-xl' : ''}`}
+                   style={{ 
+                     backgroundColor: data.occasionBgColor || config.occasionBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.8)'),
+                     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                   }}
+                 >
+                    <div className="text-center space-y-4">
+                       <h3 className="text-sm font-black dark:text-white uppercase tracking-widest opacity-80">
+                          {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادمة') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
+                       </h3>
+                       <CountdownTimer 
+                         targetDate={data.occasionDate || config.occasionDate || ''} 
+                         isDark={isDark} 
+                         lang={lang}
+                         primaryColor={data.occasionPrimaryColor || config.occasionPrimaryColor || themeColor} 
+                       />
+                    </div>
+                 </div>
               </div>
            )}
 

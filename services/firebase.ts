@@ -30,6 +30,8 @@ import {
   sum,
   serverTimestamp
 } from "firebase/firestore";
+// Added missing import for getStorage
+import { getStorage } from "firebase/storage";
 import { CardData, TemplateCategory, VisualStyle, PricingPlan } from "../types";
 
 export { doc, getDoc };
@@ -44,9 +46,12 @@ const firebaseConfig = {
   measurementId: "G-GYDEKH57XN"
 };
 
+// Fix: initializeApp is a named export from 'firebase/app'
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+// Added missing export for storage to satisfy uploadService.ts requirements
+export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const ADMIN_EMAIL = "adelawad1@gmail.com"; 
@@ -255,7 +260,6 @@ export const getUserCards = async (userId: string) => {
   } catch (error) { return []; }
 };
 
-// Refactored to take an object to resolve argument count errors in App.tsx
 export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, cardId: string }) => {
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
