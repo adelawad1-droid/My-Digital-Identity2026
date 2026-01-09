@@ -172,7 +172,7 @@ const AppContent: React.FC = () => {
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
     return (
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-[1000] animate-fade-in-up">
+      <div className="xl:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-[1000] animate-fade-in-up">
         <div className="bg-white/90 dark:bg-[#0a0a0c]/90 backdrop-blur-xl border border-white/20 dark:border-gray-800 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-around relative">
           {navItems.map((item) => {
             const isActive = location.pathname.endsWith(`/${lang}${item.path === '/' ? '' : item.path}`) || (item.path === '/' && location.pathname.endsWith(`/${lang}/`));
