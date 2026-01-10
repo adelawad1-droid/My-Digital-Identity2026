@@ -226,6 +226,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   };
 
   const handleSaveDirect = () => {
+    // التحقق من تسجيل الدخول قبل الحفظ
+    if (!auth.currentUser) {
+      setShowAuthWarning(true);
+      return;
+    }
     onSave(formData, originalIdRef.current || undefined);
   };
 
@@ -272,7 +277,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         </div>
       )}
 
-      {showAuthWarning && <AuthModal lang={lang} onClose={() => setShowAuthWarning(false)} onSuccess={() => { setShowAuthWarning(false); window.location.reload(); }} />}
+      {showAuthWarning && <AuthModal lang={lang} onClose={() => setShowAuthWarning(false)} onSuccess={() => { setShowAuthWarning(false); }} />}
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
         
