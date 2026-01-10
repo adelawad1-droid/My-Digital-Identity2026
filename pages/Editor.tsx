@@ -188,6 +188,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
 
   // إعدادات المعاينة الحية الافتراضية للجوال دائماً
+  const isFullHeaderActive = currentTemplate?.config.desktopLayout === 'full-width-header';
   const cardBodyOffset = currentTemplate?.config.mobileBodyOffsetY ?? 0;
   
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
@@ -269,7 +270,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                       className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-y-auto no-scrollbar"
                       style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
                     >
-                        <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={true} />
+                        <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} />
                     </div>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-20 pointer-events-none"></div>
                 </div>
@@ -776,7 +777,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          icon={Sun} 
                                       />
                                       <RangeControl 
-                                         label={t('انحناء حواف الجسم', 'Border Radius')} 
+                                         label={t('انحناء الحواف الجسم', 'Border Radius')} 
                                          min={0} max={120} 
                                          value={formData.bodyBorderRadius ?? currentTemplate?.config.bodyBorderRadius ?? 48} 
                                          onChange={(v: number) => handleChange('bodyBorderRadius', v)} 
@@ -841,7 +842,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        lang={lang} 
                        customConfig={currentTemplate?.config} 
                        hideSaveButton={true} 
-                       isFullFrame={true}
+                       // في المعاينة الجانبية، إذا كان الاختيار "بطاقة في الوسط" نجعل isFullFrame كاذباً لتعمل الحواف الدائرية
+                       isFullFrame={isFullHeaderActive} 
                        bodyOffsetYOverride={cardBodyOffset}
                      />
                    </div>

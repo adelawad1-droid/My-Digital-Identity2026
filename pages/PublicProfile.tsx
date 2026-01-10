@@ -119,7 +119,11 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
   
   const isDesktop = windowWidth >= 1024;
   const isFullHeaderEnabled = customConfig?.desktopLayout === 'full-width-header' && isDesktop;
-  const cardBodyOffset = isDesktop ? 0 : (customConfig?.mobileBodyOffsetY ?? 0);
+  
+  // في حال كان سطح المكتب "بطاقة في الوسط" أو كان وضع جوال، نطبق إزاحة التداخل (mobileBodyOffsetY)
+  const shouldApplyInternalOffset = !isFullHeaderEnabled;
+  const cardBodyOffset = shouldApplyInternalOffset ? (customConfig?.mobileBodyOffsetY ?? 0) : 0;
+  
   const containerMarginTop = isDesktop ? (customConfig?.desktopBodyOffsetY ?? 0) : 0;
   const verticalPadding = isDesktop ? '100px' : '40px';
 
@@ -143,7 +147,16 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
           paddingBottom: '160px'
         }}>
         <div className="w-full px-4" style={{ maxWidth: `${customConfig?.cardMaxWidth || 500}px` }}>
-           <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} hideHeader={isFullHeaderEnabled} bodyOffsetYOverride={cardBodyOffset} />
+           <CardPreview 
+             data={data} 
+             lang={lang} 
+             customConfig={customConfig} 
+             hideSaveButton={true} 
+             hideHeader={isFullHeaderEnabled} 
+             // نلغي وضع isFullFrame في حال كانت البطاقة في الوسط لتظهر الحواف الدائرية
+             isFullFrame={isFullHeaderEnabled} 
+             bodyOffsetYOverride={cardBodyOffset} 
+           />
            <div className="mt-12 text-center flex flex-col items-center gap-8 px-6">
               <nav><a href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl font-black text-sm shadow-2xl hover:scale-105 transition-all border group">
                   <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white group-hover:rotate-12 transition-transform" style={{ backgroundColor: primary }}><Plus size={18} /></div>
