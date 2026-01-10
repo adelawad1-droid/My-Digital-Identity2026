@@ -85,17 +85,17 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
         }
       }
 
-      // 2. تجهيز البيانات النهائية للإرسال
+      // 2. تجهيز البيانات النهائية للإرسال بأسماء حقول واضحة لملف PHP
       const payload = {
         fullName: formData.name,
         companyName: formData.company,
         email: formData.email,
         phone: formData.phone,
         staffCount: formData.count,
-        details: formData.message,
         website: formData.website,
         socialMedia: formData.social,
-        logoUrl: finalLogoUrl // نرسل الرابط بدلاً من الـ Base64
+        logoUrl: finalLogoUrl,
+        details: formData.message
       };
 
       // 3. إرسال الطلب إلى السيرفر
@@ -114,11 +114,12 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
           message: '', website: '', social: '', logoFile: null, logoPreview: '' 
         });
       } else {
-        throw new Error('Server returned error');
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Server returned error');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Submission error:", err);
-      setError(isRtl ? 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً.' : 'An error occurred while sending your request. Please try again later.');
+      setError(isRtl ? `حدث خطأ: ${err.message}` : `Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -359,23 +360,6 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
                  </div>
               </div>
             </div>
-
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-               <div className="relative z-10 space-y-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                    <Tag size={24} />
-                  </div>
-                  <h3 className="text-2xl font-black uppercase leading-tight">
-                    {isRtl ? 'عروض مميزة وأسعار مناسبة' : 'Special Offers & Best Prices'}
-                  </h3>
-                  <p className="text-blue-100 text-xs font-bold leading-relaxed opacity-80">
-                    {isRtl ? 'نقدم باقات تنافسية تلبي احتياجات فريقك بأفضل جودة وأنسب الأسعار، لا تتردد في الاتصال بنا الآن.' : 'We offer competitive packages that meet your team\'s needs with top quality and the best prices. Don\'t hesitate to contact us now.'}
-                  </p>
-               </div>
-               <div className="absolute bottom-0 right-0 p-10 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                  <Tag size={180} />
-               </div>
-            </div>
           </div>
         </div>
       </div>
@@ -384,3 +368,4 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
 };
 
 export default CustomRequest;
+    
