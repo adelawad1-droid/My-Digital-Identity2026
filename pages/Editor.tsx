@@ -842,7 +842,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        lang={lang} 
                        customConfig={currentTemplate?.config} 
                        hideSaveButton={true} 
-                       // في المعاينة الجانبية، إذا كان الاختيار "بطاقة في الوسط" نجعل isFullFrame كاذباً لتعمل الحواف الدائرية
+                       // تعديل: لا نفعل وضع FullFrame إذا كانت الترويسة غير ممتدة لضمان ظهور انحناءات البطاقة بشكل سليم
                        isFullFrame={isFullHeaderActive} 
                        bodyOffsetYOverride={cardBodyOffset}
                      />
