@@ -66,12 +66,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
   const [sidebarMouseYPercentage, setSidebarMouseYPercentage] = useState(0);
 
+  // تم تحديث الترتيب بناءً على طلب المستخدم (روابط الصور قبل شبكات التواصل)
   const tabs: {id: EditorTab, label: string, icon: any, color: string}[] = [
     { id: 'identity', label: t('الهوية', 'Identity'), icon: UserIcon, color: 'text-blue-600' },
-    { id: 'contact_numbers', label: t('contactNumbers'), icon: PhoneCall, color: 'text-indigo-600' },
-    { id: 'social', label: t('التواصل', 'Social'), icon: Share2, color: 'text-emerald-600' },
     { id: 'links', label: t('الروابط', 'Links'), icon: LinkIcon, color: 'text-purple-600' },
+    { id: 'contact_numbers', label: t('contactNumbers'), icon: PhoneCall, color: 'text-indigo-600' },
     { id: 'special_links', label: t('روابط الصور', 'Image Links'), icon: ImagePlus, color: 'text-pink-600' },
+    { id: 'social', label: t('شبكات التواصل', 'Social Networks'), icon: Share2, color: 'text-emerald-600' },
     { id: 'membership', label: t('العضوية', 'Membership'), icon: ShieldCheck, color: 'text-amber-600' },
     { id: 'event', label: t('المناسبة', 'Event'), icon: Calendar, color: 'text-rose-600' },
     { id: 'theme', label: t('الألوان والسمة', 'Theme'), icon: Sparkles, color: 'text-blue-500' },
@@ -389,89 +390,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                           </div>
                         )}
 
-                        {activeTab === 'contact_numbers' && (
-                          <div className="space-y-8 animate-fade-in">
-                            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-4">
-                               <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-xl text-indigo-600 shadow-sm"><PhoneCall size={24}/></div>
-                               <div>
-                                  <h3 className="font-black dark:text-white uppercase tracking-tighter">{t('أرقام الاتصال والواتساب', 'Contact Numbers')}</h3>
-                                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
-                               </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                               <div className="space-y-3">
-                                  <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
-                                  <div className="relative">
-                                     <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                     <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={inputClasses} placeholder="+966 5..." />
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الواتساب', 'WhatsApp Number')}</label><VisibilityToggle field="showWhatsapp" label="" /></div>
-                                  <div className="relative">
-                                     <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                     <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={inputClasses} placeholder="9665..." />
-                                  </div>
-                               </div>
-                            </div>
-
-                            <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
-                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <ColorPickerUI label={t('زر الهاتف', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
-                                  <ColorPickerUI label={t('زر الواتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
-                               </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {activeTab === 'social' && (
-                          <div className="space-y-8 animate-fade-in">
-                             {/* قسم تنسيق الأيقونات الجديد */}
-                             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
-                                <div className="flex items-center gap-3">
-                                   <Palette className="text-emerald-600" size={20} />
-                                   <h4 className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق الأيقونات', 'Icon Styling')}</h4>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                   <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
-                                      <div className="flex items-center gap-3">
-                                         <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
-                                         <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
-                                      </div>
-                                      <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
-                                      </button>
-                                   </div>
-
-                                   {!formData.useSocialBrandColors && (
-                                      <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
-                                   )}
-                                </div>
-                             </div>
-
-                             <div className="flex flex-col md:flex-row gap-3 items-end">
-                                <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-                                <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
-                                <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-black transition-all"><Plus size={24} /></button>
-                             </div>
-
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {formData.socialLinks.map((link, idx) => (
-                                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 group transition-all">
-                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-800"><SocialIcon platformId={link.platformId} size={18} /></div>
-                                        <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-400">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
-                                     </div>
-                                     <button type="button" onClick={() => { const u = [...formData.socialLinks]; u.splice(idx, 1); handleChange('socialLinks', u); }} className="p-2 text-red-400 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16}/></button>
-                                  </div>
-                                ))}
-                             </div>
-                          </div>
-                        )}
-
                         {activeTab === 'links' && (
                           <div className="space-y-8 animate-fade-in">
                              <div className="space-y-4">
@@ -513,6 +431,43 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    <div className="space-y-1.5"><label className={labelClasses}>{t('رابط قوقل ماب', 'Maps Link')}</label><input type="url" value={formData.locationUrl} onChange={e => handleChange('locationUrl', e.target.value)} className={inputClasses} placeholder="https://maps.google.com/..." /></div>
                                 </div>
                              </div>
+                          </div>
+                        )}
+
+                        {activeTab === 'contact_numbers' && (
+                          <div className="space-y-8 animate-fade-in">
+                            <div className="p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-4">
+                               <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-xl text-indigo-600 shadow-sm"><PhoneCall size={24}/></div>
+                               <div>
+                                  <h3 className="font-black dark:text-white uppercase tracking-tighter">{t('أرقام الاتصال والواتساب', 'Contact Numbers')}</h3>
+                                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
+                               </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                               <div className="space-y-3">
+                                  <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
+                                  <div className="relative">
+                                     <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                     <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={inputClasses} placeholder="+966 5..." />
+                                  </div>
+                                </div>
+                                <div className="space-y-3">
+                                  <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الواتساب', 'WhatsApp Number')}</label><VisibilityToggle field="showWhatsapp" label="" /></div>
+                                  <div className="relative">
+                                     <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                     <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={inputClasses} placeholder="9665..." />
+                                  </div>
+                               </div>
+                            </div>
+
+                            <div className="pt-6 border-t dark:border-gray-800 space-y-6">
+                               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <ColorPickerUI label={t('زر الهاتف', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
+                                  <ColorPickerUI label={t('زر الواتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
+                               </div>
+                            </div>
                           </div>
                         )}
 
@@ -588,6 +543,52 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                       ))}
                                    </div>
                                 </div>
+                             </div>
+                          </div>
+                        )}
+
+                        {activeTab === 'social' && (
+                          <div className="space-y-8 animate-fade-in">
+                             {/* قسم تنسيق الأيقونات الجديد */}
+                             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
+                                <div className="flex items-center gap-3">
+                                   <Palette className="text-emerald-600" size={20} />
+                                   <h4 className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق الأيقونات', 'Icon Styling')}</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                   <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
+                                      <div className="flex items-center gap-3">
+                                         <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
+                                         <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
+                                      </div>
+                                      <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
+                                      </button>
+                                   </div>
+
+                                   {!formData.useSocialBrandColors && (
+                                      <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
+                                   )}
+                                </div>
+                             </div>
+
+                             <div className="flex flex-col md:flex-row gap-3 items-end">
+                                <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                                <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
+                                <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-black transition-all"><Plus size={24} /></button>
+                             </div>
+
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {formData.socialLinks.map((link, idx) => (
+                                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 group transition-all">
+                                     <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-800"><SocialIcon platformId={link.platformId} size={18} /></div>
+                                        <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-400">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
+                                     </div>
+                                     <button type="button" onClick={() => { const u = [...formData.socialLinks]; u.splice(idx, 1); handleChange('socialLinks', u); }} className="p-2 text-red-400 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16}/></button>
+                                  </div>
+                                ))}
                              </div>
                           </div>
                         )}
@@ -767,7 +768,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                             </div>
                                             <div className="space-y-3">
                                               <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
-                                              <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
+                                              <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                 <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
                                               </button>
                                               <button type="button" onClick={() => { handleChange('cardBodyBackgroundImage', ''); handleChange('cardBodyThemeType', 'color'); }} className="w-full py-2 text-red-400 font-bold text-[9px] uppercase hover:underline">{t('إزالة وإلغاء', 'Remove Image')}</button>
