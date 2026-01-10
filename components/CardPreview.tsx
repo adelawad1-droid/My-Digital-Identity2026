@@ -250,6 +250,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const showTitle = isVisible(data.showTitle, config.showTitleByDefault);
   const showCompany = isVisible(data.showCompany, config.showCompanyByDefault);
   const showBio = isVisible(data.showBio, config.showBioByDefault);
+  const showProfileImage = isVisible(data.showProfileImage, config.avatarStyle !== 'none');
   const showEmail = isVisible(data.showEmail, config.showEmailByDefault);
   const showPhone = isVisible(data.showPhone, config.showPhoneByDefault);
   const showWebsite = isVisible(data.showWebsite, config.showWebsiteByDefault);
@@ -496,7 +497,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       )}
 
       <div className="flex flex-col flex-1 px-4 sm:px-6" style={bodyContentStyles}>
-        {config.avatarStyle !== 'none' && (
+        {showProfileImage && (
           <div className={`relative ${getAvatarRadiusClasses()} z-30 shrink-0 mx-auto transition-all`} 
                style={{ 
                  width: `${config.avatarSize}px`, height: `${config.avatarSize}px`, 

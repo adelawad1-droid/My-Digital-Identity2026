@@ -336,6 +336,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                <div className="space-y-2"><div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('الاسم الكامل', 'Full Name')}</label><VisibilityToggle field="showName" label="" /></div><input type="text" value={formData.name} onChange={e => handleChange('name', e.target.value)} className={inputClasses} placeholder={isRtl ? 'أحمد محمد' : 'John Doe'} /></div>
                                <div className="space-y-2"><div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('jobTitle')}</label><VisibilityToggle field="showTitle" label="" /></div><input type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={inputClasses} placeholder="Senior Software Engineer" /></div>
+                               <div className="space-y-2 md:col-span-2">
+                                  <div className="flex justify-between px-2">
+                                    <label className={labelClasses + " !mb-0"}>{t('company')}</label>
+                                    <VisibilityToggle field="showCompany" label="" />
+                                  </div>
+                                  <input type="text" value={formData.company} onChange={e => handleChange('company', e.target.value)} className={inputClasses} placeholder={isRtl ? 'اسم الشركة' : 'Company Name'} />
+                               </div>
                             </div>
 
                             <div className="space-y-2">
@@ -344,7 +351,12 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             </div>
 
                             <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                               <div className="flex items-center gap-3"><Camera className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('صورتك الشخصية', 'Profile Image')}</h3></div>
+                               <div className="flex items-center justify-between px-2">
+                                  <div className="flex items-center gap-3">
+                                     <Camera className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('صورتك الشخصية', 'Profile Image')}</h3>
+                                  </div>
+                                  <VisibilityToggle field="showProfileImage" label="" />
+                               </div>
                                <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50/50 dark:bg-gray-950 rounded-[2rem] border border-dashed border-gray-100 dark:border-gray-800">
                                   <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-xl border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
                                      {formData.profileImage ? <img src={formData.profileImage} className="w-full h-full object-cover" /> : <UserIcon size={32} className="text-gray-200" />}
@@ -739,6 +751,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                             </div>
                                             <div className="space-y-3">
+                                              {/* Fixed missing bodyBgInputRef by using bodyBgFileInputRef */}
                                               <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
                                               <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                 <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}

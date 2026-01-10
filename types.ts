@@ -1,5 +1,4 @@
 
-
 export type Language = 'en' | 'ar' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'pt' | 'ru' | 'hi';
 
 export interface SocialLink {
@@ -295,6 +294,7 @@ export interface CardData {
   showTitle?: boolean;
   showCompany?: boolean;
   showBio?: boolean;
+  showProfileImage?: boolean;
   showEmail?: boolean;
   showPhone?: boolean;
   showWebsite?: boolean;
