@@ -15,7 +15,7 @@ import {
   Phone, Globe, MessageCircle, Camera, Download, Tablet, Monitor, 
   Eye, QrCode, Wind, GlassWater, ChevronRight, ChevronLeft, 
   Waves, Square, Columns, Minus, ToggleLeft, ToggleRight, Calendar, MapPin, Timer, PartyPopper, Link as LinkIcon, FolderOpen, Plus, Tag, Settings2, SlidersHorizontal, Share2, FileCode, HardDrive, Database,
-  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search
+  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search, Grab
 } from 'lucide-react';
 
 // --- المكونات المساعدة ---
@@ -159,6 +159,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const [selectedStyleId, setSelectedStyleId] = useState<string>(initialTemplate?.parentStyleId || '');
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isDragMode, setIsDragMode] = useState(false);
 
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [showDirectAuth, setShowDirectAuth] = useState(false);
@@ -198,16 +199,23 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       avatarAnimatedBorderSpeed: 3,
       avatarAnimatedGlow: false,
       nameOffsetY: 0,
+      nameOffsetX: 0,
       titleOffsetY: 0,
+      titleOffsetX: 0,
       bioOffsetY: 0,
+      bioOffsetX: 0,
       emailOffsetY: 0,
+      emailOffsetX: 0,
       websiteOffsetY: 0,
+      websiteOffsetX: 0,
       contactButtonsOffsetY: 0,
+      contactButtonsOffsetX: 0,
       contactButtonsGap: 12,
       contactButtonsRadius: 16,
       contactButtonsPaddingV: 16,
       contactButtonsGlassy: false,
       socialLinksOffsetY: 0,
+      socialLinksOffsetX: 0,
       contentAlign: 'center',
       buttonStyle: 'pill',
       animations: 'none',
@@ -219,6 +227,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       qrBgColor: 'transparent',
       qrPadding: 0,
       qrOffsetY: 0,
+      qrOffsetX: 0,
       qrBorderWidth: 4,
       qrBorderColor: '#f9fafb',
       qrBorderRadius: 0, 
@@ -238,6 +247,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       occasionTitleEn: 'Upcoming Occasion',
       occasionDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
       occasionOffsetY: 0,
+      occasionOffsetX: 0,
       occasionPrimaryColor: '#3b82f6',
       occasionBgColor: '',
       occasionGlassy: false,
@@ -247,6 +257,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       specialLinksRadius: 24,
       specialLinksAspectRatio: 'square',
       specialLinksOffsetY: 0,
+      specialLinksOffsetX: 0,
       defaultSpecialLinks: [],
       showMembershipByDefault: false,
       membershipTitleAr: 'اشتراك مفعل',
@@ -254,6 +265,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       membershipStartDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       membershipExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       membershipOffsetY: 0,
+      membershipOffsetX: 0,
       membershipGlassy: false,
       membershipBgColor: '',
       membershipBorderColor: '',
@@ -261,6 +273,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       membershipAccentColor: '',
       showLocationByDefault: true,
       locationOffsetY: 0,
+      locationOffsetX: 0,
       locationBgColor: '',
       locationIconColor: '',
       locationTextColor: '',
@@ -275,6 +288,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       linksSectionRadius: 24,
       linksSectionGlassy: false,
       linksSectionOffsetY: 0,
+      linksSectionOffsetX: 0,
       linksSectionPadding: 0,
       linksSectionPaddingV: 24,
       linksSectionGap: 12,
@@ -291,6 +305,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       bodyGlassy: false,
       bodyOpacity: 100,
       bodyOffsetY: 0,
+      bodyOffsetX: 0,
       bodyBorderRadius: 48,
       nameColor: '#111827',
       titleColor: '#2563eb',
@@ -339,6 +354,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       bodyFeatureHeight: 45,
       bodyFeaturePaddingX: 0,
       bodyFeatureOffsetY: 0,
+      bodyFeatureOffsetX: 0,
       bodyFeatureBorderRadius: 16,
       bodyFeatureGlassy: false,
       socialIconStyle: 'rounded',
@@ -408,21 +424,36 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       avatarOffsetY: 0,
       avatarOffsetX: 0,
       nameOffsetY: 0,
+      nameOffsetX: 0,
       titleOffsetY: 0,
+      titleOffsetX: 0,
       bioOffsetY: 0,
+      bioOffsetX: 0,
       emailOffsetY: 0,
+      emailOffsetX: 0,
       websiteOffsetY: 0,
+      websiteOffsetX: 0,
       contactButtonsOffsetY: 0,
+      contactButtonsOffsetX: 0,
       socialLinksOffsetY: 0,
+      socialLinksOffsetX: 0,
       bodyOffsetY: 0,
+      bodyOffsetX: 0,
       qrOffsetY: 0,
+      qrOffsetX: 0,
       bodyFeatureOffsetY: 0,
+      bodyFeatureOffsetX: 0,
       bodyFeaturePaddingX: 0,
       specialLinksOffsetY: 0,
+      specialLinksOffsetX: 0,
       occasionOffsetY: 0,
+      occasionOffsetX: 0,
       locationOffsetY: 0,
+      locationOffsetX: 0,
       linksSectionOffsetY: 0,
+      linksSectionOffsetX: 0,
       membershipOffsetY: 0,
+      membershipOffsetX: 0,
       spacing: 'normal',
       contentAlign: 'center',
       mobileBodyOffsetY: 0,
@@ -547,6 +578,88 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     ? (template.config.defaultThemeType === 'color' ? template.config.defaultThemeColor : '#f8fafc')
     : (template.config.pageBgColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc'));
 
+  // --- Drag Handling Logic ---
+  const [activeDragElement, setActiveDragElement] = useState<string | null>(null);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const dragInitialValues = useRef({ ox: 0, oy: 0 });
+  const previewScale = previewDevice === 'desktop' ? 0.48 : 1;
+
+  const handleDragStart = (e: React.MouseEvent, elementId: string) => {
+    if (!isDragMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveDragElement(elementId);
+    
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    
+    // الحصول على القيم الابتدائية للإزاحة بناءً على العنصر
+    const config = template.config;
+    let ox = 0, oy = 0;
+    
+    switch(elementId) {
+      case 'avatar': ox = config.avatarOffsetX || 0; oy = config.avatarOffsetY || 0; break;
+      case 'name': ox = config.nameOffsetX || 0; oy = config.nameOffsetY || 0; break;
+      case 'title': ox = config.titleOffsetX || 0; oy = config.titleOffsetY || 0; break;
+      case 'bio': ox = config.bioOffsetX || 0; oy = config.bioOffsetY || 0; break;
+      case 'bodyFeature': ox = config.bodyFeatureOffsetX || 0; oy = config.bodyFeatureOffsetY || 0; break;
+      case 'linksSection': ox = config.linksSectionOffsetX || 0; oy = config.linksSectionOffsetY || 0; break;
+      case 'contactButtons': ox = config.contactButtonsOffsetX || 0; oy = config.contactButtonsOffsetY || 0; break;
+      case 'membership': ox = config.membershipOffsetX || 0; oy = config.membershipOffsetY || 0; break;
+      case 'occasion': ox = config.occasionOffsetX || 0; oy = config.occasionOffsetY || 0; break;
+      case 'specialLinks': ox = config.specialLinksOffsetX || 0; oy = config.specialLinksOffsetY || 0; break;
+      case 'location': ox = config.locationOffsetX || 0; oy = config.locationOffsetY || 0; break;
+      case 'socialLinks': ox = config.socialLinksOffsetX || 0; oy = config.socialLinksOffsetY || 0; break;
+      case 'qrCode': ox = config.qrOffsetX || 0; oy = config.qrOffsetY || 0; break;
+    }
+    
+    dragInitialValues.current = { ox, oy };
+  };
+
+  const handleDragMove = (e: MouseEvent) => {
+    if (!activeDragElement) return;
+    
+    const dx = (e.clientX - dragStartPos.current.x) / previewScale;
+    const dy = (e.clientY - dragStartPos.current.y) / previewScale;
+    
+    const newX = Math.round(dragInitialValues.current.ox + dx);
+    const newY = Math.round(dragInitialValues.current.oy + dy);
+    
+    // تحديث الإعدادات بناءً على العنصر المسحوب
+    switch(activeDragElement) {
+      case 'avatar': updateConfig('avatarOffsetX', newX); updateConfig('avatarOffsetY', newY); break;
+      case 'name': updateConfig('nameOffsetX', newX); updateConfig('nameOffsetY', newY); break;
+      case 'title': updateConfig('titleOffsetX', newX); updateConfig('titleOffsetY', newY); break;
+      case 'bio': updateConfig('bioOffsetX', newX); updateConfig('bioOffsetY', newY); break;
+      case 'bodyFeature': updateConfig('bodyFeatureOffsetX', newX); updateConfig('bodyFeatureOffsetY', newY); break;
+      case 'linksSection': updateConfig('linksSectionOffsetX', newX); updateConfig('linksSectionOffsetY', newY); break;
+      case 'contactButtons': updateConfig('contactButtonsOffsetX', newX); updateConfig('contactButtonsOffsetY', newY); break;
+      case 'membership': updateConfig('membershipOffsetX', newX); updateConfig('membershipOffsetY', newY); break;
+      case 'occasion': updateConfig('occasionOffsetX', newX); updateConfig('occasionOffsetY', newY); break;
+      case 'specialLinks': updateConfig('specialLinksOffsetX', newX); updateConfig('specialLinksOffsetY', newY); break;
+      case 'location': updateConfig('locationOffsetX', newX); updateConfig('locationOffsetY', newY); break;
+      case 'socialLinks': updateConfig('socialLinksOffsetX', newX); updateConfig('socialLinksOffsetY', newY); break;
+      case 'qrCode': updateConfig('qrOffsetX', newX); updateConfig('qrOffsetY', newY); break;
+    }
+  };
+
+  const handleDragEnd = () => {
+    setActiveDragElement(null);
+  };
+
+  useEffect(() => {
+    if (activeDragElement) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+    } else {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [activeDragElement]);
+
   return (
     <div className="bg-white dark:bg-[#0a0a0c] rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col h-[calc(100vh-100px)] min-h-[850px] relative">
       
@@ -601,6 +714,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button 
+            type="button" 
+            onClick={() => setIsDragMode(!isDragMode)} 
+            className={`px-6 py-3 rounded-xl font-black text-xs uppercase transition-all flex items-center gap-2 border-2 ${isDragMode ? 'bg-amber-500 text-white border-amber-600 shadow-lg scale-105' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
+          >
+             {isDragMode ? <Grab size={18} /> : <Move size={18} />}
+             {isDragMode ? t('إيقاف التحريك الحر', 'Stop Drag Mode') : t('تفعيل التحريك الحر', 'Free Drag Mode')}
+          </button>
           <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
         </div>
       </div>
@@ -1006,8 +1127,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <RangeControl label={t('حجم خط الاسم', 'Name Font Size')} min={16} max={56} value={template.config.nameSize} onChange={(v: number) => updateConfig('nameSize', v)} icon={TypographyIcon} />
                            <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={MousePointer2} />
-                           <RangeControl label={t('إزاحة المسمى الوظيفي (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
-                           <RangeControl label={t('إزاحة منطقة الصورة (رأسياً)', 'Avatar Y Offset')} min={-2000} max={2000} value={template.config.avatarOffsetY} onChange={(v: number) => updateConfig('avatarOffsetY', v)} icon={Move} />
+                           <RangeControl label={t('إزاحة الاسم (أفقياً)', 'Name X Offset')} min={-1000} max={1000} value={template.config.nameOffsetX || 0} onChange={(v: number) => updateConfig('nameOffsetX', v)} icon={ArrowLeftRight} />
+                           <RangeControl label={t('إزاحة المسمى (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة المسمى (أفقياً)', 'Title X Offset')} min={-1000} max={1000} value={template.config.titleOffsetX || 0} onChange={(v: number) => updateConfig('titleOffsetX', v)} icon={ArrowLeftRight} />
                         </div>
                      </div>
                   </div>
@@ -1052,6 +1174,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('حجم الخط', 'Font Size')} min={10} max={40} value={template.config.bioSize} onChange={(v: number) => updateConfig('bioSize', v)} icon={TypographyIcon} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.bioOffsetY} onChange={(v: number) => updateConfig('bioOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'X Offset')} min={-1000} max={1000} value={template.config.bioOffsetX || 0} onChange={(v: number) => updateConfig('bioOffsetX', v)} icon={ArrowLeftRight} />
                           <RangeControl label={t('العرض الأقصى (%)', 'Max Width')} min={50} max={100} value={template.config.bioMaxWidth ?? 90} onChange={(v: number) => updateConfig('bioMaxWidth', v)} icon={Maximize2} />
                           <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.bioBorderRadius ?? 32} onChange={(v: number) => updateConfig('bioBorderRadius', v)} icon={Ruler} />
                        </div>
@@ -1119,6 +1242,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <RangeControl label={t('انحناء حواف القسم', 'Section Radius')} min={0} max={60} value={template.config.linksSectionRadius ?? 24} onChange={(v: number) => updateConfig('linksSectionRadius', v)} icon={Ruler} />
                           <RangeControl label={t('انحناء حواف الروابط', 'Item Radius')} min={0} max={50} value={template.config.linksItemRadius ?? 16} onChange={(v: number) => updateConfig('linksItemRadius', v)} icon={Ruler} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.linksSectionOffsetY || 0} onChange={(v: number) => updateConfig('linksSectionOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.linksSectionOffsetX || 0} onChange={(v: number) => updateConfig('linksSectionOffsetX', v)} icon={ArrowLeftRight} />
                           <RangeControl label={t('الارتفاع الداخلي للقسم', 'Vertical Padding')} min={0} max={100} value={template.config.linksSectionPaddingV ?? 24} onChange={(v: number) => updateConfig('linksSectionPaddingV', v)} icon={Maximize2} />
                        </div>
 
@@ -1187,6 +1311,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800 items-center">
                           <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                           <RangeControl label={t('الإزاحة الرأسية')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('الإزاحة الأفقية')} min={-1000} max={1000} value={template.config.membershipOffsetX || 0} onChange={(v: number) => updateConfig('membershipOffsetX', v)} icon={ArrowLeftRight} />
                        </div>
 
                        <div className="pt-4 flex justify-end">
@@ -1230,6 +1355,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.contactButtonsOffsetY} onChange={(v: number) => updateConfig('contactButtonsOffsetY', v)} icon={Move} />
+                             <RangeControl label={t('إزاحة القسم أفقياً', 'X Offset')} min={-1000} max={1000} value={template.config.contactButtonsOffsetX || 0} onChange={(v: number) => updateConfig('contactButtonsOffsetX', v)} icon={ArrowLeftRight} />
                              <RangeControl label={t('المسافة بين الزرين', 'Buttons Gap')} min={0} max={40} value={template.config.contactButtonsGap ?? 12} onChange={(v: number) => updateConfig('contactButtonsGap', v)} icon={SlidersHorizontal} />
                              <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.contactButtonsRadius ?? 16} onChange={(v: number) => updateConfig('contactButtonsRadius', v)} icon={Ruler} />
                              <RangeControl label={t('ارتفاع الأزرار (تعبئة)', 'Buttons Height')} min={4} max={40} value={template.config.contactButtonsPaddingV ?? 16} onChange={(v: number) => updateConfig('contactButtonsPaddingV', v)} icon={Maximize2} />
@@ -1266,6 +1392,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <RangeControl label={t('المسافة بين الصور', 'Link Spacing')} min={0} max={40} value={template.config.specialLinksGap || 12} onChange={(v: number) => updateConfig('specialLinksGap', v)} icon={SlidersHorizontal} />
                           <RangeControl label={t('عدد الأعمدة', 'Columns')} min={1} max={3} value={template.config.specialLinksCols || 2} onChange={(v: number) => updateConfig('specialLinksCols', v)} icon={Grid} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.specialLinksOffsetY || 0} onChange={(v: number) => updateConfig('specialLinksOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.specialLinksOffsetX || 0} onChange={(v: number) => updateConfig('specialLinksOffsetX', v)} icon={ArrowLeftRight} />
                           <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.specialLinksRadius ?? 24} onChange={(v: number) => updateConfig('specialLinksRadius', v)} icon={Ruler} />
                        </div>
 
@@ -1377,6 +1504,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.occasionOffsetY || 0} onChange={(v: number) => updateConfig('occasionOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.occasionOffsetX || 0} onChange={(v: number) => updateConfig('occasionOffsetX', v)} icon={ArrowLeftRight} />
                           <ToggleSwitch label={t('تأثير زجاجي شفاف', 'Glassy Effect')} value={template.config.occasionGlassy} onChange={(v: boolean) => updateConfig('occasionGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                        </div>
 
@@ -1406,6 +1534,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <RangeControl label={t('انحناء حواف الصندوق', 'Border Radius')} min={0} max={60} value={template.config.locationBorderRadius ?? 24} onChange={(v: number) => updateConfig('locationBorderRadius', v)} icon={Ruler} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.locationOffsetY || 0} onChange={(v: number) => updateConfig('locationOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.locationOffsetX || 0} onChange={(v: number) => updateConfig('locationOffsetX', v)} icon={ArrowLeftRight} />
                           <RangeControl label={t('تضييق الارتفاع (المساحة الداخلية)', 'Vertical Padding')} min={4} max={60} value={template.config.locationPaddingV ?? 20} onChange={(v: number) => updateConfig('locationPaddingV', v)} icon={Maximize2} />
                           <RangeControl label={t('حجم خط العنوان التفصيلي', 'Address Font Size')} min={8} max={20} value={template.config.locationAddressSize ?? 13} onChange={(v: number) => updateConfig('locationAddressSize', v)} icon={TypographyIcon} />
                        </div>
@@ -1462,6 +1591,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <RangeControl label={t('المسافة بين الأيقونات', 'Gap')} min={4} max={40} value={template.config.socialIconGap || 12} onChange={(v: number) => updateConfig('socialIconGap', v)} icon={SlidersHorizontal} />
                           <RangeControl label={t('عدد الأعمدة', 'Columns')} min={0} max={6} value={template.config.socialIconColumns || 0} onChange={(v: number) => updateConfig('socialIconColumns', v)} icon={Grid} hint={t('0 للتوزيع المرن', '0 for Flex Wrap')} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.socialLinksOffsetY || 0} onChange={(v: number) => updateConfig('socialLinksOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.socialLinksOffsetX || 0} onChange={(v: number) => updateConfig('socialLinksOffsetX', v)} icon={ArrowLeftRight} />
                        </div>
                     </div>
 
@@ -1494,6 +1624,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} isRtl={isRtl} />
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
                      <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
+                     <RangeControl label={t('إزاحة الباركود أفقياً', 'QR Horizontal Offset')} min={-1000} max={1000} value={template.config.qrOffsetX || 0} onChange={(v: number) => updateConfig('qrOffsetX', v)} icon={ArrowLeftRight} />
                      <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
                   </div>
                </div>
@@ -1567,6 +1698,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                       value={template.config.bodyFeatureOffsetY ?? 0} 
                                       onChange={(v: number) => updateConfig('bodyFeatureOffsetY', v)} 
                                       icon={Move} 
+                                   />
+                                   <RangeControl 
+                                      label={t('إزاحة الميزة أفقياً', 'Horizontal Offset')} 
+                                      min={-1000} max={1000} 
+                                      value={template.config.bodyFeatureOffsetX || 0} 
+                                      onChange={(v: number) => updateConfig('bodyFeatureOffsetX', v)} 
+                                      icon={ArrowLeftRight} 
                                    />
                                    <RangeControl label={t('ارتفاع القسم', 'Height')} min={30} max={120} value={template.config.bodyFeatureHeight ?? 45} onChange={(v: number) => updateConfig('bodyFeatureHeight', v)} icon={Maximize2} />
                                    <RangeControl label={t('انحناء الحواف', 'Radius')} min={0} max={50} value={template.config.bodyFeatureBorderRadius ?? 16} onChange={(v: number) => updateConfig('bodyFeatureBorderRadius', v)} icon={Ruler} />
@@ -1707,7 +1845,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 </div>
               </div>
               
-              <div className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-900 dark:border-gray-800 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'}`} 
+              <div className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-900 dark:border-gray-800 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : ''}`} 
                    style={{ 
                      isolation: 'isolate', 
                      transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
@@ -1716,6 +1854,40 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      minHeight: previewDevice === 'desktop' ? '1200px' : undefined,
                      backgroundColor: previewPageBg
                    }}>
+                
+                {/* Drag Overlays - تظهر فقط في وضع التحريك الحر */}
+                {isDragMode && (
+                   <div className="absolute inset-0 z-[100] pointer-events-none">
+                      {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
+                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode'].map(elId => {
+                         const element = document.querySelector(`[data-element-id="${elId}"]`);
+                         if (!element) return null;
+                         const rect = element.getBoundingClientRect();
+                         const parentRect = element.closest('.themed-scrollbar')?.getBoundingClientRect();
+                         if (!parentRect) return null;
+                         
+                         return (
+                            <div 
+                              key={elId}
+                              onMouseDown={(e) => handleDragStart(e, elId)}
+                              className={`absolute pointer-events-auto cursor-move border-2 border-dashed transition-colors ${activeDragElement === elId ? 'bg-blue-500/20 border-blue-500' : 'bg-amber-500/10 border-amber-500/50 hover:bg-amber-500/20 hover:border-amber-500'}`}
+                              style={{
+                                top: (rect.top - parentRect.top) / previewScale,
+                                left: (rect.left - parentRect.left) / previewScale,
+                                width: rect.width / previewScale,
+                                height: rect.height / previewScale,
+                                zIndex: activeDragElement === elId ? 101 : 100
+                              }}
+                            >
+                               <div className="absolute -top-6 left-0 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-t-lg uppercase">
+                                  {elId}
+                               </div>
+                            </div>
+                         );
+                      })}
+                   </div>
+                )}
+
                 <div className="themed-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem' }}>
                    {isFullHeaderPreview && (
                       <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
@@ -1742,7 +1914,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
                         position: 'relative',
                         zIndex: 10,
-                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: activeDragElement ? 'none' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                      }}
                    >
                      <CardPreview 
@@ -1762,6 +1934,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          occasionBgColor: template.config.occasionBgColor,
                          occasionGlassy: template.config.occasionGlassy,
                          occasionOffsetY: template.config.occasionOffsetY,
+                         occasionOffsetX: template.config.occasionOffsetX,
                          showBodyFeature: template.config.showBodyFeatureByDefault,
                          showQrCode: template.config.showQrCodeByDefault,
                          showStars: template.config.showStarsByDefault,
@@ -1781,6 +1954,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          membershipExpiryDate: template.config.membershipExpiryDate,
                          membershipGlassy: template.config.membershipGlassy,
                          membershipOffsetY: template.config.membershipOffsetY,
+                         membershipOffsetX: template.config.membershipOffsetX,
                          membershipBgColor: template.config.membershipBgColor,
                          membershipBorderColor: template.config.membershipBorderColor,
                          membershipTextColor: template.config.membershipTextColor,
@@ -1788,6 +1962,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          showLocation: template.config.showLocationByDefault,
                          location: isRtl ? 'عنوان الموقع الجغرافي الافتراضي' : 'Default Location Address',
                          locationUrl: 'https://maps.google.com',
+                         locationOffsetX: template.config.locationOffsetX,
+                         locationOffsetY: template.config.locationOffsetY,
                          linksShowText: template.config.linksShowText,
                          linksShowBg: template.config.linksShowBg,
                          emails: sampleCardData.emails,
@@ -1805,7 +1981,30 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          cardBodyBackgroundImage: template.config.cardBodyBackgroundImage,
                          cardBodyThemeType: template.config.cardBodyThemeType,
                          cardBgColor: template.config.cardBgColor,
-                         linksSectionPaddingV: template.config.linksSectionPaddingV
+                         linksSectionPaddingV: template.config.linksSectionPaddingV,
+                         // Pass down all offsets for interactive dragging
+                         avatarOffsetX: template.config.avatarOffsetX,
+                         avatarOffsetY: template.config.avatarOffsetY,
+                         nameOffsetX: template.config.nameOffsetX,
+                         nameOffsetY: template.config.nameOffsetY,
+                         titleOffsetX: template.config.titleOffsetX,
+                         titleOffsetY: template.config.titleOffsetY,
+                         bioOffsetX: template.config.bioOffsetX,
+                         bioOffsetY: template.config.bioOffsetY,
+                         bodyFeatureOffsetX: template.config.bodyFeatureOffsetX,
+                         bodyFeatureOffsetY: template.config.bodyFeatureOffsetY,
+                         linksSectionOffsetX: template.config.linksSectionOffsetX,
+                         linksSectionOffsetY: template.config.linksSectionOffsetY,
+                         contactButtonsOffsetX: template.config.contactButtonsOffsetX,
+                         contactButtonsOffsetY: template.config.contactButtonsOffsetY,
+                         socialLinksOffsetX: template.config.socialLinksOffsetX,
+                         socialLinksOffsetY: template.config.socialLinksOffsetY,
+                         qrOffsetX: template.config.qrOffsetX,
+                         qrOffsetY: template.config.qrOffsetY,
+                         specialLinksOffsetX: template.config.specialLinksOffsetX,
+                         specialLinksOffsetY: template.config.specialLinksOffsetY,
+                         bodyOffsetX: template.config.bodyOffsetX,
+                         bodyOffsetY: template.config.bodyOffsetY
                        } as any} 
                        lang={lang} 
                        customConfig={template.config} 

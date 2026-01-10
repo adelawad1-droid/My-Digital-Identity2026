@@ -62,19 +62,26 @@ export interface TemplateConfig {
   avatarAnimatedGlow?: boolean;
 
   nameOffsetY: number;
+  nameOffsetX?: number;
   titleOffsetY?: number; 
+  titleOffsetX?: number;
   bioOffsetY: number;
+  bioOffsetX?: number;
   emailOffsetY: number;
+  emailOffsetX?: number;
   websiteOffsetY: number;
+  websiteOffsetX?: number;
   
   // Contact Buttons Section
   contactButtonsOffsetY: number;
+  contactButtonsOffsetX?: number;
   contactButtonsGap?: number;
   contactButtonsRadius?: number;
   contactButtonsPaddingV?: number;
   contactButtonsGlassy?: boolean;
   
   socialLinksOffsetY: number;
+  socialLinksOffsetX?: number;
   contentAlign: 'start' | 'center' | 'end';
   buttonStyle: 'pill' | 'square' | 'glass';
   animations: 'none' | 'fade' | 'slide' | 'bounce';
@@ -87,6 +94,7 @@ export interface TemplateConfig {
   bodyGlassy?: boolean;
   bodyOpacity?: number;
   bodyOffsetY?: number;
+  bodyOffsetX?: number;
   bodyBorderRadius?: number;
 
   socialIconStyle?: 'circle' | 'squircle' | 'rounded' | 'square' | 'none';
@@ -109,6 +117,7 @@ export interface TemplateConfig {
   specialLinksRadius?: number;
   specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
   specialLinksOffsetY?: number;
+  specialLinksOffsetX?: number;
   defaultSpecialLinks?: SpecialLinkItem[];
 
   // Membership & Subscription Config
@@ -118,6 +127,7 @@ export interface TemplateConfig {
   membershipStartDate?: string;
   membershipExpiryDate?: string;
   membershipOffsetY?: number;
+  membershipOffsetX?: number;
   membershipGlassy?: boolean;
   membershipBgColor?: string;
   membershipBorderColor?: string;
@@ -127,6 +137,7 @@ export interface TemplateConfig {
   // Location Config
   showLocationByDefault?: boolean;
   locationOffsetY?: number;
+  locationOffsetX?: number;
   locationBgColor?: string;
   locationIconColor?: string;
   locationTextColor?: string;
@@ -143,6 +154,7 @@ export interface TemplateConfig {
   linksSectionRadius?: number;
   linksSectionGlassy?: boolean;
   linksSectionOffsetY?: number;
+  linksSectionOffsetX?: number;
   linksSectionPadding?: number;
   linksSectionPaddingV?: number;
   linksSectionGap?: number;
@@ -157,6 +169,7 @@ export interface TemplateConfig {
   qrBgColor?: string;
   qrPadding?: number;
   qrOffsetY?: number;
+  qrOffsetX?: number;
   qrBorderWidth?: number;
   qrBorderColor?: string;
   qrBorderRadius?: number;
@@ -180,6 +193,7 @@ export interface TemplateConfig {
   occasionDate?: string;
   occasionMapUrl?: string;
   occasionOffsetY?: number;
+  occasionOffsetX?: number;
   occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
@@ -196,6 +210,7 @@ export interface TemplateConfig {
   bodyFeatureHeight?: number;
   bodyFeaturePaddingX?: number; 
   bodyFeatureOffsetY?: number;
+  bodyFeatureOffsetX?: number;
   bodyFeatureBorderRadius?: number;
   bodyFeatureGlassy?: boolean;
 
@@ -229,6 +244,8 @@ export interface TemplateConfig {
 
   invitationPrefix?: string;
   invitationWelcome?: string;
+  invitationWelcomeAr?: string;
+  invitationWelcomeEn?: string;
   invitationYOffset?: number;
 
   nameColor?: string;
@@ -310,6 +327,7 @@ export interface CardData {
   specialLinksCols?: number;
   // Added missing special links config overrides for CardData
   specialLinksOffsetY?: number;
+  specialLinksOffsetX?: number;
   specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
 
   // Membership & Subscription
@@ -319,6 +337,7 @@ export interface CardData {
   membershipStartDate?: string;
   membershipExpiryDate?: string;
   membershipOffsetY?: number;
+  membershipOffsetX?: number;
   membershipGlassy?: boolean;
   membershipBgColor?: string;
   membershipBorderColor?: string;
@@ -337,6 +356,7 @@ export interface CardData {
   occasionDate?: string;
   occasionMapUrl?: string;
   occasionOffsetY?: number;
+  occasionOffsetX?: number;
   occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
@@ -359,6 +379,7 @@ export interface CardData {
   /** Added bodyBorderRadius and bodyOffsetY to CardData to fix compile errors and support per-card overrides */
   bodyBorderRadius?: number;
   bodyOffsetY?: number;
+  bodyOffsetX?: number;
 
   nameColor?: string;
   titleColor?: string;
@@ -387,6 +408,7 @@ export interface CardData {
   qrBgColor?: string;
   qrPadding?: number;
   qrOffsetY?: number;
+  qrOffsetX?: number;
   qrBorderWidth?: number;
   qrBorderColor?: string;
   qrBorderRadius?: number;
@@ -399,6 +421,18 @@ export interface CardData {
   mobileBodyOffsetY?: number;
   desktopBodyOffsetY?: number;
   linksSectionPaddingV?: number;
+  linksSectionOffsetX?: number;
+  linksSectionOffsetY?: number;
+  nameOffsetY?: number;
+  nameOffsetX?: number;
+  titleOffsetY?: number;
+  titleOffsetX?: number;
+  bioOffsetY?: number;
+  bioOffsetX?: number;
+  contactButtonsOffsetY?: number;
+  contactButtonsOffsetX?: number;
+  socialLinksOffsetY?: number;
+  socialLinksOffsetX?: number;
 }
 
 export interface VisualStyle {

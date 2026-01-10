@@ -182,7 +182,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const bioStyles: React.CSSProperties = {
     backgroundColor: bBgColor,
-    transform: `translateY(${config.bioOffsetY}px)`,
+    transform: `translate(${data.bioOffsetX ?? config.bioOffsetX ?? 0}px, ${data.bioOffsetY ?? config.bioOffsetY ?? 0}px)`,
     maxWidth: `${data.bioMaxWidth ?? config.bioMaxWidth ?? 90}%`,
     borderRadius: `${data.bioBorderRadius ?? config.bioBorderRadius ?? 32}px`,
     borderWidth: `${data.bioBorderWidth ?? config.bioBorderWidth ?? 1}px`,
@@ -236,7 +236,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const qrBorderWidth = data.qrBorderWidth ?? config.qrBorderWidth ?? 0;
   const qrBorderColor = data.qrBorderColor || config.qrBorderColor || 'transparent';
   const qrBorderRadius = data.qrBorderRadius ?? config.qrBorderRadius ?? 0;
-  const qrOffsetY = data.qrOffsetY || config.qrOffsetY || 0;
+  const qrOffsetY = data.qrOffsetY ?? config.qrOffsetY ?? 0;
+  const qrOffsetX = data.qrOffsetX ?? config.qrOffsetX ?? 0;
 
   const cardUrl = generateShareUrl(data);
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cardUrl)}&bgcolor=${qrBgColor === 'transparent' ? (isDark ? '0f0f12' : 'ffffff') : qrBgColor.replace('#', '')}&color=${qrColorVal}&margin=0`;
@@ -332,10 +333,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   /** Respect per-card overrides for bodyOffsetY from CardData */
   const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
+  const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
   const bodyContentStyles: React.CSSProperties = {
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? `${headerHeight * 0.4}px` : (headerType.startsWith('side') ? '40px' : '-60px')),
-    transform: `translateY(${finalBodyOffsetY}px)`, 
+    transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
     /** Respect per-card overrides for bodyBorderRadius from CardData */
     borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
@@ -377,7 +379,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const isFeatureGlassy = config.bodyFeatureGlassy;
   const featureHeight = config.bodyFeatureHeight || 45;
   const featureRadius = config.bodyFeatureBorderRadius ?? 16;
-  const featureOffsetY = config.bodyFeatureOffsetY || 0;
+  const featureOffsetY = data.bodyFeatureOffsetY ?? config.bodyFeatureOffsetY ?? 0;
+  const featureOffsetX = data.bodyFeatureOffsetX ?? config.bodyFeatureOffsetX ?? 0;
 
   const sStyle = config.socialIconStyle || 'rounded';
   const sSize = config.socialIconSize || 22;
@@ -434,7 +437,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const slGap = config.specialLinksGap || 12;
   const slRadius = config.specialLinksRadius ?? 24;
   const slAspect = data.specialLinksAspectRatio || config.specialLinksAspectRatio || 'square';
-  const slOffsetY = data.specialLinksOffsetY || config.specialLinksOffsetY || 0;
+  const slOffsetY = data.specialLinksOffsetY ?? config.specialLinksOffsetY ?? 0;
+  const slOffsetX = data.specialLinksOffsetX ?? config.specialLinksOffsetX ?? 0;
 
   const finalEmails = data.emails && data.emails.length > 0 ? data.emails : (data.email ? [data.email] : []);
   const finalWebsites = data.websites && data.websites.length > 0 ? data.websites : (data.website ? [data.website] : []);
@@ -499,9 +503,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       <div className="flex flex-col flex-1 px-4 sm:px-6" style={bodyContentStyles}>
         {showProfileImage && (
           <div className={`relative ${getAvatarRadiusClasses()} z-30 shrink-0 mx-auto transition-all`} 
+               data-element-id="avatar"
                style={{ 
                  width: `${config.avatarSize}px`, height: `${config.avatarSize}px`, 
-                 transform: `translate(${config.avatarOffsetX || 0}px, ${config.avatarOffsetY || 0}px)`,
+                 transform: `translate(${data.avatarOffsetX ?? config.avatarOffsetX ?? 0}px, ${data.avatarOffsetY ?? config.avatarOffsetY ?? 0}px)`,
                  padding: `${config.avatarBorderWidth ?? 4}px`, 
                  backgroundColor: showAnimatedBorder ? 'transparent' : (config.avatarBorderColor || '#ffffff'),
                  boxShadow: config.avatarAnimatedGlow ? `0 0 20px rgba(${hexToRgb(borderClr1).string}, 0.5)` : '0 20px 40px rgba(0,0,0,0.1)'
@@ -528,9 +533,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         <div className={`w-full ${config.spacing === 'relaxed' ? 'space-y-6' : config.spacing === 'compact' ? 'space-y-2' : 'space-y-4'} relative z-10`} style={{ marginTop: hideHeader ? '20px' : (headerType === 'overlay' ? '20px' : '24px') }}>
            
            {showName && (
-             <div className="flex flex-col items-center justify-center gap-1">
+             <div className="flex flex-col items-center justify-center gap-1" data-element-id="name" style={{ transform: `translate(${data.nameOffsetX ?? config.nameOffsetX ?? 0}px, ${data.nameOffsetY ?? config.nameOffsetY ?? 0}px)` }}>
                 <div className="flex items-center justify-center gap-2">
-                  <h2 className="font-black leading-tight" style={{ color: nameColor, transform: `translateY(${config.nameOffsetY}px)`, fontSize: `${config.nameSize}px` }}>
+                  <h2 className="font-black leading-tight" style={{ color: nameColor, fontSize: `${config.nameSize}px` }}>
                     {finalName}
                   </h2>
                   {isVerified && <CheckCircle size={config.nameSize * 0.7} className="text-blue-500 animate-pulse" />}
@@ -544,7 +549,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {(showTitle || showCompany) && (
-             <p className="font-bold opacity-80" style={{ color: titleColor, transform: `translateY(${config.titleOffsetY || 0}px)`, fontSize: '14px' }}>
+             <p className="font-bold opacity-80" data-element-id="title" style={{ color: titleColor, transform: `translate(${data.titleOffsetX ?? config.titleOffsetX ?? 0}px, ${data.titleOffsetY ?? config.titleOffsetY ?? 0}px)`, fontSize: '14px' }}>
                {showTitle && finalTitle}
                {(showTitle && showCompany) && finalTitle && finalCompany && ' • '}
                {showCompany && finalCompany}
@@ -553,10 +558,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {showBodyFeature && featureContent && (
              <div 
+               data-element-id="bodyFeature"
                className={`py-3 px-4 shadow-xl flex items-center justify-center gap-3 transition-all duration-500 animate-fade-in-up relative z-40`}
                style={{ 
                  color: featureTextColor,
-                 transform: `translateY(${featureOffsetY}px)`,
+                 transform: `translate(${featureOffsetX}px, ${featureOffsetY}px)`,
                  marginLeft: `-${featurePaddingX}px`,
                  marginRight: `-${featurePaddingX}px`,
                  borderRadius: `${featureRadius}px`,
@@ -576,7 +582,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showBio && finalBio && (
-             <div className="mx-auto relative group overflow-hidden" style={bioStyles}>
+             <div className="mx-auto relative group overflow-hidden" data-element-id="bio" style={bioStyles}>
                 <Quote size={12} className="absolute top-3 left-4 opacity-20 text-blue-500" />
                <p className="font-bold leading-relaxed italic" style={{ color: bTextColor, fontSize: `${config.bioSize}px` }}>
                  {finalBio}
@@ -586,9 +592,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {hasDirectLinks ? (
               <div 
+                data-element-id="linksSection"
                 className={`w-full px-2 animate-fade-in-up flex flex-col items-center gap-3`}
                 style={{ 
-                  transform: `translateY(${config.linksSectionOffsetY || 0}px)`,
+                  transform: `translate(${data.linksSectionOffsetX ?? config.linksSectionOffsetX ?? 0}px, ${data.linksSectionOffsetY ?? config.linksSectionOffsetY ?? 0}px)`,
                   padding: `${config.linksSectionPadding || 0}px`
                 }}
               >
@@ -652,9 +659,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {hasContactButtons && (
               <div 
+                data-element-id="contactButtons"
                 className="flex flex-row items-center justify-center w-full mt-6 px-2" 
                 style={{ 
-                  transform: `translateY(${config.contactButtonsOffsetY || 0}px)`,
+                  transform: `translate(${data.contactButtonsOffsetX ?? config.contactButtonsOffsetX ?? 0}px, ${data.contactButtonsOffsetY ?? config.contactButtonsOffsetY ?? 0}px)`,
                   gap: `${cbGap}px`
                 }}
               >
@@ -678,8 +686,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {showMembership && (data.membershipExpiryDate || config.membershipExpiryDate) && (
               <div 
+                data-element-id="membership"
                 className="w-full px-2 mt-4"
-                style={{ transform: `translateY(${data.membershipOffsetY ?? config.membershipOffsetY ?? 0}px)` }}
+                style={{ transform: `translate(${data.membershipOffsetX ?? config.membershipOffsetX ?? 0}px, ${data.membershipOffsetY ?? config.membershipOffsetY ?? 0}px)` }}
               >
                  <MembershipBar 
                     startDate={data.membershipStartDate || config.membershipStartDate} 
@@ -697,8 +706,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {showOccasion && (data.occasionDate || config.occasionDate) && (
               <div 
+                data-element-id="occasion"
                 className="w-full px-2 mt-4"
-                style={{ transform: `translateY(${data.occasionOffsetY ?? config.occasionOffsetY ?? 0}px)` }}
+                style={{ transform: `translate(${data.occasionOffsetX ?? config.occasionOffsetX ?? 0}px, ${data.occasionOffsetY ?? config.occasionOffsetY ?? 0}px)` }}
               >
                  <div 
                    className={`w-full p-6 rounded-[2.5rem] border transition-all duration-500 ${data.occasionGlassy ?? config.occasionGlassy ? 'backdrop-blur-xl' : ''}`}
@@ -724,11 +734,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {showSpecialLinks && finalSpecialLinks.length > 0 && (
               <div 
+                data-element-id="specialLinks"
                 className={`grid w-full px-2 animate-fade-in-up`}
                 style={{ 
                   gridTemplateColumns: `repeat(${slCols}, 1fr)`,
                   gap: `${slGap}px`,
-                  transform: `translateY(${slOffsetY}px)`
+                  transform: `translate(${slOffsetX}px, ${slOffsetY}px)`
                 }}
               >
                 {finalSpecialLinks.map((link) => (
@@ -757,7 +768,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showLocation && data.locationUrl && (
-             <div className="w-full px-2 animate-fade-in-up" style={{ transform: `translateY(${config.locationOffsetY || 0}px)` }}>
+             <div data-element-id="location" className="w-full px-2 animate-fade-in-up" style={{ transform: `translate(${data.locationOffsetX ?? config.locationOffsetX ?? 0}px, ${data.locationOffsetY ?? config.locationOffsetY ?? 0}px)` }}>
                <a 
                  href={data.locationUrl} 
                  target="_blank" 
@@ -791,9 +802,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
            {showSocialLinks && data.socialLinks?.length > 0 && (
              <div 
+               data-element-id="socialLinks"
                className={`grid justify-center py-6 mx-auto ${sCols > 0 ? `grid-cols-${sCols}` : 'flex flex-wrap'}`} 
                style={{ 
-                 transform: `translateY(${config.socialLinksOffsetY || 0}px)`,
+                 transform: `translate(${data.socialLinksOffsetX ?? config.socialLinksOffsetX ?? 0}px, ${data.socialLinksOffsetY ?? config.socialLinksOffsetY ?? 0}px)`,
                  gap: `${sGap}px`,
                  maxWidth: '100%'
                }}
@@ -817,7 +829,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showQrCode && (
-             <div className="pt-12 flex flex-col items-center gap-3" style={{ transform: `translateY(${qrOffsetY}px)` }}>
+             <div data-element-id="qrCode" className="pt-12 flex flex-col items-center gap-3" style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)` }}>
                <div className="transition-all duration-700 overflow-hidden shadow-2xl p-1 bg-white" 
                     style={{ 
                       border: `${qrBorderWidth}px solid ${qrBorderColor}`, 
@@ -826,7 +838,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     }}>
                   <img src={qrImageUrl} alt="QR" style={{ width: `${qrSize}px`, height: `${qrSize}px` }} />
                </div>
-               <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] opacity-40">{t('showQrCode')}</span>
              </div>
            )}
         </div>
