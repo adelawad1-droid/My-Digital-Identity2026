@@ -9,12 +9,11 @@ import {
   Zap, Smartphone, Share2, ShieldCheck, 
   ArrowRight, Globe, Palette, QrCode,
   Instagram, Twitter, Music, Youtube, MessageCircle,
-  Wand2, Sparkles, SmartphoneNfc, Check, Crown, Star, Shield,
+  Wand2, Sparkles, Sparkle, SmartphoneNfc, Check, Crown, Star, Shield,
   Loader2, Ticket, CalendarDays, Percent, CreditCard, Mail, Phone, UserPlus,
   Compass, MapPin, ExternalLink, ShoppingCart, Award, Gift, Link as LinkIcon,
   MousePointer2, Layers, Cpu, Heart, Briefcase, Camera, Search, HelpCircle,
-  // Added missing LayoutGrid import
-  LayoutGrid
+  LayoutGrid, Coffee
 } from 'lucide-react';
 
 interface HomeProps {
@@ -435,6 +434,46 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
                  </span>
               </button>
            </div>
+        </div>
+      </section>
+
+      {/* Support Section - Redesigned to be horizontal like the provided image */}
+      <section className="relative z-10 py-16 px-6 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white dark:bg-[#0d111b] rounded-[2.5rem] p-6 md:p-10 border border-orange-100 dark:border-white/5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 group transition-all duration-500 hover:shadow-orange-500/10">
+             {/* Decorative Background */}
+             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-900/5 pointer-events-none"></div>
+             
+             {/* Button Side (Left in screenshot) */}
+             <div className="relative z-10 order-2 md:order-1 shrink-0">
+                <a 
+                   href="https://buymeacoffee.com/guidai" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="group/btn relative px-8 md:px-12 py-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-[2rem] font-black text-xl md:text-2xl shadow-[0_15px_40px_rgba(249,115,22,0.3)] hover:shadow-[0_20px_50px_rgba(249,115,22,0.5)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-4 overflow-hidden"
+                >
+                   <div className="absolute inset-0 bg-white/0 group-hover/btn:bg-white/10 transition-colors"></div>
+                   <span>{t('buyMeCoffee')}</span>
+                   <Coffee size={24} className="group-hover/btn:rotate-12 transition-transform" />
+                </a>
+             </div>
+
+             {/* Text Side (Right in screenshot) */}
+             <div className="relative z-10 flex-1 text-center md:text-start space-y-3 order-1 md:order-2">
+                <div className="inline-flex items-center gap-2 px-4 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-orange-100/50">
+                   <Sparkle size={10} className="animate-pulse" />
+                   {isRtl ? 'دعم استمرار المنصة' : 'Support Platform Continuity'}
+                </div>
+                <h2 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">
+                   {isRtl ? 'ساعدنا ليبقى الموقع مجانياً!' : 'Help us keep the site free!'}
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm md:text-lg font-bold leading-relaxed">
+                   {isRtl 
+                     ? 'تبرع بسيط يساعدنا على تغطية تكاليف السيرفرات وإضافة مميزات جديدة.' 
+                     : 'A small donation helps us cover server costs and add new features.'}
+                </p>
+             </div>
+          </div>
         </div>
       </section>
 
