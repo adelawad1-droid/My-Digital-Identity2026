@@ -329,12 +329,14 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const needsSideMargins = headerType.startsWith('side') || isBodyGlassy || bodyOpacity < 1 || config.headerType === 'floating' || hideHeader;
 
-  const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (config.bodyOffsetY || 0);
+  /** Respect per-card overrides for bodyOffsetY from CardData */
+  const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
 
   const bodyContentStyles: React.CSSProperties = {
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? `${headerHeight * 0.4}px` : (headerType.startsWith('side') ? '40px' : '-60px')),
     transform: `translateY(${finalBodyOffsetY}px)`, 
-    borderRadius: `${config.bodyBorderRadius ?? 48}px`,
+    /** Respect per-card overrides for bodyBorderRadius from CardData */
+    borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
     position: 'relative',
     zIndex: 20,
@@ -559,7 +561,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  borderRadius: `${featureRadius}px`,
                  minHeight: `${featureHeight}px`,
                  backdropFilter: isFeatureGlassy ? 'blur(10px)' : 'none',
-                 WebkitBackdropFilter: isFeatureGlassy ? 'blur(10px)' : 'none',
+                 WebkitBackdropFilter: isFeatureGlassy ? 'blur(15px)' : 'none',
                  border: isFeatureGlassy ? `1px solid rgba(${hexToRgb(featureBg).string}, 0.3)` : 'none',
                  background: isFeatureGlassy 
                     ? `rgba(${hexToRgb(featureBg).string}, 0.15)` 

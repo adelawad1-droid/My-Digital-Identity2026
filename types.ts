@@ -356,6 +356,9 @@ export interface CardData {
 
   bodyGlassy?: boolean;
   bodyOpacity?: number;
+  /** Added bodyBorderRadius and bodyOffsetY to CardData to fix compile errors and support per-card overrides */
+  bodyBorderRadius?: number;
+  bodyOffsetY?: number;
 
   nameColor?: string;
   titleColor?: string;

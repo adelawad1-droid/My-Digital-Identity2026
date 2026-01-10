@@ -171,15 +171,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     </div>
   );
 
-  const ColorPickerUI = ({ label, field, icon: Icon }: { label: string, field: keyof CardData, icon?: any }) => (
+  const ColorPickerUI = ({ label, field, icon: Icon, onAfterChange }: { label: string, field: keyof CardData, icon?: any, onAfterChange?: (val: string) => void }) => (
     <div className="bg-white dark:bg-gray-950 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
       <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-gray-400" />}<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span></div>
       <div className="flex items-center gap-3">
          <div className="relative w-8 h-8 rounded-xl overflow-hidden border shadow-sm">
-            <input type="color" value={(formData[field] as string) || '#3b82f6'} onChange={(v) => handleChange(field, v.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
+            <input type="color" value={(formData[field] as string) || '#3b82f6'} onChange={(v) => { handleChange(field, v.target.value); if (onAfterChange) onAfterChange(v.target.value); }} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
             <div className="w-full h-full" style={{ backgroundColor: (formData[field] as string) || '#3b82f6' }} />
          </div>
-         <input type="text" value={((formData[field] as string) || '').toUpperCase()} onChange={(e) => handleChange(field, e.target.value)} className="bg-gray-50 dark:bg-gray-900 border-none rounded-xl px-2 py-1.5 text-[9px] font-black text-blue-600 w-16 uppercase text-center outline-none" placeholder="#HEX" />
+         <input type="text" value={((formData[field] as string) || '').toUpperCase()} onChange={(e) => { handleChange(field, e.target.value); if (onAfterChange) onAfterChange(e.target.value); }} className="bg-gray-50 dark:bg-gray-900 border-none rounded-xl px-2 py-1.5 text-[9px] font-black text-blue-600 w-16 uppercase text-center outline-none" placeholder="#HEX" />
       </div>
     </div>
   );
@@ -625,7 +625,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                      <label className="text-[10px] font-black text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
                                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
                                         {THEME_COLORS.map((clr, i) => (
-                                          <button type="button" key={i} onClick={() => handleChange('themeColor', clr)} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${formData.themeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
+                                          <button type="button" key={i} onClick={() => { handleChange('themeColor', clr); handleChange('themeType', 'color'); }} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${formData.themeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
                                         ))}
                                      </div>
                                   </div>
@@ -636,7 +636,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                      <label className="text-[10px] font-black text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
                                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                                         {THEME_GRADIENTS.map((grad, i) => (
-                                          <button type="button" key={i} onClick={() => handleChange('themeGradient', grad)} className={`h-12 rounded-2xl border-2 transition-all ${formData.themeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
+                                          <button type="button" key={i} onClick={() => { handleChange('themeGradient', grad); handleChange('themeType', 'gradient'); }} className={`h-12 rounded-2xl border-2 transition-all ${formData.themeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
                                         ))}
                                      </div>
                                   </div>
@@ -647,7 +647,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                      <label className="text-[10px] font-black text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
                                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                         {BACKGROUND_PRESETS.map((url, i) => (
-                                          <button type="button" key={i} onClick={() => handleChange('backgroundImage', url)} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
+                                          <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
                                              <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
                                           </button>
                                         ))}
@@ -662,7 +662,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                   </div>
                                 )}
 
-                                <ColorPickerUI label={t('لون السمة الأساسي', 'Base Theme Color')} field="themeColor" icon={Pipette} />
+                                <ColorPickerUI label={t('لون السمة الأساسي', 'Base Theme Color')} field="themeColor" icon={Pipette} onAfterChange={() => handleChange('themeType', 'color')} />
                                 
                                 <div className="pt-4 border-t dark:border-gray-800 flex items-center justify-between">
                                     <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
@@ -722,13 +722,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                <button 
                                                  key={idx} 
                                                  type="button"
-                                                 onClick={() => handleChange('cardBodyColor', clr)}
+                                                 onClick={() => { handleChange('cardBodyColor', clr); handleChange('cardBodyThemeType', 'color'); }}
                                                  className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-125 ${formData.cardBodyColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-800'}`}
                                                  style={{ backgroundColor: clr }}
                                                />
                                             ))}
                                          </div>
-                                         <ColorPickerUI label={t('لون مخصص', 'Custom Color')} field="cardBodyColor" icon={Pipette} />
+                                         <ColorPickerUI label={t('لون مخصص', 'Custom Color')} field="cardBodyColor" icon={Pipette} onAfterChange={() => handleChange('cardBodyThemeType', 'color')} />
                                       </div>
                                    ) : (
                                       /* خيار الصورة الخلفية */
@@ -748,6 +748,23 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          </div>
                                       </div>
                                    )}
+
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
+                                      <RangeControl 
+                                         label={t('شفافية جسم البطاقة', 'Body Opacity')} 
+                                         min={0} max={100} unit="%" 
+                                         value={formData.bodyOpacity ?? currentTemplate?.config.bodyOpacity ?? 100} 
+                                         onChange={(v: number) => handleChange('bodyOpacity', v)} 
+                                         icon={Sun} 
+                                      />
+                                      <RangeControl 
+                                         label={t('انحناء حواف الجسم', 'Border Radius')} 
+                                         min={0} max={120} 
+                                         value={formData.bodyBorderRadius ?? currentTemplate?.config.bodyBorderRadius ?? 48} 
+                                         onChange={(v: number) => handleChange('bodyBorderRadius', v)} 
+                                         icon={Ruler} 
+                                      />
+                                   </div>
                                 </div>
                              </div>
                           </div>
@@ -782,7 +799,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               </div>
               
               {/* محاكي الجوال الثابت */}
-              <div className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-800 bg-white dark:bg-black w-[340px] aspect-[9/18.5]" 
+              <div className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5]" 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg
