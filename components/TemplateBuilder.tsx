@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -117,13 +116,13 @@ const ColorPicker = ({ label, value, onChange }: any) => (
   </div>
 );
 
-const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, activeColor = "bg-blue-600" }: any) => (
+const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = "text-blue-600", activeBg = "bg-blue-600" }: any) => (
   <button 
     type="button" 
     onClick={() => setActiveTab(id)} 
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeColor} text-white shadow-lg` : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-white shadow-lg` : `${colorClass} hover:bg-white/50 dark:hover:bg-white/5`}`}
   >
-    <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-white/20' : 'bg-gray-50 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-700'} transition-colors`}>
+    <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-white/20' : 'bg-current opacity-10'} transition-colors`}>
       <Icon size={16} />
     </div>
     <span className="text-[11px] font-black uppercase tracking-tight leading-tight text-start flex-1">{label}</span>
@@ -269,7 +268,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       specialLinksOffsetY: 0,
       specialLinksOffsetX: 0,
       defaultSpecialLinks: [],
-      // Floating Asset Default
       floatingAssetUrl: '',
       floatingAssetSize: 100,
       floatingAssetOffsetX: 0,
@@ -728,7 +726,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
       { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
       { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
-      { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
+      { id: 'group4', tabs: ['special-links', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
     
@@ -792,7 +790,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {/* زر إضافة ملحق خاص بجانب التحريك الحر */}
           <button 
             type="button" 
             onClick={() => checkAuthAndClick(floatingAssetInputRef)} 
@@ -816,122 +813,121 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-gray-50/30 dark:bg-[#0a0a0c]">
+        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-4 space-y-3">
           
           {/* Group 1: الترويسة والانماط - Blue Theme */}
-          <div className="border-b dark:border-white/5">
+          <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group1')}
-               className={`w-full flex items-center justify-between p-5 transition-colors group ${openGroups['group1'] ? 'bg-blue-600/10 dark:bg-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-blue-50 dark:bg-blue-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${openGroups['group1'] ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group1'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
                       <LayoutTemplate size={20} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group1'] ? 'text-blue-600 dark:text-blue-400' : 'dark:text-white'}`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group1'] ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-blue-600' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-blue-400'}`} />
              </button>
              {openGroups['group1'] && (
-                <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5">
-                   <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} activeColor="bg-blue-600" />
-                   <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} activeColor="bg-blue-600" />
-                   <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} activeColor="bg-blue-600" />
+                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                   <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
 
-          {/* Group 2: بيانات الهوية - Indigo Theme */}
-          <div className="border-b dark:border-white/5">
+          {/* Group 2: بيانات الهوية - Purple Theme */}
+          <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group2')}
-               className={`w-full flex items-center justify-between p-5 transition-colors group ${openGroups['group2'] ? 'bg-indigo-600/10 dark:bg-indigo-900/20' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-purple-600 shadow-lg shadow-purple-500/20' : 'bg-purple-50 dark:bg-purple-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${openGroups['group2'] ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group2'] ? 'bg-white text-purple-600' : 'bg-purple-600 text-white shadow-md'}`}>
                       <UserIcon size={20} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group2'] ? 'text-indigo-600 dark:text-indigo-400' : 'dark:text-white'}`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group2'] ? 'text-white' : 'text-purple-600 dark:text-purple-400'}`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-indigo-600' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-purple-400'}`} />
              </button>
              {openGroups['group2'] && (
-                <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-indigo-50/20 dark:bg-indigo-900/5">
-                   <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} activeColor="bg-indigo-600" />
-                   <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} activeColor="bg-indigo-600" />
-                   <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} activeColor="bg-indigo-600" />
-                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} activeColor="bg-indigo-600" />
+                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-purple-50/20 dark:bg-purple-900/5 rounded-b-2xl">
+                   <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-purple-600" activeBg="bg-purple-600" />
+                   <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-purple-600" activeBg="bg-purple-600" />
+                   <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-purple-600" activeBg="bg-purple-600" />
+                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-purple-600" activeBg="bg-purple-600" />
                 </div>
              )}
           </div>
 
           {/* Group 3: التواصل والروابط - Emerald Theme */}
-          <div className="border-b dark:border-white/5">
+          <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group3')}
-               className={`w-full flex items-center justify-between p-5 transition-colors group ${openGroups['group3'] ? 'bg-emerald-600/10 dark:bg-emerald-900/20' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-emerald-600 shadow-lg shadow-emerald-500/20' : 'bg-emerald-50 dark:bg-emerald-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${openGroups['group3'] ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group3'] ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white shadow-md'}`}>
                       <Share2 size={20} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-emerald-600 dark:text-emerald-400' : 'dark:text-white'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-emerald-600' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-emerald-400'}`} />
              </button>
              {openGroups['group3'] && (
-                <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-emerald-50/20 dark:bg-emerald-900/5">
-                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} activeColor="bg-emerald-600" />
-                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} activeColor="bg-emerald-600" />
-                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} activeColor="bg-emerald-600" />
-                   <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} activeColor="bg-emerald-600" />
+                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-emerald-50/20 dark:bg-emerald-900/5 rounded-b-2xl">
+                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-emerald-600" activeBg="bg-emerald-600" />
+                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-emerald-600" activeBg="bg-emerald-600" />
+                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-emerald-600" activeBg="bg-emerald-600" />
+                   <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-emerald-600" activeBg="bg-emerald-600" />
                 </div>
              )}
           </div>
 
           {/* Group 4: المحتوى الإضافي - Rose Theme */}
-          <div className="border-b dark:border-white/5">
+          <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
-               className={`w-full flex items-center justify-between p-5 transition-colors group ${openGroups['group4'] ? 'bg-rose-600/10 dark:bg-rose-900/20' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-500 group rounded-2xl ${openGroups['group4'] ? 'bg-rose-600 shadow-lg shadow-rose-500/20' : 'bg-rose-50 dark:bg-rose-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${openGroups['group4'] ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/20' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-white text-rose-600' : 'bg-rose-600 text-white shadow-md'}`}>
                       <Plus size={20} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group4'] ? 'text-rose-600 dark:text-rose-400' : 'dark:text-white'}`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group4'] ? 'text-white' : 'text-rose-600 dark:text-rose-400'}`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-rose-600' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-rose-400'}`} />
              </button>
              {openGroups['group4'] && (
-                <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-rose-50/20 dark:bg-rose-900/5">
-                   <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} activeColor="bg-rose-600" />
-                   {/* تبويب ملحق خاص العائم */}
-                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'ملحق خاص عائم (Floating)' : 'Floating Asset'} icon={Sticker} activeColor="bg-rose-600" />
-                   <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} activeColor="bg-rose-600" />
+                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-rose-50/20 dark:bg-rose-900/5 rounded-b-2xl">
+                   <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-rose-600" activeBg="bg-rose-600" />
+                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'ملحق خاص عائم (Floating)' : 'Floating Asset'} icon={Sticker} colorClass="text-rose-600" activeBg="bg-rose-600" />
+                   <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-rose-600" activeBg="bg-rose-600" />
                 </div>
              )}
           </div>
 
           {/* Group 5: المميزات والإعدادات - Amber Theme */}
-          <div className="border-b dark:border-white/5">
+          <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group5')}
-               className={`w-full flex items-center justify-between p-5 transition-colors group ${openGroups['group5'] ? 'bg-amber-500/10 dark:bg-amber-900/20' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-amber-500 shadow-lg shadow-amber-500/20' : 'bg-amber-50 dark:bg-amber-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${openGroups['group5'] ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group5'] ? 'bg-white text-amber-500' : 'bg-amber-500 text-white shadow-md'}`}>
                       <Settings2 size={20} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group5'] ? 'text-amber-600 dark:text-amber-500' : 'dark:text-white'}`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group5'] ? 'text-white' : 'text-amber-600 dark:text-amber-500'}`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-amber-600' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-amber-400'}`} />
              </button>
              {openGroups['group5'] && (
-                <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-amber-50/20 dark:bg-amber-900/5">
-                   <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} activeColor="bg-amber-500" />
-                   <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} activeColor="bg-amber-500" />
-                   <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} activeColor="bg-amber-500" />
+                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-amber-50/20 dark:bg-amber-900/5 rounded-b-2xl">
+                   <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} colorClass="text-amber-600" activeBg="bg-amber-500" />
+                   <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} colorClass="text-amber-600" activeBg="bg-amber-500" />
+                   <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} colorClass="text-amber-600" activeBg="bg-amber-500" />
                 </div>
              )}
           </div>
@@ -1084,48 +1080,56 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                   
                   <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                        {['color', 'gradient', 'image'].map(type => (
+                         // Fix: replace undefined handleChange and formData
                          <button type="button" key={type} onClick={() => updateConfig('defaultThemeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${template.config.defaultThemeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
-                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIconLucide size={20}/>}
+                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
                            <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                          </button>
                        ))}
                   </div>
 
+                  {/* Fix: replace undefined formData */}
                   {template.config.defaultThemeType === 'color' && (
                     <div className="space-y-6 animate-fade-in">
                        <label className="text-[10px] font-black text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
                        <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
                           {ADMIN_PRESET_COLORS.map((clr, i) => (
-                            <button type="button" key={i} onClick={() => updateConfig('defaultThemeColor', clr)} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${template.config.defaultThemeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
+                            // Fix: replace undefined handleChange and formData
+                            <button type="button" key={i} onClick={() => { updateConfig('defaultThemeColor', clr); updateConfig('defaultThemeType', 'color'); }} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${template.config.defaultThemeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
                           ))}
                        </div>
                     </div>
                   )}
 
+                  {/* Fix: replace undefined formData */}
                   {template.config.defaultThemeType === 'gradient' && (
                     <div className="space-y-6 animate-fade-in">
                        <label className="text-[10px] font-black text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                           {THEME_GRADIENTS.map((grad, i) => (
-                            <button type="button" key={i} onClick={() => updateConfig('defaultThemeGradient', grad)} className={`h-12 rounded-2xl border-2 transition-all ${template.config.defaultThemeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
+                            // Fix: replace undefined handleChange and formData
+                            <button type="button" key={i} onClick={() => { updateConfig('defaultThemeGradient', grad); updateConfig('defaultThemeType', 'gradient'); }} className={`h-12 rounded-2xl border-2 transition-all ${template.config.defaultThemeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
                           ))}
                        </div>
                     </div>
                   )}
 
+                  {/* Fix: replace undefined formData */}
                   {template.config.defaultThemeType === 'image' && (
                     <div className="space-y-6 animate-fade-in">
                        <label className="text-[10px] font-black text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                           {BACKGROUND_PRESETS.map((url, i) => (
-                            <button type="button" key={i} onClick={() => updateConfig('defaultBackgroundImage', url)} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${template.config.defaultBackgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
+                            // Fix: replace undefined handleChange and formData
+                            <button type="button" key={i} onClick={() => { updateConfig('defaultBackgroundImage', url); updateConfig('defaultThemeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${template.config.defaultBackgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
                                <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
                             </button>
                           ))}
                        </div>
                        <div className="pt-4 border-t dark:border-gray-800">
-                          <input type="file" ref={bgInputRef} onChange={handleBgUpload} className="hidden" accept="image/*" />
-                          <button type="button" onClick={() => checkAuthAndClick(bgInputRef)} className="w-full py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
+                          {/* Fix: replace incorrect ref and handler names */}
+                          <input type="file" ref={bgInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { updateConfig('defaultBackgroundImage', url); updateConfig('defaultThemeType', 'image'); } } finally { setUploadingBg(false); } }} className="hidden" accept="image/*" />
+                          <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgInputRef.current?.click(); }} className="w-full py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
                              {uploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
                              {t('رفع خلفية خاصة للقالب', 'Upload Custom Background')}
                           </button>
@@ -1636,8 +1640,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              ].map(ratio => (
                                 <button 
                                   key={ratio.id} 
+                                  // Fix: replace undefined handleChange
                                   onClick={() => updateConfig('specialLinksAspectRatio', ratio.id)} 
-                                  className={`py-5 rounded-2xl border-2 transition-all font-black text-xs uppercase ${template.config.specialLinksAspectRatio === ratio.id ? 'bg-blue-600 text-white border-blue-600 shadow-xl scale-[1.02]' : 'bg-white dark:bg-[#121215] text-gray-400 border-gray-100 dark:border-white/5 hover:bg-gray-50'}`}
+                                  // Fix: replace undefined formData
+                                  className={`py-4 rounded-2xl border-2 transition-all font-black text-[9px] uppercase ${template.config.specialLinksAspectRatio === ratio.id ? 'bg-pink-600 text-white border-pink-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
                                 >
                                    {t(ratio.label, ratio.id.toUpperCase())}
                                 </button>
@@ -2092,7 +2098,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 {isDragMode && (
                    <div className="absolute inset-0 z-[100] pointer-events-none">
                       {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
-                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'floatingAsset', 'location', 'socialLinks', 'qrCode'].map(elId => {
+                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode'].map(elId => {
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;
                          const rect = element.getBoundingClientRect();
@@ -2180,12 +2186,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          specialLinks: currentSpecialLinks,
                          showSpecialLinks: template.config.showSpecialLinksByDefault,
                          showSocialLinks: template.config.showSocialLinksByDefault,
-                         showFloatingAsset: template.config.showFloatingAssetByDefault,
-                         floatingAssetUrl: template.config.floatingAssetUrl,
-                         floatingAssetSize: template.config.floatingAssetSize,
-                         floatingAssetOffsetX: template.config.floatingAssetOffsetX,
-                         floatingAssetOffsetY: template.config.floatingAssetOffsetY,
-                         floatingAssetOpacity: template.config.floatingAssetOpacity,
                          showMembership: template.config.showMembershipByDefault,
                          membershipTitleAr: template.config.membershipTitleAr,
                          membershipTitleEn: template.config.membershipTitleEn,
@@ -2319,12 +2319,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label>
                           <input type="text" value={template.nameAr} onChange={e => updateTemplate('nameAr', e.target.value)} className={inputClasses} />
                        </div>
                        <div className="space-y-2">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label>
                           <input type="text" value={template.nameEn} onChange={e => updateTemplate('nameEn', e.target.value)} className={inputClasses} />
                        </div>
@@ -2332,7 +2330,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('القسم (CATEGORY)', 'Template Category')}</label>
                           <select 
                              value={template.categoryId} 
@@ -2344,7 +2341,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           </select>
                        </div>
                        <div className="space-y-2">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('ترتيب العرض', 'Display Order')}</label>
                           <input type="number" value={template.order} onChange={e => updateTemplate('order', parseInt(e.target.value) || 0)} className={inputClasses} />
                        </div>

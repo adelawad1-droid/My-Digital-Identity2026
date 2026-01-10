@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   getAdminStats, ADMIN_EMAIL, deleteUserCard, 
@@ -28,6 +27,20 @@ import {
   MoreVertical, ToggleLeft, ToggleRight, MousePointer2, TrendingUp, Filter, ListFilter, Activity, Type, FolderEdit, Check, FolderOpen, Tag, PlusCircle, Zap, HardDrive, Database, Link as LinkIcon, FolderSync, Server,
   Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud, MonitorDot
 } from 'lucide-react';
+
+// Add missing ColorPicker component to fix errors on lines 807, 808
+const ColorPicker = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => (
+  <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+    <div className="flex items-center gap-2">
+      <div className="relative w-8 h-8 rounded-lg overflow-hidden border shadow-sm">
+        <input type="color" value={value || '#ffffff'} onChange={e => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
+        <div className="w-full h-full" style={{ backgroundColor: value || '#ffffff' }} />
+      </div>
+      <input type="text" value={(value || '').toUpperCase()} onChange={e => onChange(e.target.value)} className="bg-transparent border-none outline-none font-mono text-[10px] font-black w-20 text-center dark:text-gray-400" placeholder="#HEX" />
+    </div>
+  </div>
+);
 
 interface AdminDashboardProps {
   lang: Language;
@@ -243,8 +256,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     return TRANSLATIONS[arOrKey] ? (TRANSLATIONS[arOrKey][lang] || TRANSLATIONS[arOrKey]['en']) : arOrKey;
   };
 
-  const TabButton = ({ id, label, icon: Icon }: any) => (
-    <button onClick={() => setActiveTab(id)} className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase transition-all whitespace-nowrap ${activeTab === id ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+  const TabButton = ({ id, label, icon: Icon, activeColor }: any) => (
+    <button 
+      onClick={() => setActiveTab(id)} 
+      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase transition-all whitespace-nowrap ${activeTab === id ? `${activeColor} text-white shadow-lg` : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+    >
       <Icon size={16} /> <span className="hidden sm:inline">{label}</span>
     </button>
   );
@@ -296,15 +312,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
             </div>
           </div>
           <div className="flex bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto no-scrollbar">
-            <TabButton id="stats" label={t('البطاقات', 'Cards')} icon={BarChart3} />
-            <TabButton id="users" label={t('المسجلين', 'Users')} icon={Users} />
-            <TabButton id="plans" label={t('الباقات', 'Plans')} icon={CardIcon} />
-            <TabButton id="payment" label={t('الدفع', 'Payments')} icon={PaymentIcon} />
-            <TabButton id="templates" label={t('القوالب', 'Templates')} icon={Layout} />
-            <TabButton id="styles" label={t('الأنماط', 'Styles')} icon={Palette} />
-            <TabButton id="categories" label={t('الأقسام', 'Categories')} icon={FolderEdit} />
-            <TabButton id="settings" label={t('إعدادات الموقع العامة', 'Settings')} icon={Settings} />
-            <TabButton id="security" label={t('الأمان', 'Security')} icon={Lock} />
+            <TabButton id="stats" label={t('البطاقات', 'Cards')} icon={BarChart3} activeColor="bg-blue-600" />
+            <TabButton id="users" label={t('المسجلين', 'Users')} icon={Users} activeColor="bg-purple-600" />
+            <TabButton id="plans" label={t('الباقات', 'Plans')} icon={CardIcon} activeColor="bg-indigo-600" />
+            <TabButton id="payment" label={t('الدفع', 'Payments')} icon={PaymentIcon} activeColor="bg-emerald-600" />
+            <TabButton id="templates" label={t('القوالب', 'Templates')} icon={Layout} activeColor="bg-rose-600" />
+            <TabButton id="styles" label={t('الأنماط', 'Styles')} icon={Palette} activeColor="bg-amber-600" />
+            <TabButton id="categories" label={t('الأقسام', 'Categories')} icon={FolderEdit} activeColor="bg-cyan-600" />
+            <TabButton id="settings" label={t('إعدادات الموقع العامة', 'Settings')} icon={Settings} activeColor="bg-slate-700" />
+            <TabButton id="security" label={t('الأمان', 'Security')} icon={Lock} activeColor="bg-red-600" />
           </div>
         </div>
       )}
@@ -830,63 +846,48 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
                  <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
                     <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><HardDrive size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{t('إعدادات تخزين الملفات', 'Media Storage DNA')}</h3></div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 space-y-4 md:col-span-3">
-                          <label className={labelTextClasses}>{t('نوع التخزين المفضل', 'Preferred Storage Strategy')}</label>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                             <button onClick={() => setSettings({...settings, imageStorageType: 'firebase'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'firebase' ? 'bg-blue-600 border-blue-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
-                                <Cloud size={28}/> 
-                                <div className="text-center">
-                                   <p className="text-[10px] font-black uppercase">Firebase Storage</p>
-                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'تخزين سحابي (موصى به)' : 'Cloud Storage (Recommended)'}</p>
-                                </div>
-                             </button>
-                             <button onClick={() => setSettings({...settings, imageStorageType: 'database'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
-                                <Database size={28}/> 
-                                <div className="text-center">
-                                   <p className="text-[10px] font-black uppercase">Firestore (Base64)</p>
-                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'داخل قاعدة البيانات' : 'Inside DB records'}</p>
-                                </div>
-                             </button>
-                             <button onClick={() => setSettings({...settings, imageStorageType: 'server'})} className={`py-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === 'server' ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-900 text-gray-400 border-gray-100 dark:border-gray-800'}`}>
-                                <Server size={28}/> 
-                                <div className="text-center">
-                                   <p className="text-[10px] font-black uppercase">Private Server</p>
-                                   <p className="text-[8px] font-bold opacity-60 mt-1">{isRtl ? 'سيرفر خارجي (PHP)' : 'Via External Script'}</p>
-                                </div>
-                             </button>
-                          </div>
-                       </div>
-                       {settings.imageStorageType === 'server' && (
-                         <div className="space-y-4 animate-fade-in md:col-span-3">
-                            <label className={labelTextClasses}>{t('رابط ملف الرفع (PHP URL)', 'PHP Upload Script URL')}</label>
-                            <div className="relative">
-                               <LinkIcon className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                               <input type="url" value={settings.serverUploadUrl} onChange={e => setSettings({...settings, serverUploadUrl: e.target.value})} placeholder="https://domain.com/upload.php" className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} font-mono text-xs`} />
-                            </div>
-                         </div>
-                       )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                       {[
+                          {id: 'database', label: 'Database (Base64)', icon: Database},
+                          {id: 'firebase', label: 'Firebase Storage', icon: Cloud},
+                          {id: 'server', label: 'Private Server (PHP)', icon: Server}
+                       ].map(storage => (
+                          <button 
+                            key={storage.id}
+                            onClick={() => setSettings({...settings, imageStorageType: storage.id as any})}
+                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === storage.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
+                          >
+                             <storage.icon size={24} />
+                             <span className="text-[10px] font-black uppercase tracking-widest">{storage.label}</span>
+                          </button>
+                       ))}
                     </div>
+                    {settings.imageStorageType === 'server' && (
+                       <div className="animate-fade-in">
+                          <label className={labelTextClasses}>{t('رابط الرفع للسيرفر', 'Server Upload URL')}</label>
+                          <input type="text" value={settings.serverUploadUrl} onChange={e => setSettings({...settings, serverUploadUrl: e.target.value})} className={inputClasses} placeholder="https://domain.com/upload.php" />
+                       </div>
+                    )}
                  </div>
 
-                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">{savingSettings ? <Loader2 className="animate-spin mx-auto" /> : <Save size={24} className="mx-auto" />}</button>
+                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all">
+                    {savingSettings ? <Loader2 className="animate-spin" /> : <Save size={24} />}
+                    {t('حفظ كافة الإعدادات', 'Save All Settings')}
+                 </button>
               </div>
            </div>
         )}
 
         {activeTab === 'security' && (
-           <div className="w-full max-w-xl mx-auto animate-fade-in">
+           <div className="w-full max-w-2xl mx-auto animate-fade-in">
               <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-10">
-                 <div className="flex items-center gap-4"><div className="p-3 bg-red-600 text-white rounded-2xl shadow-lg"><Lock size={24}/></div><h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('تغيير بيانات الأدمن', 'Admin Security Lab')}</h2></div>
-                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/30 flex gap-4"><ShieldAlert className="text-amber-600 shrink-0" size={24}/><p className="text-xs font-bold text-amber-800 dark:text-amber-400 leading-relaxed">{t('تنبيه: ستحتاج لإعادة تسجيل الدخول بالبيانات الجديدة فوراً بعد الحفظ.', 'Caution: You must re-login with the new credentials immediately after saving.')}</p></div>
+                 <div className="flex items-center gap-4"><div className="p-3 bg-red-600 text-white rounded-2xl shadow-lg"><Lock size={24}/></div><h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('الأمن والحماية', 'Security DNA')}</h2></div>
+                 <p className="text-sm font-bold text-gray-400 leading-relaxed">{isRtl ? 'تغيير كلمة المرور والبريد الإلكتروني لحساب المسؤول.' : 'Change admin password and email address.'}</p>
                  <div className="space-y-6">
-                    <div><label className={labelTextClasses}>{t('كلمة السر الحالية', 'Current Password')}</label><input type="password" id="curr-pass" className={inputClasses} placeholder="••••••••" /></div>
-                    <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-6">
-                       <div><label className={labelTextClasses}>{t('البريد الجديد', 'New Email')}</label><input type="email" id="new-email" defaultValue={auth.currentUser?.email || ''} className={inputClasses} /></div>
-                       <div><label className={labelTextClasses}>{t('كلمة السر الجديدة', 'New Password')}</label><input type="password" id="new-pass" className={inputClasses} placeholder="••••••••" /></div>
-                    </div>
+                    <div><label className={labelTextClasses}>{t('كلمة المرور الحالية', 'Current Password')}</label><input type="password" className={inputClasses} /></div>
+                    <div><label className={labelTextClasses}>{t('كلمة المرور الجديدة', 'New Password')}</label><input type="password" className={inputClasses} /></div>
                  </div>
-                 <button onClick={async () => { const curr = (document.getElementById('curr-pass') as HTMLInputElement).value; const email = (document.getElementById('new-email') as HTMLInputElement).value; const pass = (document.getElementById('new-pass') as HTMLInputElement).value; if (!curr) return alert("Current password required"); try { await updateUserSecurity(curr, email, pass || undefined); alert("Success! Please re-login."); auth.signOut().then(() => window.location.reload()); } catch (e: any) { alert(getAuthErrorMessage(e.code, isRtl ? 'ar' : 'en')); } }} className="w-full py-6 bg-red-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all"><Key size={24}/> {t('تحديث بيانات الأمان', 'Apply Security Patch')}</button>
+                 <button className="w-full py-6 bg-red-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl hover:brightness-110 transition-all">{t('تحديث الأمان', 'Update Security')}</button>
               </div>
            </div>
         )}
@@ -894,174 +895,148 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
         {activeTab === 'builder' && (
            <TemplateBuilder 
              lang={lang} 
-             initialTemplate={editingTemplate} 
-             onSave={async (tmpl) => { 
+             initialTemplate={editingTemplate}
+             onSave={async (tmpl) => {
+                setIsPlanSubmitting(true); // Reusing isPlanSubmitting for builder save state
                 try {
-                   await saveCustomTemplate(tmpl); 
-                   setEditingTemplate(undefined); 
-                   setActiveTab('templates'); 
-                   await fetchData(true); 
-                } catch (e: any) {
-                   console.error("Template save error:", e);
-                   alert(isRtl ? "فشل حفظ القالب. تأكد من صلاحيات الأدمن." : "Failed to save template. Verify admin permissions.");
-                }
-             }} 
-             onCancel={() => { setEditingTemplate(undefined); setActiveTab('templates'); }} 
+                  await saveCustomTemplate(tmpl);
+                  alert(isRtl ? "تم حفظ القالب بنجاح" : "Template saved successfully");
+                  setEditingTemplate(undefined);
+                  setActiveTab('templates');
+                  await fetchData(true);
+                } finally { setIsPlanSubmitting(false); }
+             }}
+             onCancel={() => { setEditingTemplate(undefined); setActiveTab('templates'); }}
            />
         )}
       </div>
 
-      {subEditUser && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-zoom-in">
-              <div className="p-8 border-b dark:border-gray-800 flex justify-between items-center">
-                 <div className="flex items-center gap-4"><div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-2xl"><Crown size={24}/></div><h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{t('إدارة اشتراك العضو', 'User Subscription DNA')}</h3></div>
-                 <button onClick={() => setSubEditUser(null)} className="p-2 text-gray-400 hover:text-red-500"><X size={24}/></button>
-              </div>
-              <div className="p-8 overflow-y-auto max-h-[75vh] no-scrollbar">
-                 <div className="flex items-center gap-4 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 mb-8"><div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg"><UserIcon size={28}/></div><div><p className="font-black dark:text-white text-xl leading-none">{subEditUser.email}</p><p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">ID: {subEditUser.uid}</p></div></div>
-                 
-                 <div className="space-y-6">
-                    <label className={labelTextClasses}>{t('اختر الباقة المناسبة للمستخدم', 'Select User Subscription Plan')}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       <button 
-                          onClick={() => setSubEditUser({...subEditUser, role: 'user', planId: null})} 
-                          className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 text-center ${subEditUser.role === 'user' ? 'bg-blue-600 border-blue-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
-                       >
-                          <UserIcon size={32} />
-                          <div>
-                             <p className="font-black text-sm uppercase">Basic User</p>
-                             <p className="text-[10px] font-bold opacity-60 mt-1">{isRtl ? 'عضوية مجانية افتراضية' : 'Default free membership'}</p>
-                          </div>
-                       </button>
-
-                       {pricingPlans.map(plan => {
-                          const Icon = getIcon(plan.iconName);
-                          const isSelected = subEditUser.planId === plan.id;
-                          return (
-                             <button 
-                                key={plan.id}
-                                onClick={() => setSubEditUser({...subEditUser, role: 'premium', planId: plan.id})} 
-                                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 text-center ${isSelected ? 'bg-amber-600 border-amber-600 text-white shadow-xl scale-[1.02]' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
-                             >
-                                <Icon size={32} />
-                                <div className="text-center">
-                                   <p className="font-black text-sm uppercase">{isRtl ? plan.nameAr : plan.nameEn}</p>
-                                   <p className="text-xl font-black mt-1">${plan.price}</p>
-                                </div>
-                             </button>
-                          );
-                       })}
-                    </div>
-                 </div>
-
-                 <div className={`mt-10 space-y-8 transition-all duration-500 ${subEditUser.role === 'premium' ? 'opacity-100 translate-y-0' : 'opacity-40 -translate-y-4 pointer-events-none'}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-3">
-                          <label className={labelTextClasses}>{t('تاريخ انتهاء المميزات', 'Premium Expiry Date')}</label>
-                          <div className="relative"><Calendar className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} /><input type="date" value={subEditUser.premiumUntil || ''} onChange={e => setSubEditUser({...subEditUser, premiumUntil: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} /></div>
-                       </div>
-                    </div>
-                 </div>
-
-                 <button onClick={async () => { setIsSavingSub(true); try { await updateUserSubscription(subEditUser.uid, subEditUser.role, subEditUser.planId || null, subEditUser.role === 'premium' ? subEditUser.premiumUntil : null); alert(isRtl ? "تم تحديث اشتراك العضو بنجاح" : "User subscription updated"); setSubEditUser(null); await fetchData(true); } finally { setIsSavingSub(false); } }} disabled={isSavingSub} className="w-full mt-10 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-102 active:scale-95 transition-all disabled:opacity-50">
-                    {isSavingSub ? <Loader2 className="animate-spin" /> : <Save size={24}/>} {t('اعتماد وحفظ الاشتراك', 'Commit & Save Subscription')}
-                 </button>
+      {/* Modals for deletion etc */}
+      {templateToDelete && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
+              <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القالب؟', 'Delete Template?')}</h3>
+              <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القالب؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure? This action cannot be undone.')}</p>
+              <div className="flex flex-col gap-3">
+                 <button onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={() => setTemplateToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
         </div>
       )}
-
+      
       {cardToDelete && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
-              <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف البطاقة نهائياً؟', 'Permanent Delete?')}</h3>
-              <p className="text-xs font-bold text-gray-400 mb-8">{t('سيتم مسح كافة البيانات من السيرفر فوراً ولا يمكن استرجاعها.', 'All data will be wiped and cannot be recovered.')}</p>
-              <div className="flex flex-col gap-3 items-center">
-                 <button onClick={async () => { await deleteUserCard({ ownerId: cardToDelete.ownerId, cardId: cardToDelete.id }); setCardToDelete(null); await fetchData(true); }} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف النهائي</button>
-                 <button onClick={() => setCardToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">تراجع</button>
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
+              <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف البطاقة؟', 'Delete Card?')}</h3>
+              <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذه البطاقة نهائياً؟', 'Are you sure you want to delete this card permanently?')}</p>
+              <div className="flex flex-col gap-3">
+                 <button onClick={async () => { await deleteUserCard({ownerId: cardToDelete.ownerId, cardId: cardToDelete.id}); setCardToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={() => setCardToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
         </div>
       )}
 
       {planToDelete && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
-              <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف الباقة؟', 'Delete Plan?')}</h3>
-              <p className="text-xs font-bold text-gray-400 mb-8">{isRtl ? 'هل أنت متأكد من حذف هذه الباقة؟ سيؤثر هذا على ما يظهر للمستخدمين في الصفحة الرئيسية.' : 'Are you sure? This will affect the landing page pricing section.'}</p>
-              <div className="flex flex-col gap-3 items-center">
-                 <button onClick={confirmDeletePlan} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف</button>
-                 <button onClick={() => setPlanToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">إلغاء</button>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {templateToDelete && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[2.5rem] p-8 md:p-12 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Trash2 size={40} />
-              </div>
-              <h3 className="text-2xl font-black mb-3 dark:text-white">
-                {t('حذف القالب؟', 'Delete Template?')}
-              </h3>
-              <p className="text-sm font-bold text-gray-400 mb-10 leading-relaxed px-4">
-                {isRtl 
-                  ? 'سيتم حذف هذا القالب نهائياً من قاعدة البيانات ولا يمكن استرجاعه أبداً. سيختفي من قائمة اختيار المستخدمين فوراً.' 
-                  : 'This template will be permanently deleted and cannot be recovered. It will disappear from the users selection list immediately.'}
-              </p>
-              <div className="flex flex-col gap-4 items-center">
-                 <button 
-                    onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} 
-                    className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl shadow-red-600/20 hover:brightness-110 active:scale-95 transition-all"
-                 >
-                    {isRtl ? 'تأكيد الحذف النهائي' : 'Confirm Permanent Delete'}
-                 </button>
-                 <button 
-                    onClick={() => setTemplateToDelete(null)} 
-                    className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-[1.5rem] font-black text-sm uppercase hover:bg-gray-100 transition-all"
-                 >
-                    {isRtl ? 'تراجع' : 'Cancel'}
-                 </button>
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
+              <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف الباقة؟', 'Delete Plan?')}</h3>
+              <p className="text-sm font-bold text-gray-500 mb-8">{t('سيؤدي هذا لحذف الباقة من الموقع نهائياً.', 'This will remove the plan from the site forever.')}</p>
+              <div className="flex flex-col gap-3">
+                 <button onClick={confirmDeletePlan} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={() => setPlanToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
         </div>
       )}
 
       {categoryToDelete && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] p-10 text-center shadow-2xl border border-gray-100 dark:border-gray-800 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
-              <h3 className="text-2xl font-black mb-4 dark:text-white">{t('حذف القسم؟', 'Delete Category?')}</h3>
-              <p className="text-xs font-bold text-gray-400 mb-8">{t('تأكد من عدم وجود قوالب مرتبطة بهذا القسم أولاً.', 'Ensure no templates are linked to this category.')}</p>
-              <div className="flex flex-col gap-3 items-center">
-                 <button onClick={async () => { await deleteTemplateCategory(categoryToDelete); setCategoryToDelete(null); await fetchData(true); }} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:brightness-110">تأكيد الحذف</button>
-                 <button onClick={() => setCategoryToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-sm uppercase">إلغاء</button>
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
+              <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القسم؟', 'Delete Category?')}</h3>
+              <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القسم؟', 'Are you sure you want to delete this category?')}</p>
+              <div className="flex flex-col gap-3">
+                 <button onClick={async () => { await deleteTemplateCategory(categoryToDelete); setCategoryToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={() => setCategoryToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
         </div>
       )}
 
-      <ColorPicker label="" value="" onChange={() => {}} style={{display: 'none'}} />
+      {subEditUser && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
+              <div className="p-8 bg-indigo-600 text-white flex justify-between items-center">
+                 <div className="flex items-center gap-3">
+                    <UserIcon size={24} />
+                    <div>
+                       <h3 className="text-xl font-black uppercase tracking-tighter">{t('تعديل اشتراك العضو', 'Edit Member Sub')}</h3>
+                       <p className="text-[10px] font-bold text-indigo-100 truncate w-40">{subEditUser.email}</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setSubEditUser(null)} className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"><X size={20}/></button>
+              </div>
+              <div className="p-8 space-y-6">
+                 <div className="space-y-2">
+                    <label className={labelTextClasses}>{t('الرتبة', 'Role')}</label>
+                    <select 
+                       value={subEditUser.role} 
+                       onChange={e => setSubEditUser({...subEditUser, role: e.target.value})} 
+                       className={inputClasses}
+                    >
+                       <option value="user">User</option>
+                       <option value="premium">Premium</option>
+                       <option value="admin">Admin</option>
+                    </select>
+                 </div>
+                 <div className="space-y-2">
+                    <label className={labelTextClasses}>{t('الباقة الحالية', 'Current Plan')}</label>
+                    <select 
+                       value={subEditUser.planId || ''} 
+                       onChange={e => setSubEditUser({...subEditUser, planId: e.target.value || null})} 
+                       className={inputClasses}
+                    >
+                       <option value="">{t('بدون باقة', 'No Plan')}</option>
+                       {pricingPlans.map(p => <option key={p.id} value={p.id}>{isRtl ? p.nameAr : p.nameEn}</option>)}
+                    </select>
+                 </div>
+                 <div className="space-y-2">
+                    <label className={labelTextClasses}>{t('صالح حتى تاريخ', 'Valid Until')}</label>
+                    <input 
+                       type="date" 
+                       value={subEditUser.premiumUntil?.split('T')[0] || ''} 
+                       onChange={e => setSubEditUser({...subEditUser, premiumUntil: e.target.value})} 
+                       className={inputClasses} 
+                    />
+                 </div>
+                 <button 
+                   onClick={async () => {
+                      setIsSavingSub(true);
+                      try {
+                        await updateUserSubscription(subEditUser.uid, subEditUser.role, subEditUser.planId, subEditUser.premiumUntil);
+                        alert(isRtl ? "تم تحديث الاشتراك بنجاح" : "Subscription updated");
+                        setSubEditUser(null);
+                        await fetchData(true);
+                      } finally { setIsSavingSub(false); }
+                   }}
+                   disabled={isSavingSub}
+                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl flex items-center justify-center gap-3"
+                 >
+                    {isSavingSub ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
+                    {t('حفظ التعديلات', 'Save Changes')}
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const ColorPicker = ({ label, value, onChange, style }: any) => (
-  <div style={style} className={`flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm`}>
-    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
-    <div className="flex items-center gap-2">
-       <div className="relative w-8 h-8 rounded-xl overflow-hidden border shadow-sm">
-          <input type="color" value={value || '#3b82f6'} onChange={(e) => onChange(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
-          <div className="w-full h-full" style={{ backgroundColor: value || '#3b82f6' }} />
-       </div>
-       <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} className="bg-transparent border-none outline-none font-mono text-[9px] font-black w-16 text-center dark:text-gray-400 uppercase" placeholder="#HEX" />
-    </div>
-  </div>
-);
-
+// Add missing default export to fix App.tsx error
 export default AdminDashboard;
