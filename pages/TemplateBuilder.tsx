@@ -3,8 +3,8 @@ import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, V
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
 import { uploadImageToCloud } from '../services/uploadService';
 import { getAllCategories, saveTemplateCategory, getAllVisualStyles, auth, getSiteSettings, searchUsersByEmail } from '../services/firebase';
-import CardPreview from './CardPreview';
-import AuthModal from './AuthModal';
+import CardPreview from '../components/CardPreview';
+import AuthModal from '../components/AuthModal';
 import { 
   Save, Layout, Smartphone, Layers, Move, Check, X, 
   Zap, AlignCenter, Circle, Box, Loader2, Type as TypographyIcon, 
@@ -19,7 +19,6 @@ import {
 
 // --- المكونات المساعدة ---
 
-// Fix: Add missing BuilderTab type definition
 type BuilderTab = 
   | 'header' 
   | 'body-style' 
@@ -1033,7 +1032,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                   <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                        {['color', 'gradient', 'image'].map(type => (
                          <button type="button" key={type} onClick={() => updateConfig('defaultThemeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${template.config.defaultThemeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
-                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIconLucide size={20}/>}
+                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
                            <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                          </button>
                        ))}
@@ -1154,7 +1153,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <Shapes className="text-blue-600" size={18} />
                           <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{isRtl ? 'مكتبة الكركترات والايموجي' : 'Emoji & Character Library'}</h4>
                        </div>
-                       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-[160px] overflow-y-auto no-scrollbar p-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner">
+                       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-[160px] overflow-y-auto no-scrollbar p-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner">
                           {AVATAR_PRESETS.map((url, i) => (
                              <button 
                                key={i} 
@@ -2169,8 +2168,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        lang={lang} 
                        customConfig={template.config} 
                        hideSaveButton={true} 
-                       // التعديل الجوهري: لا نلزم المعاينة بوضع FullFrame إلا في حالة الجوال أو الترويسة الممتدة لضمان ظهور انحناءات البطاقة
-                       isFullFrame={previewDevice === 'mobile' || isFullHeaderPreview} 
+                       isFullFrame={isFullHeaderPreview}
                        hideHeader={isFullHeaderPreview}
                        bodyOffsetYOverride={previewBodyOffsetY}
                      />

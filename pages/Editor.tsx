@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -559,7 +558,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                    <div className="grid grid-cols-1 gap-4">
                                       {(formData.specialLinks || []).map((link) => (
-                                         <div key={link.id} className="flex flex-col md:flex-row gap-4 p-5 bg-gray-50 dark:bg-gray-800 rounded-[2rem] border border-gray-100 dark:border-gray-700 group">
+                                         <div key={link.id} className="flex flex-col md:flex-row gap-4 p-5 bg-gray-50 dark:bg-gray-800 rounded-[2rem] border border-gray-100 dark:border-gray-800 group">
                                             <div className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-gray-900 relative">
                                                <img src={link.imageUrl} className="w-full h-full object-cover" alt="Item" />
                                                {isUploadingSpecialImg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 size={16} className="animate-spin text-white" /></div>}
@@ -567,11 +566,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                <div className="space-y-1">
                                                   <label className="text-[8px] font-black text-pink-600 uppercase px-1">{t('رابط الوجهة', 'Link URL')}</label>
-                                                  <input type="url" value={link.linkUrl} onChange={e => updateSpecialLink(link.id, 'linkUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" />
+                                                  <input type="url" value={link.linkUrl} onChange={e => updateSpecialLink(link.id, 'linkUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" />
                                                </div>
                                                <div className="space-y-1">
                                                   <label className="text-[8px] font-black text-pink-600 uppercase px-1">{t('العنوان', 'Title')}</label>
-                                                  <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
+                                                  <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
                                                </div>
                                             </div>
                                             <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-400 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
@@ -757,7 +756,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                             </div>
                                             <div className="space-y-3">
-                                              {/* Fixed missing bodyBgInputRef by using bodyBgFileInputRef */}
                                               <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
                                               <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                 <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
@@ -809,15 +807,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             </div>
         </main>
 
-        {/* نظام المعاينة الحية المتقدم المحدث لمطابقة الجوال فقط دائماً */}
+        {/* نظام المعاينة الحية المتقدم لمطابقة الجوال فقط دائماً */}
         <aside className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية (جوال)', 'Live Preview (Mobile)')}</span></div>
-                {/* تم إزالة أزرار التبديل لتبسيط الواجهة */}
               </div>
               
-              {/* محاكي الجوال الثابت */}
               <div className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5]" 
                    style={{ 
                      isolation: 'isolate', 
@@ -842,7 +838,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        lang={lang} 
                        customConfig={currentTemplate?.config} 
                        hideSaveButton={true} 
-                       // تعديل: لا نفعل وضع FullFrame إذا كانت الترويسة غير ممتدة لضمان ظهور انحناءات البطاقة بشكل سليم
                        isFullFrame={isFullHeaderActive} 
                        bodyOffsetYOverride={cardBodyOffset}
                      />
