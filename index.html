@@ -61,7 +61,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;700&family=Montserrat:wght@400;700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -70,7 +70,15 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
+                    fontFamily: { 
+                      sans: ['Cairo', 'sans-serif'],
+                      cairo: ['Cairo', 'sans-serif'],
+                      almarai: ['Almarai', 'sans-serif'],
+                      tajawal: ['Tajawal', 'sans-serif'],
+                      ibm: ['IBM Plex Sans Arabic', 'sans-serif'],
+                      montserrat: ['Montserrat', 'sans-serif'],
+                      roboto: ['Roboto', 'sans-serif']
+                    },
                     colors: { brand: { primary: 'var(--brand-primary)', secondary: 'var(--brand-secondary)' } },
                     animation: {
                         'float': 'float 3s ease-in-out infinite',
@@ -90,12 +98,29 @@
     </script>
     <style>
         :root { --brand-primary: #3b82f6; --brand-secondary: #8b5cf6; --site-font: 'Cairo'; }
-        * { font-family: var(--site-font), "Cairo", sans-serif !important; }
-        body { font-family: var(--site-font), "Cairo", sans-serif; background-color: transparent; overflow-x: hidden; margin: 0; padding: 0; }
+        
+        /* تطبيق الخط الافتراضي على الـ body فقط للسماح للعناصر بالوراثة أو التغيير */
+        body { 
+          font-family: var(--site-font), "Cairo", sans-serif; 
+          background-color: transparent; 
+          overflow-x: hidden; 
+          margin: 0; 
+          padding: 0; 
+        }
+
+        /* منع التقييد الشامل (*) لأنه يكسر وراثة الخطوط في البطاقات */
+        * { font-family: inherit; }
+        
+        html { font-family: var(--site-font), "Cairo", sans-serif; }
+
         .no-scrollbar::-webkit-scrollbar { display: none !important; }
         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; overflow: -moz-scrollbars-none; }
         .mesh-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #f8fafc; }
         .dark .mesh-bg { background: #050507; }
+        
+        input, textarea, select, button {
+          font-family: inherit;
+        }
     </style>
 <script type="importmap">
 {

@@ -65,15 +65,16 @@ const MembershipBar = ({
       className={`w-full p-5 rounded-[2rem] border transition-all duration-500 animate-fade-in-up ${isGlassy ? 'backdrop-blur-xl' : ''}`}
       style={{ 
         backgroundColor: finalBg,
-        borderColor: finalBorder
+        borderColor: finalBorder,
+        fontFamily: 'inherit'
       }}
     >
        <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
              <ShieldCheck size={16} style={{ color: dynamicColor }} />
-             <span className="text-[10px] font-black uppercase tracking-widest opacity-80" style={{ color: textColor || undefined }}>{title || (daysLeft > 0 ? 'ACTIVE SUBSCRIPTION' : 'EXPIRED')}</span>
+             <span className="text-[10px] font-black uppercase tracking-widest opacity-80" style={{ color: textColor || undefined, fontFamily: 'inherit' }}>{title || (daysLeft > 0 ? 'ACTIVE SUBSCRIPTION' : 'EXPIRED')}</span>
           </div>
-          <span className="text-[10px] font-black" style={{ color: dynamicColor }}>{daysLeft > 0 ? `${daysLeft} DAYS LEFT` : 'EXPIRED'}</span>
+          <span className="text-[10px] font-black" style={{ color: dynamicColor, fontFamily: 'inherit' }}>{daysLeft > 0 ? `${daysLeft} DAYS LEFT` : 'EXPIRED'}</span>
        </div>
        <div className="h-3 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden shadow-inner">
           <div 
@@ -85,7 +86,7 @@ const MembershipBar = ({
             }}
           />
        </div>
-       <div className="flex justify-between mt-2 text-[8px] font-black uppercase tracking-tighter" style={{ color: finalTextColor }}>
+       <div className="flex justify-between mt-2 text-[8px] font-black uppercase tracking-tighter" style={{ color: finalTextColor, fontFamily: 'inherit' }}>
           <span>{start.toLocaleDateString()}</span>
           <span>{end.toLocaleDateString()}</span>
        </div>
@@ -121,14 +122,14 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor, lang }: { targetDate
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
 
   const Unit = ({ val, label }: { val: number, label: string }) => (
-    <div className={`flex flex-col items-center justify-center flex-1 p-3 rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} border shadow-sm transition-all duration-500 hover:scale-105`}>
-      <span className="text-xl font-black leading-none" style={{ color: primaryColor }}>{val}</span>
-      <span className="text-[7px] font-black uppercase tracking-widest opacity-40 mt-1.5">{label}</span>
+    <div className={`flex flex-col items-center justify-center flex-1 p-3 rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} border shadow-sm transition-all duration-500 hover:scale-105`} style={{ fontFamily: 'inherit' }}>
+      <span className="text-xl font-black leading-none" style={{ color: primaryColor, fontFamily: 'inherit' }}>{val}</span>
+      <span className="text-[7px] font-black uppercase tracking-widest opacity-40 mt-1.5" style={{ fontFamily: 'inherit' }}>{label}</span>
     </div>
   );
 
   return (
-    <div className="flex gap-2 justify-between w-full mt-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+    <div className="flex gap-2 justify-between w-full mt-6 animate-fade-in-up" style={{ animationDelay: '300ms', fontFamily: 'inherit' }}>
       <Unit val={timeLeft.s} label={t('unitSeconds')} />
       <Unit val={timeLeft.m} label={t('unitMinutes')} />
       <Unit val={timeLeft.h} label={t('unitHours')} />
@@ -192,7 +193,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     paddingRight: `${data.bioPaddingH ?? config.bioPaddingH ?? 20}px`,
     backdropFilter: bGlassy ? 'blur(15px)' : 'none',
     WebkitBackdropFilter: bGlassy ? 'blur(15px)' : 'none',
-    textAlign: (data.bioTextAlign ?? config.bioTextAlign ?? 'center') as any
+    textAlign: (data.bioTextAlign ?? config.bioTextAlign ?? 'center') as any,
+    fontFamily: 'inherit'
   };
 
   const isLocGlassy = config.locationGlassy;
@@ -352,7 +354,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     marginRight: headerType === 'side-right' ? '28%' : (headerType === 'side-left' ? '2%' : (needsSideMargins ? 'auto' : '0')),
     minHeight: '400px',
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: needsSideMargins ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none'
+    boxShadow: needsSideMargins ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none',
+    // ضمان توريث الخط لكافة العناصر الداخلية في جسم البطاقة
+    fontFamily: 'inherit'
   };
 
   if (bodyThemeType === 'image' && bodyBgImage) {
@@ -463,12 +467,16 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       backdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       WebkitBackdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       border: cbGlassy ? `1px solid rgba(${hexToRgb(baseColor).string}, 0.3)` : 'none',
-      color: cbGlassy ? baseColor : '#ffffff'
+      color: cbGlassy ? baseColor : '#ffffff',
+      fontFamily: 'inherit'
     };
     return style;
   };
 
   const finalBio = data.bio || (isRtl ? config.defaultBioAr : config.defaultBioEn);
+
+  // الخط النهائي المختار
+  const currentFont = data.fontFamily || config.fontFamily || 'var(--site-font), sans-serif';
 
   return (
     <div 
@@ -476,7 +484,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       style={{ 
         backgroundColor: finalCardBaseGroundColor,
         // منع أي عنصر من الخروج عن حدود الفريم
-        clipPath: isFullFrame ? 'none' : 'inset(0 round 2.25rem)' 
+        clipPath: isFullFrame ? 'none' : 'inset(0 round 2.25rem)',
+        // فرض الخط المختار على الحاوية الرئيسية
+        fontFamily: currentFont
       }}
     >
       
@@ -496,7 +506,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         </div>
       )}
 
-      <div className="flex flex-col flex-1 px-4 sm:px-6" style={bodyContentStyles}>
+      {/* حاوية فرعية تفرض الخط بالوراثة على كل العناصر الداخلية */}
+      <div className="flex flex-col flex-1 px-4 sm:px-6" style={{ ...bodyContentStyles, fontFamily: 'inherit' }}>
         {showProfileImage && (
           <div className={`relative ${getAvatarRadiusClasses()} z-30 shrink-0 mx-auto transition-all`} 
                data-element-id="avatar"
@@ -505,7 +516,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  transform: `translate(${data.avatarOffsetX ?? config.avatarOffsetX ?? 0}px, ${data.avatarOffsetY ?? config.avatarOffsetY ?? 0}px)`,
                  padding: `${config.avatarBorderWidth ?? 4}px`, 
                  backgroundColor: showAnimatedBorder ? 'transparent' : (config.avatarBorderColor || '#ffffff'),
-                 boxShadow: config.avatarAnimatedGlow ? `0 0 20px rgba(${hexToRgb(borderClr1).string}, 0.5)` : '0 20px 40px rgba(0,0,0,0.1)'
+                 boxShadow: config.avatarAnimatedGlow ? `0 0 20px rgba(${hexToRgb(borderClr1).string}, 0.5)` : '0 20px 40px rgba(0,0,0,0.1)',
+                 fontFamily: 'inherit'
                }}>
             
             {showAnimatedBorder && (
@@ -526,18 +538,18 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
           </div>
         )}
 
-        <div className={`w-full ${config.spacing === 'relaxed' ? 'space-y-6' : config.spacing === 'compact' ? 'space-y-2' : 'space-y-4'} relative z-10`} style={{ marginTop: hideHeader ? '20px' : (headerType === 'overlay' ? '20px' : '24px') }}>
+        <div className={`w-full ${config.spacing === 'relaxed' ? 'space-y-6' : config.spacing === 'compact' ? 'space-y-2' : 'space-y-4'} relative z-10`} style={{ marginTop: hideHeader ? '20px' : (headerType === 'overlay' ? '20px' : '24px'), fontFamily: 'inherit' }}>
            
            {showName && (
-             <div className="flex flex-col items-center justify-center gap-1" data-element-id="name" style={{ transform: `translate(${data.nameOffsetX ?? config.nameOffsetX ?? 0}px, ${data.nameOffsetY ?? config.nameOffsetY ?? 0}px)` }}>
-                <div className="flex items-center justify-center gap-2">
-                  <h2 className="font-black leading-tight" style={{ color: nameColor, fontSize: `${config.nameSize}px` }}>
+             <div className="flex flex-col items-center justify-center gap-1" data-element-id="name" style={{ transform: `translate(${data.nameOffsetX ?? config.nameOffsetX ?? 0}px, ${data.nameOffsetY ?? config.nameOffsetY ?? 0}px)`, fontFamily: 'inherit' }}>
+                <div className="flex items-center justify-center gap-2" style={{ fontFamily: 'inherit' }}>
+                  <h2 className="font-black leading-tight" style={{ color: nameColor, fontSize: `${config.nameSize}px`, fontFamily: 'inherit' }}>
                     {finalName}
                   </h2>
                   {isVerified && <CheckCircle size={config.nameSize * 0.7} className="text-blue-500 animate-pulse" />}
                 </div>
                 {showStars && (
-                   <div className="flex items-center gap-1 mt-1">
+                   <div className="flex items-center gap-1 mt-1" style={{ fontFamily: 'inherit' }}>
                       {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="#fbbf24" className="text-yellow-400" />)}
                    </div>
                 )}
@@ -545,7 +557,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {(showTitle || showCompany) && (
-             <p className="font-bold opacity-80" data-element-id="title" style={{ color: titleColor, transform: `translate(${data.titleOffsetX ?? config.titleOffsetX ?? 0}px, ${data.titleOffsetY ?? config.titleOffsetY ?? 0}px)`, fontSize: '14px' }}>
+             <p className="font-bold opacity-80" data-element-id="title" style={{ color: titleColor, transform: `translate(${data.titleOffsetX ?? config.titleOffsetX ?? 0}px, ${data.titleOffsetY ?? config.titleOffsetY ?? 0}px)`, fontSize: '14px', fontFamily: 'inherit' }}>
                {showTitle && finalTitle}
                {(showTitle && showCompany) && finalTitle && finalCompany && ' • '}
                {showCompany && finalCompany}
@@ -568,11 +580,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  border: isFeatureGlassy ? `1px solid rgba(${hexToRgb(featureBg).string}, 0.3)` : 'none',
                  background: isFeatureGlassy 
                     ? `rgba(${hexToRgb(featureBg).string}, 0.15)` 
-                    : featureBg
+                    : featureBg,
+                 fontFamily: 'inherit'
                }}
              >
                 <Sparkle size={14} className="animate-pulse shrink-0" />
-                <span className="text-xs font-black uppercase tracking-tight text-center">{featureContent}</span>
+                <span className="text-xs font-black uppercase tracking-tight text-center" style={{ fontFamily: 'inherit' }}>{featureContent}</span>
                 <Sparkle size={14} className="animate-pulse shrink-0" />
              </div>
            )}
@@ -580,7 +593,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            {showBio && finalBio && (
              <div className="mx-auto relative group overflow-hidden" data-element-id="bio" style={bioStyles}>
                 <Quote size={12} className="absolute top-3 left-4 opacity-20 text-blue-500" />
-               <p className="font-bold leading-relaxed italic" style={{ color: bTextColor, fontSize: `${config.bioSize}px` }}>
+               <p className="font-bold leading-relaxed italic" style={{ color: bTextColor, fontSize: `${config.bioSize}px`, fontFamily: 'inherit' }}>
                  {finalBio}
                </p>
              </div>
@@ -592,7 +605,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                 className={`w-full px-2 animate-fade-in-up flex flex-col items-center gap-3`}
                 style={{ 
                   transform: `translate(${data.linksSectionOffsetX ?? config.linksSectionOffsetX ?? 0}px, ${data.linksSectionOffsetY ?? config.linksSectionOffsetY ?? 0}px)`,
-                  padding: `${config.linksSectionPadding || 0}px`
+                  padding: `${config.linksSectionPadding || 0}px`,
+                  fontFamily: 'inherit'
                 }}
               >
                 <div 
@@ -606,10 +620,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     paddingRight: dLinksShowBg ? '24px' : '0px',
                     backdropFilter: (dLinksShowBg && isDLinksGlassy) ? 'blur(15px)' : 'none',
                     WebkitBackdropFilter: (dLinksShowBg && isDLinksGlassy) ? 'blur(15px)' : 'none',
-                    border: (isDark && dLinksShowBg) ? '1px solid rgba(255,255,255,0.1)' : (!isDark && dLinksShowBg ? '1px solid rgba(0,0,0,0.05)' : 'none')
+                    border: (isDark && dLinksShowBg) ? '1px solid rgba(255,255,255,0.1)' : (!isDark && dLinksShowBg ? '1px solid rgba(0,0,0,0.05)' : 'none'),
+                    fontFamily: 'inherit'
                   }}
                 >
-                   <div className={`flex flex-wrap items-center justify-center gap-4 ${!dLinksShowText ? 'flex-row' : (dLinksVariant === 'grid' ? 'grid grid-cols-2' : (dLinksVariant === 'pills' ? 'flex-row' : 'flex-col'))} w-full`}>
+                   <div className={`flex flex-wrap items-center justify-center gap-4 ${!dLinksShowText ? 'flex-row' : (dLinksVariant === 'grid' ? 'grid grid-cols-2' : (dLinksVariant === 'pills' ? 'flex-row' : 'flex-col'))} w-full`} style={{ fontFamily: 'inherit' }}>
                       {showEmail && finalEmails.map((email, idx) => (
                         <a 
                           key={`em-${idx}`}
@@ -618,14 +633,15 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                           style={{ 
                             color: dLinksTextColor, 
                             backgroundColor: dLinksItemBg,
-                            borderRadius: !dLinksShowText ? '999px' : `${dLinksItemRadius}px` 
+                            borderRadius: !dLinksShowText ? '999px' : `${dLinksItemRadius}px`,
+                            fontFamily: 'inherit'
                           }}
                           title={!dLinksShowText ? email : ''}
                         >
                           <div className={`shrink-0 ${dLinksVariant === 'pills' || !dLinksShowText ? '' : 'p-2 bg-white/10 rounded-xl shadow-sm'}`} style={{ color: dLinksIconColor }}>
                             <Mail size={!dLinksShowText ? 22 : 18} />
                           </div>
-                          {dLinksShowText && <span className="break-all text-start leading-tight">{email}</span>}
+                          {dLinksShowText && <span className="break-all text-start leading-tight" style={{ fontFamily: 'inherit' }}>{email}</span>}
                         </a>
                       ))}
                       {showWebsite && finalWebsites.map((web, idx) => (
@@ -638,14 +654,15 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                           style={{ 
                             color: dLinksTextColor, 
                             backgroundColor: dLinksItemBg,
-                            borderRadius: !dLinksShowText ? '999px' : `${dLinksItemRadius}px`
+                            borderRadius: !dLinksShowText ? '999px' : `${dLinksItemRadius}px`,
+                            fontFamily: 'inherit'
                           }}
                           title={!dLinksShowText ? web : ''}
                         >
                           <div className={`shrink-0 ${dLinksVariant === 'pills' || !dLinksShowText ? '' : 'p-2 bg-white/10 rounded-xl shadow-sm'}`} style={{ color: dLinksIconColor }}>
                             {config.linksWebsiteIconType === 'store' ? <ShoppingCart size={!dLinksShowText ? 22 : 18} /> : <Globe size={!dLinksShowText ? 22 : 18} />}
                           </div>
-                          {dLinksShowText && <span className="break-all text-start leading-tight">{web}</span>}
+                          {dLinksShowText && <span className="break-all text-start leading-tight" style={{ fontFamily: 'inherit' }}>{web}</span>}
                         </a>
                       ))}
                    </div>
@@ -659,22 +676,25 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                 className="flex flex-row items-center justify-center w-full mt-6 px-2" 
                 style={{ 
                   transform: `translate(${data.contactButtonsOffsetX ?? config.contactButtonsOffsetX ?? 0}px, ${data.contactButtonsOffsetY ?? config.contactButtonsOffsetY ?? 0}px)`,
-                  gap: `${cbGap}px`
+                  gap: `${cbGap}px`,
+                  fontFamily: 'inherit'
                 }}
               >
                 {showPhone && data.phone && (
-                  <a href={`tel:${data.phone}`} style={getContactBtnStyle(phoneBtnColor)} className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0">
-                    <Phone size={14} className="shrink-0" /> <span className="truncate">{t('call')}</span>
+                  // Fix: Removed redundant style attribute to resolve duplicate key error
+                  <a href={`tel:${data.phone}`} className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(phoneBtnColor), fontFamily: 'inherit' }}>
+                    <Phone size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('call')}</span>
                   </a>
                 )}
                 {showWhatsapp && data.whatsapp && (
-                  <a href={`https://wa.me/${data.whatsapp}`} target="_blank" style={getContactBtnStyle(whatsappBtnColor)} className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0">
-                    <MessageCircle size={14} className="shrink-0" /> <span className="truncate">{t('whatsappBtn')}</span>
+                  // Fix: Removed redundant style attribute to resolve duplicate key error
+                  <a href={`https://wa.me/${data.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(whatsappBtnColor), fontFamily: 'inherit' }}>
+                    <MessageCircle size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')}</span>
                   </a>
                 )}
                 {!hideSaveButton && showButtons && (
-                  <button onClick={() => downloadVCard(data)} className="flex-1 py-4 flex items-center justify-center gap-3 px-3 rounded-2xl bg-gray-900 text-white font-black text-[10px] shadow-lg hover:bg-black transition-all min-w-0">
-                    <UserPlus size={14} className="shrink-0" /> <span className="truncate">{t('saveContact')}</span>
+                  <button onClick={() => downloadVCard(data)} className="flex-1 py-4 flex items-center justify-center gap-3 px-3 rounded-2xl bg-gray-900 text-white font-black text-[10px] shadow-lg hover:bg-black transition-all min-w-0" style={{ fontFamily: 'inherit' }}>
+                    <UserPlus size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('saveContact')}</span>
                   </button>
                 )}
               </div>
@@ -684,7 +704,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
               <div 
                 data-element-id="membership"
                 className="w-full px-2 mt-4"
-                style={{ transform: `translate(${data.membershipOffsetX ?? config.membershipOffsetX ?? 0}px, ${data.membershipOffsetY ?? config.membershipOffsetY ?? 0}px)` }}
+                style={{ transform: `translate(${data.membershipOffsetX ?? config.membershipOffsetX ?? 0}px, ${data.membershipOffsetY ?? config.membershipOffsetY ?? 0}px)`, fontFamily: 'inherit' }}
               >
                  <MembershipBar 
                     startDate={data.membershipStartDate || config.membershipStartDate} 
@@ -704,18 +724,19 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
               <div 
                 data-element-id="occasion"
                 className="w-full px-2 mt-4"
-                style={{ transform: `translate(${data.occasionOffsetX ?? config.occasionOffsetX ?? 0}px, ${data.occasionOffsetY ?? config.occasionOffsetY ?? 0}px)` }}
+                style={{ transform: `translate(${data.occasionOffsetX ?? config.occasionOffsetX ?? 0}px, ${data.occasionOffsetY ?? config.occasionOffsetY ?? 0}px)`, fontFamily: 'inherit' }}
               >
                  <div 
                    className={`w-full p-6 rounded-[2.5rem] border transition-all duration-500 ${data.occasionGlassy ?? config.occasionGlassy ? 'backdrop-blur-xl' : ''}`}
                    style={{ 
                      backgroundColor: data.occasionBgColor || config.occasionBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.8)'),
-                     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                     fontFamily: 'inherit'
                    }}
                  >
-                    <div className="text-center space-y-4">
-                       <h3 className="text-sm font-black dark:text-white uppercase tracking-widest opacity-80">
-                          {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادية') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
+                    <div className="text-center space-y-4" style={{ fontFamily: 'inherit' }}>
+                       <h3 className="text-sm font-black dark:text-white uppercase tracking-widest opacity-80" style={{ fontFamily: 'inherit' }}>
+                          {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادمة') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
                        </h3>
                        <CountdownTimer 
                          targetDate={data.occasionDate || config.occasionDate || ''} 
@@ -735,7 +756,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                 style={{ 
                   gridTemplateColumns: `repeat(${slCols}, 1fr)`,
                   gap: `${slGap}px`,
-                  transform: `translate(${slOffsetX}px, ${slOffsetY}px)`
+                  transform: `translate(${slOffsetX}px, ${slOffsetY}px)`,
+                  fontFamily: 'inherit'
                 }}
               >
                 {finalSpecialLinks.map((link) => (
@@ -746,7 +768,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     className="group relative overflow-hidden shadow-lg transition-all duration-500 hover:scale-[1.03] active:scale-95"
                     style={{ 
                       borderRadius: `${slRadius}px`,
-                      aspectRatio: slAspect === 'square' ? '1/1' : (slAspect === 'video' ? '16/9' : '3/4')
+                      aspectRatio: slAspect === 'square' ? '1/1' : (slAspect === 'video' ? '16/9' : '3/4'),
+                      fontFamily: 'inherit'
                     }}
                   >
                     <img src={link.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Link Image" />
@@ -755,7 +778,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     </div>
                     {(isRtl ? link.titleAr : link.titleEn) && (
                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
-                          <p className="text-[10px] font-black text-white text-center truncate">{isRtl ? link.titleAr : link.titleEn}</p>
+                          <p className="text-[10px] font-black text-white text-center truncate" style={{ fontFamily: 'inherit' }}>{isRtl ? link.titleAr : link.titleEn}</p>
                        </div>
                     )}
                   </a>
@@ -764,7 +787,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showLocation && data.locationUrl && (
-             <div data-element-id="location" className="w-full px-2 animate-fade-in-up" style={{ transform: `translate(${data.locationOffsetX ?? config.locationOffsetX ?? 0}px, ${data.locationOffsetY ?? config.locationOffsetY ?? 0}px)` }}>
+             <div data-element-id="location" className="w-full px-2 animate-fade-in-up" style={{ transform: `translate(${data.locationOffsetX ?? config.locationOffsetX ?? 0}px, ${data.locationOffsetY ?? config.locationOffsetY ?? 0}px)`, fontFamily: 'inherit' }}>
                <a 
                  href={data.locationUrl} 
                  target="_blank" 
@@ -778,16 +801,17 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    paddingRight: '20px',
                    backdropFilter: isLocGlassy ? 'blur(15px)' : 'none',
                    WebkitBackdropFilter: isLocGlassy ? 'blur(15px)' : 'none',
-                   border: (isDark) ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)'
+                   border: (isDark) ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+                   fontFamily: 'inherit'
                  }}
                >
                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                  <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-md text-blue-600 transition-transform group-hover:rotate-12" style={{ color: locIconColor }}>
                    <MapIcon size={22} />
                  </div>
-                 <div className="flex-1 text-start min-w-0">
-                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 leading-none">{t('locationSection')}</h4>
-                   <p className="font-bold dark:text-white truncate leading-tight" style={{ color: locTextColor, fontSize: `${locAddressSize}px` }}>{data.location || t('visitUs')}</p>
+                 <div className="flex-1 text-start min-w-0" style={{ fontFamily: 'inherit' }}>
+                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 leading-none" style={{ fontFamily: 'inherit' }}>{t('locationSection')}</h4>
+                   <p className="font-bold dark:text-white truncate leading-tight" style={{ color: locTextColor, fontSize: `${locAddressSize}px`, fontFamily: 'inherit' }}>{data.location || t('visitUs')}</p>
                  </div>
                  <div className="shrink-0 p-2 bg-blue-600 rounded-full text-white shadow-lg shadow-blue-600/20 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" style={{ backgroundColor: themeColor }}>
                    <Navigation2 size={14} />
@@ -803,7 +827,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                style={{ 
                  transform: `translate(${data.socialLinksOffsetX ?? config.socialLinksOffsetX ?? 0}px, ${data.socialLinksOffsetY ?? config.socialLinksOffsetY ?? 0}px)`,
                  gap: `${sGap}px`,
-                 maxWidth: '100%'
+                 maxWidth: '100%',
+                 fontFamily: 'inherit'
                }}
              >
                {data.socialLinks.map((link, idx) => (
@@ -812,7 +837,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    href={link.url} 
                    target="_blank" 
                    className="hover:scale-110 active:scale-95"
-                   style={getSocialBtnStyles(link.platformId)}
+                   style={{ ...getSocialBtnStyles(link.platformId), fontFamily: 'inherit' }}
                  >
                    <SocialIcon 
                     platformId={link.platformId} 
@@ -825,7 +850,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showQrCode && (
-             <div data-element-id="qrCode" className="pt-12 flex flex-col items-center gap-3" style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)` }}>
+             <div data-element-id="qrCode" className="pt-12 flex flex-col items-center gap-3" style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)`, fontFamily: 'inherit' }}>
                <div className="transition-all duration-700 overflow-hidden shadow-2xl p-1 bg-white" 
                     style={{ 
                       border: `${qrBorderWidth}px solid ${qrBorderColor}`, 

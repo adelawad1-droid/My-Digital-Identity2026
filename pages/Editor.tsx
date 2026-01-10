@@ -16,7 +16,7 @@ import {
 import CardPreview from '../components/CardPreview';
 import SocialIcon, { BRAND_COLORS } from '../components/SocialIcon';
 import AuthModal from '../components/AuthModal';
-import { BACKGROUND_PRESETS, AVATAR_PRESETS, SAMPLE_DATA, SOCIAL_PLATFORMS, THEME_COLORS, THEME_GRADIENTS, TRANSLATIONS } from '../constants';
+import { BACKGROUND_PRESETS, AVATAR_PRESETS, SAMPLE_DATA, SOCIAL_PLATFORMS, THEME_COLORS, THEME_GRADIENTS, TRANSLATIONS, AVAILABLE_FONTS } from '../constants';
 import { isSlugAvailable, auth, getSiteSettings, getUserProfile } from '../services/firebase';
 import { uploadImageToCloud } from '../services/uploadService';
 import { CardData, CustomTemplate, Language, SpecialLinkItem, ThemeType } from '../types';
@@ -110,7 +110,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          cardBodyThemeType: selectedTmpl.config.cardBodyThemeType || 'color',
          specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
-         specialLinks: selectedTmpl.config.defaultSpecialLinks || []
+         specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
+         fontFamily: selectedTmpl.config.fontFamily || 'Cairo'
        } as CardData;
     }
     return baseData;
@@ -366,6 +367,20 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                <textarea rows={3} value={formData.bio} onChange={e => handleChange('bio', e.target.value)} className={inputClasses + " resize-none"} placeholder="Write something inspiring about yourself..." />
                             </div>
 
+                            {/* خيار اختيار الخط المضاف حديثاً */}
+                            <div className="space-y-2">
+                               <label className={labelClasses}>{t('الخط المستخدم', 'Font Family')}</label>
+                               <select 
+                                 value={formData.fontFamily || 'Cairo'} 
+                                 onChange={e => handleChange('fontFamily', e.target.value)} 
+                                 className={inputClasses}
+                               >
+                                 {AVAILABLE_FONTS.map(font => (
+                                   <option key={font.id} value={font.id}>{isRtl ? font.nameAr : font.name}</option>
+                                 ))}
+                               </select>
+                            </div>
+
                             <div className="pt-6 border-t dark:border-gray-800 space-y-6">
                                <div className="flex items-center justify-between px-2">
                                   <div className="flex items-center gap-3">
@@ -471,6 +486,52 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                           </div>
                         )}
 
+                        {activeTab === 'social' && (
+                          <div className="space-y-8 animate-fade-in">
+                             {/* قسم تنسيق الأيقونات الجديد */}
+                             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
+                                <div className="flex items-center gap-3">
+                                   <Palette className="text-emerald-600" size={20} />
+                                   <h4 className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق الأيقونات', 'Icon Styling')}</h4>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                   <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
+                                      <div className="flex items-center gap-3">
+                                         <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
+                                         <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
+                                      </div>
+                                      <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
+                                      </button>
+                                   </div>
+
+                                   {!formData.useSocialBrandColors && (
+                                      <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
+                                   )}
+                                </div>
+                             </div>
+
+                             <div className="flex flex-col md:flex-row gap-3 items-end">
+                                <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                                <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
+                                <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-black transition-all"><Plus size={24} /></button>
+                             </div>
+
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {formData.socialLinks.map((link, idx) => (
+                                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 group transition-all">
+                                     <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-800"><SocialIcon platformId={link.platformId} size={18} /></div>
+                                        <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-400">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
+                                     </div>
+                                     <button type="button" onClick={() => { const u = [...formData.socialLinks]; u.splice(idx, 1); handleChange('socialLinks', u); }} className="p-2 text-red-400 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16}/></button>
+                                  </div>
+                                ))}
+                             </div>
+                          </div>
+                        )}
+
                         {activeTab === 'special_links' && (
                           <div className="space-y-8 animate-fade-in">
                              <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-10">
@@ -543,52 +604,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                       ))}
                                    </div>
                                 </div>
-                             </div>
-                          </div>
-                        )}
-
-                        {activeTab === 'social' && (
-                          <div className="space-y-8 animate-fade-in">
-                             {/* قسم تنسيق الأيقونات الجديد */}
-                             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-6">
-                                <div className="flex items-center gap-3">
-                                   <Palette className="text-emerald-600" size={20} />
-                                   <h4 className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق الأيقونات', 'Icon Styling')}</h4>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                   <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
-                                      <div className="flex items-center gap-3">
-                                         <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
-                                         <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
-                                      </div>
-                                      <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
-                                      </button>
-                                   </div>
-
-                                   {!formData.useSocialBrandColors && (
-                                      <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
-                                   )}
-                                </div>
-                             </div>
-
-                             <div className="flex flex-col md:flex-row gap-3 items-end">
-                                <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-                                <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
-                                <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-black transition-all"><Plus size={24} /></button>
-                             </div>
-
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {formData.socialLinks.map((link, idx) => (
-                                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 group transition-all">
-                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-800"><SocialIcon platformId={link.platformId} size={18} /></div>
-                                        <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-400">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
-                                     </div>
-                                     <button type="button" onClick={() => { const u = [...formData.socialLinks]; u.splice(idx, 1); handleChange('socialLinks', u); }} className="p-2 text-red-400 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16}/></button>
-                                  </div>
-                                ))}
                              </div>
                           </div>
                         )}

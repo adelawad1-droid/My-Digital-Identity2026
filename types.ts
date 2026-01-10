@@ -325,6 +325,8 @@ export interface CardData {
   linksShowText?: boolean;
   linksShowBg?: boolean;
   specialLinksCols?: number;
+  fontFamily?: string;
+
   // Added missing special links config overrides for CardData
   specialLinksOffsetY?: number;
   specialLinksOffsetX?: number;
