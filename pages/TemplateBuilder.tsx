@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -666,6 +667,15 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     };
   }, [activeDragElement]);
 
+  const [mouseYPercentage, setMouseYPercentage] = useState(0);
+
+  const handlePreviewMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+    setMouseYPercentage(percentage);
+  };
+
   // --- Accordion Logic ---
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'group1': true, // Open first group by default
@@ -915,7 +925,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  </div>
 
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                    <div className="flex items-center gap-3"><Shapes className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('هندسة الترويسة', 'Header Geometry')}</h4></div>
+                    <div className="flex items-center gap-4"><Shapes className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('هندسة الترويسة', 'Header Geometry')}</h4></div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                          {[
                            {id: 'classic', icon: LayoutTemplate, label: 'كلاسيك'},
@@ -997,7 +1007,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal boxed desktop"} />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal content overlap"} />
                         </div>
                      </div>
 
@@ -1032,7 +1042,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                   <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                        {['color', 'gradient', 'image'].map(type => (
                          <button type="button" key={type} onClick={() => updateConfig('defaultThemeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${template.config.defaultThemeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
-                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
+                           {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIconLucide size={20}/>}
                            <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                          </button>
                        ))}
@@ -1220,17 +1230,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/40 rounded-3xl border border-gray-100 dark:border-gray-800">
                         <div className="space-y-4">
                            <div>
-                              {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                               <label className={labelTextClasses}>{t('الاسم الافتراضي', 'Default Name')}</label>
                               <input type="text" value={template.config.defaultName || ''} onChange={e => updateConfig('defaultName', e.target.value)} className={inputClasses} placeholder={t('أدخل الاسم', 'Enter Name')} />
                            </div>
                            <div>
-                              {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                               <label className={labelTextClasses}>{t('المسمى الوظيفي الافتراضي', 'Default Title')}</label>
                               <input type="text" value={template.config.defaultTitle || ''} onChange={e => updateConfig('defaultTitle', e.target.value)} className={inputClasses} placeholder={t('أدخل المسمى', 'Enter Title')} />
                            </div>
                            <div>
-                              {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                               <label className={labelTextClasses}>{t('اسم الشركة الافتراضي', 'Default Company')}</label>
                               <input type="text" value={template.config.defaultCompany || ''} onChange={e => updateConfig('defaultCompany', e.target.value)} className={inputClasses} placeholder={t('أدخل الشركة', 'Enter Company')} />
                            </div>
@@ -1243,7 +1250,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      </div>
 
                      <div className="pt-8 border-t dark:border-gray-800 space-y-6">
-                        {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                         <h4 className={labelTextClasses}>{t('ألوان خطوط الهوية', 'Identity Typography Colors')}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <ColorPicker label={t('لون الاسم', 'Name Color')} value={template.config.nameColor || '#111827'} onChange={(v: string) => updateConfig('nameColor', v)} />
@@ -1295,7 +1301,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t dark:border-gray-800 pt-6">
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('النبذة المهنية (AR)', 'Default Bio (AR)')}</label>
                              <textarea 
                                value={template.config.defaultBioAr || ''} 
@@ -1305,7 +1310,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              />
                           </div>
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('النبذة المهنية (EN)', 'Default Bio (EN)')}</label>
                              <textarea 
                                value={template.config.defaultBioEn || ''} 
@@ -1325,7 +1329,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="space-y-4">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('محاذاة النص', 'Text Alignment')}</label>
                           <div className="grid grid-cols-3 gap-2">
                              {['start', 'center', 'end'].map(align => (
@@ -1344,8 +1347,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                           <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
                              <div className="flex flex-col">
-                                {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
-                                <span className={labelTextClasses}>{t('إظهار الإطار', 'Show Border')}</span>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إظهار الإطار', 'Show Border')}</span>
                                 <span className="text-[8px] font-bold text-gray-300">0 تعني إخفاء</span>
                              </div>
                              <input type="number" min={0} max={10} value={template.config.bioBorderWidth ?? 1} onChange={e => updateConfig('bioBorderWidth', parseInt(e.target.value) || 0)} className="w-16 bg-gray-50 dark:bg-gray-800 border-none rounded-lg p-2 text-center text-xs font-black dark:text-white outline-none" />
@@ -1376,7 +1378,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <h4 className={labelTextClasses}>{t('ألوان قسم الروابط المباشرة', 'Direct Links Colors')}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                              <ColorPicker label={t('لون الروابط العامة', 'Links Base Color')} value={template.config.linksColor || '#3b82f6'} onChange={(v: string) => updateConfig('linksColor', v)} />
@@ -1395,7 +1396,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="pt-6 space-y-4">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('نمط العرض', 'Layout Style')}</label>
                           <div className="grid grid-cols-3 gap-2">
                              {['list', 'grid', 'pills'].map(v => (
@@ -1424,12 +1424,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     <div className="space-y-10">
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('عنون العضوية (AR)', 'Membership Title (AR)')}</label>
                              <input type="text" value={template.config.membershipTitleAr || ''} onChange={e => updateConfig('membershipTitleAr', e.target.value)} className={inputClasses} placeholder="اشتراك مفعل" />
                           </div>
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('عنون العضوية (EN)', 'Membership Title (EN)')}</label>
                              <input type="text" value={template.config.membershipTitleEn || ''} onChange={e => updateConfig('membershipTitleEn', e.target.value)} className={inputClasses} placeholder="Active Subscription" />
                           </div>
@@ -1437,12 +1435,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('تاريخ البدء', 'Start Date')}</label>
                              <input type="date" value={template.config.membershipStartDate || ''} onChange={e => updateConfig('membershipStartDate', e.target.value)} className={inputClasses} />
                           </div>
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('تاريخ الانتهاء', 'Expiry Date')}</label>
                              <input type="date" value={template.config.membershipExpiryDate || ''} onChange={e => updateConfig('membershipExpiryDate', e.target.value)} className={inputClasses} />
                           </div>
@@ -1493,7 +1489,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
-                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <h4 className={labelTextClasses}>{t('ألوان أزرار الاتصال', 'Contact Buttons Colors')}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <ColorPicker label={t('لون زر الاتصال', 'Phone Button Color')} value={template.config.contactPhoneColor || '#2563eb'} onChange={(v: string) => updateConfig('contactPhoneColor', v)} />
@@ -1608,7 +1603,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                       />
                                    </div>
                                    <div className="space-y-1">
-                                      {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                                       <label className={labelTextClasses}>{t('العنوان الافتراضى (AR)', 'Default Title (AR)')}</label>
                                       <input 
                                         type="text" 
@@ -1644,17 +1638,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('occasionTitleAr')}</label>
                              <input type="text" value={template.config.occasionTitleAr || ''} onChange={e => updateConfig('occasionTitleAr', e.target.value)} className={inputClasses} placeholder="مناسبة قادمة" />
                           </div>
                           <div className="space-y-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('occasionTitleEn')}</label>
                              <input type="text" value={template.config.occasionTitleEn || ''} onChange={e => updateConfig('occasionTitleEn', e.target.value)} className={inputClasses} placeholder="Upcoming Occasion" />
                           </div>
                           <div className="space-y-2 md:col-span-2">
-                             {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                              <label className={labelTextClasses}>{t('occasionDate')}</label>
                              <input type="datetime-local" value={template.config.occasionDate || ''} onChange={e => updateConfig('occasionDate', e.target.value)} className={inputClasses} />
                           </div>
@@ -1754,7 +1745,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     </div>
 
                     <div className="pt-8 border-t border-gray-100 dark:border-gray-800 space-y-6">
-                       {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                        <h4 className={labelTextClasses}>{t('نمط العرض والألوان', 'Visual Style & Colors')}</h4>
                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {['filled', 'outline', 'glass', 'ghost'].map(v => (
@@ -2004,7 +1994,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 </div>
               </div>
               
-              <div className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-900 dark:border-gray-800 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : ''}`} 
+              <div 
+                   onMouseMove={handlePreviewMouseMove}
+                   onMouseLeave={() => setMouseYPercentage(0)}
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
@@ -2022,7 +2015,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;
                          const rect = element.getBoundingClientRect();
-                         const parentRect = element.closest('.themed-scrollbar')?.getBoundingClientRect();
+                         const parentRect = element.closest('.no-scrollbar')?.getBoundingClientRect();
                          if (!parentRect) return null;
                          
                          return (
@@ -2047,7 +2040,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    </div>
                 )}
 
-                <div className="themed-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem' }}>
+                <div className="no-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem' }}>
                    {isFullHeaderPreview && (
                       <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
                         <div className="absolute inset-0 z-0">
@@ -2066,14 +2059,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    
                    <div 
                      style={{ 
-                        transform: previewDevice === 'desktop' ? `translateY(${previewDesktopPullUp}px)` : 'none',
                         maxWidth: previewDevice === 'desktop' ? `${template.config.cardMaxWidth || 500}px` : '100%',
                         marginRight: 'auto',
                         marginLeft: 'auto',
                         paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
                         position: 'relative',
                         zIndex: 10,
-                        transition: activeDragElement ? 'none' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: activeDragElement ? 'none' : 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                        transform: activeDragElement ? 'none' : `translateY(${(previewDevice === 'desktop' ? previewDesktopPullUp : 0) - (mouseYPercentage * (previewDevice === 'desktop' ? 0.3 : 0.7))}px)`
                      }}
                    >
                      <CardPreview 
@@ -2207,7 +2200,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <button 
                          key={user.uid} 
                          onClick={() => { setSelectedUser(user); updateTemplate('restrictedUserId', user.uid); }}
-                         className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between group ${selectedUser?.uid === user.uid ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-500 hover:border-indigo-200'}`}
+                         className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between group ${selectedUser?.uid === user.uid ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500 hover:border-indigo-200'}`}
                        >
                           <div className="flex items-center gap-3 min-w-0">
                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedUser?.uid === user.uid ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-900'}`}>
@@ -2293,35 +2286,4 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       )}
 
       {showResetConfirm && (
-        <div className="fixed inset-0 z-[700] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-2xl border border-orange-100 dark:border-orange-900/20 animate-zoom-in">
-             <div className="w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle size={40} />
-             </div>
-             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد إعادة الضبط', 'Confirm Reset')}</h3>
-             <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                {t('هل أنت متأكد من تصفير كافة قيم الإزاحة والتباعد؟ هذا الإجراء سيعيد العناصر لمواقعها الافتراضية.', 'Are you sure? This will reset all offsets and spacing to their original default values.')}
-             </p>
-             <div className="flex flex-col gap-3">
-                <button 
-                  onClick={handleActualReset}
-                  className="w-full py-5 bg-orange-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
-                >
-                  <RotateCcw size={18} />
-                  {t('نعم، قم بإعادة الضبط', 'Yes, Reset Now')}
-                </button>
-                <button 
-                  onClick={() => setShowResetConfirm(false)}
-                  className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-[10px] uppercase transition-all"
-                >
-                  {t('إلغاء', 'Cancel')}
-                </button>
-             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default TemplateBuilder;
+        

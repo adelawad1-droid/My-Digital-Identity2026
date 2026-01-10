@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -61,8 +62,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [uploadConfig, setUploadConfig] = useState({ storageType: 'database' as const, uploadUrl: '' });
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
 
-  // تحريك المعاينة في وضع الجوال العائم
+  // تحريك المعاينة في وضع الجوال العائم والجانبي
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
+  const [sidebarMouseYPercentage, setSidebarMouseYPercentage] = useState(0);
 
   const tabs: {id: EditorTab, label: string, icon: any, color: string}[] = [
     { id: 'identity', label: t('الهوية', 'Identity'), icon: UserIcon, color: 'text-blue-600' },
@@ -142,6 +144,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     const relativeY = e.clientY - rect.top;
     const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
     setMouseYPercentage(percentage);
+  };
+
+  const handleSidebarPreviewMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+    setSidebarMouseYPercentage(percentage);
   };
 
   const VisibilityToggle = ({ field, label }: { field: keyof CardData, label: string }) => {
@@ -793,11 +802,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                            {isRtl ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>} {t('السابق', 'Previous')}
                         </button>
                         {currentIndex < tabs.length - 1 ? (
-                          <button type="button" onClick={handleNext} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                          <button type="button" onClick={handleNext} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                              {t('التالي', 'Next')} {isRtl ? <ChevronLeft size={18}/> : <ChevronRight size={18}/>}
                           </button>
                         ) : (
-                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                              {t('حفظ ومشاركة', 'Save & Share')} <Check size={18}/>
                           </button>
                         )}
@@ -814,7 +823,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية (جوال)', 'Live Preview (Mobile)')}</span></div>
               </div>
               
-              <div className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5]" 
+              <div 
+                   onMouseMove={handleSidebarPreviewMouseMove}
+                   onMouseLeave={() => setSidebarMouseYPercentage(0)}
+                   className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5] cursor-ns-resize" 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg
@@ -823,14 +835,16 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 {/* Dynamic Island Mockup */}
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-50 border border-white/5 shadow-inner"></div>
 
-                <div className="themed-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0">
+                <div className="no-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0">
                    <div 
                      style={{ 
                         maxWidth: '100%',
                         marginRight: 'auto',
                         marginLeft: 'auto',
                         position: 'relative',
-                        zIndex: 10
+                        zIndex: 10,
+                        transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                        transform: `translateY(-${sidebarMouseYPercentage * 0.7}%)`
                      }}
                    >
                      <CardPreview 
