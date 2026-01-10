@@ -145,6 +145,24 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
   return (
     <div className={`relative min-h-screen bg-[#fcfdfe] dark:bg-[#050810] text-slate-900 dark:text-white transition-colors duration-700 overflow-hidden ${isRtl ? 'rtl' : 'ltr'}`}>
       
+      {/* WhatsApp Floating Contact Button - Only on Home Page */}
+      <a 
+        href="https://wa.me/966556797515" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className={`fixed bottom-24 ${isRtl ? 'left-6' : 'right-6'} z-[100] group flex items-center gap-3`}
+      >
+        <div className="bg-emerald-500 text-white p-4 rounded-2xl shadow-[0_10px_30px_rgba(16,185,129,0.4)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 relative">
+          <div className="absolute inset-0 bg-emerald-500 rounded-2xl animate-ping opacity-20 group-hover:opacity-40"></div>
+          <MessageCircle size={28} className="relative z-10" />
+        </div>
+        <div className={`hidden md:block bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300`}>
+           <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+             {isRtl ? 'تواصل معنا' : 'Contact Us'}
+           </span>
+        </div>
+      </a>
+
       {/* Background Decor */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-100/40 dark:bg-blue-600/5 rounded-full blur-[120px] animate-pulse"></div>
