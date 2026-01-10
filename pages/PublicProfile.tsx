@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { CardData, Language, TemplateConfig } from '../types';
 import CardPreview from '../components/CardPreview';
-import { TRANSLATIONS, PATTERN_PRESETS } from '../constants';
+import { TRANSLATIONS } from '../constants';
 import { downloadVCard } from '../utils/vcard';
-import { Plus, UserPlus, Share2, AlertCircle, Coffee, Loader2, PowerOff } from 'lucide-react';
+import { Plus, UserPlus, Share2, PowerOff, Loader2 } from 'lucide-react';
 import { generateShareUrl } from '../utils/share';
+import ShareModal from '../components/ShareModal';
 
 interface PublicProfileProps {
   data: CardData;
@@ -17,7 +18,7 @@ interface PublicProfileProps {
 const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig, siteIcon }) => {
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en'];
-  const [isCapturing, setIsCapturing] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   useEffect(() => {
@@ -63,7 +64,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
       }
     `;
 
-    // Advanced SEO for Card
     const clientName = data.name || 'Digital ID';
     const clientTitle = data.title || (isRtl ? 'بطاقة شخصية ذكية' : 'Digital Business Card');
     const fullTitle = `${clientName} | ${clientTitle} | NextID`;
@@ -93,29 +93,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
     };
   }, [data, isRtl, customConfig]);
 
-  const handleShare = async () => {
-    if (isCapturing) return;
-    setIsCapturing(true);
-
-    const url = generateShareUrl(data);
-    const professionalText = isRtl 
-      ? `*${data.name}*\nتواصل معي عبر بطاقتي الرقمية:\n${url}`
-      : `*${data.name}*\nConnect with me via my digital card:\n${url}`;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: data.name, text: professionalText, url: url });
-      } else {
-        navigator.clipboard.writeText(url);
-        alert(isRtl ? "تم نسخ الرابط" : "Link copied");
-      }
-    } catch (err) {
-      console.error("Share error:", err);
-    } finally {
-      setIsCapturing(false);
-    }
-  };
-
   if (data.isActive === false) {
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center p-6 text-center ${data.isDark ? 'bg-[#050507] text-white' : 'bg-slate-50 text-gray-900'}`}>
@@ -142,11 +119,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
   
   const isDesktop = windowWidth >= 1024;
   const isFullHeaderEnabled = customConfig?.desktopLayout === 'full-width-header' && isDesktop;
-  
-  // نستخدم mobileBodyOffsetY لجميع الأجهزة كإزاحة داخلية لبيانات البطاقة
   const cardBodyOffset = isDesktop ? 0 : (customConfig?.mobileBodyOffsetY ?? 0);
-  
-  // إزاحة سحب البطاقة للأعلى في سطح المكتب
   const containerMarginTop = isDesktop ? (customConfig?.desktopBodyOffsetY ?? 0) : 0;
   const verticalPadding = isDesktop ? '100px' : '40px';
 
@@ -162,7 +135,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
         </div>
       )}
 
-      {/* الحاوية الرئيسية التي تضمن تطبيق cardMaxWidth وتوسيط المحتوى */}
       <main className="w-full z-10 animate-fade-in-up transition-all duration-700 mx-auto flex flex-col items-center" 
         style={{ 
           maxWidth: isFullHeaderEnabled ? '100%' : `${customConfig?.cardMaxWidth || 500}px`, 
@@ -187,11 +159,15 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
               style={{ backgroundColor: primary, boxShadow: `0 10px 25px -5px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)` }}>
                <UserPlus size={18} /><span>{t('saveContact')}</span>
             </button>
-            <button onClick={handleShare} disabled={isCapturing} className="p-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-3xl hover:bg-gray-200 transition-colors">
-               {isCapturing ? <Loader2 size={20} className="animate-spin" /> : <Share2 size={20} />}
+            <button onClick={() => setShowShareModal(true)} className="p-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-3xl hover:bg-gray-200 transition-colors">
+               <Share2 size={20} />
             </button>
          </div>
       </div>
+
+      {showShareModal && (
+        <ShareModal data={data} lang={lang} onClose={() => setShowShareModal(false)} isNewSave={false} />
+      )}
     </article>
   );
 };
