@@ -373,6 +373,9 @@ export interface CardData {
 
   showBodyFeature?: boolean;
   bodyFeatureText?: string;
+  // Added missing body feature offset properties to fix TS errors in CardPreview.tsx
+  bodyFeatureOffsetX?: number;
+  bodyFeatureOffsetY?: number;
 
   bodyGlassy?: boolean;
   bodyOpacity?: number;
@@ -433,6 +436,11 @@ export interface CardData {
   contactButtonsOffsetX?: number;
   socialLinksOffsetY?: number;
   socialLinksOffsetX?: number;
+  // Added missing avatar and location offset properties to fix TS errors in CardPreview.tsx
+  avatarOffsetX?: number;
+  avatarOffsetY?: number;
+  locationOffsetX?: number;
+  locationOffsetY?: number;
 }
 
 export interface VisualStyle {

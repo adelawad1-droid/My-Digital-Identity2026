@@ -1,4 +1,3 @@
-
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -481,13 +480,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       }}
     >
       
-      {!hideHeader && (
-        <div className="absolute inset-0 z-[-1] opacity-40">
-          {themeType === 'image' && backgroundImage && <img src={backgroundImage} className="w-full h-full object-cover blur-sm scale-110" />}
-          {themeType === 'gradient' && <div className="w-full h-full" style={{ background: themeGradient }} />}
-        </div>
-      )}
-
       {!hideHeader && (
         <div className="shrink-0 overflow-hidden relative" style={getHeaderStyles()}>
             {headerType === 'custom-asset' && config.headerSvgRaw && (
