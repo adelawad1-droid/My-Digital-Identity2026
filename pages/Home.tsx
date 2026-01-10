@@ -393,64 +393,62 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
         </div>
       </section>
 
-      {/* CTA Section - Beautiful Vibrant Red for "How to Start" Engagement */}
-      <section className="relative py-32 px-6 overflow-hidden">
-        {/* Modern Animated Red Mesh Gradient Background */}
-        <div className="absolute inset-0 z-0 bg-red-950">
-           <div className="absolute inset-0 bg-gradient-to-br from-red-800 via-rose-900 to-crimson-950 opacity-90"></div>
-           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/30 rounded-full blur-[120px] animate-pulse"></div>
-           <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-rose-600/30 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.2),transparent_70%)]"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10 text-center space-y-16">
-           <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest border border-white/20 mx-auto">
-                 <HelpCircle size={14} className="text-white animate-bounce" />
-                 {isRtl ? 'خطوتك الأولى تبدأ هنا' : 'YOUR FIRST STEP STARTS HERE'}
-              </div>
-              <h2 className="text-4xl md:text-7xl font-black text-white leading-tight tracking-tighter">
-                 {isRtl ? 'تريد معرفة كيف تبدأ معنا؟' : 'Want to Know How to Start?'}
-              </h2>
-              <p className="text-red-100/80 font-bold max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-                 {isRtl 
-                   ? 'اكتشف رحلة التحول الرقمي، من اختيار القالب المثالي إلى امتلاك لوحة تحكم ذكية تدير بها هويتك الاحترافية بسهولة.' 
-                   : 'Discover your digital transformation journey, from selecting the perfect template to owning a smart dashboard that manages your professional identity easily.'}
-              </p>
-           </div>
-
-           <div className="flex flex-wrap justify-center gap-8 md:gap-20">
-              <div className="flex flex-col items-center gap-4 group cursor-default">
-                 <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 group-hover:border-red-500 transition-all duration-500 shadow-xl">
-                    <UserPlus size={32} className="text-red-300 group-hover:text-white" />
+      {/* CTA Section - Redesigned to be less annoying and more professional */}
+      <section className="relative py-12 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+           {/* Section Background Card */}
+           <div className="bg-red-950 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-800 via-rose-900 to-red-950 opacity-95"></div>
+              <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/20 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000"></div>
+              
+              <div className="relative z-10 flex flex-col items-center text-center space-y-8">
+                 <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white text-[9px] font-black uppercase tracking-widest border border-white/20 mx-auto">
+                       <HelpCircle size={12} className="text-white animate-bounce" />
+                       {isRtl ? 'خطوتك الأولى تبدأ هنا' : 'YOUR FIRST STEP STARTS HERE'}
+                    </div>
+                    <h2 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tighter">
+                       {isRtl ? 'تريد معرفة كيف تبدأ معنا؟' : 'Want to Know How to Start?'}
+                    </h2>
+                    <p className="text-red-100/70 font-bold max-w-2xl mx-auto text-sm md:text-lg leading-relaxed">
+                       {isRtl 
+                         ? 'اكتشف رحلة التحول الرقمي، من اختيار القالب المثالي إلى امتلاك لوحة تحكم ذكية تدير بها هويتك بسهولة.' 
+                         : 'Discover your digital transformation journey, from selecting the perfect template to owning a smart dashboard easily.'}
+                    </p>
                  </div>
-                 <span className="font-black text-xs uppercase tracking-widest text-white/70 group-hover:text-white transition-colors">{isRtl ? 'تسجيل سريع' : 'Quick Signup'}</span>
-              </div>
-              <div className="flex flex-col items-center gap-4 group cursor-default">
-                 <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 group-hover:border-red-500 transition-all duration-500 shadow-xl">
-                    <Palette size={32} className="text-red-300 group-hover:text-white" />
-                 </div>
-                 <span className="font-black text-xs uppercase tracking-widest text-white/70 group-hover:text-white transition-colors">{isRtl ? 'تصميم مخصص' : 'Custom Design'}</span>
-              </div>
-              <div className="flex flex-col items-center gap-4 group cursor-default">
-                 <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 group-hover:border-red-500 transition-all duration-500 shadow-xl">
-                    <LayoutGrid size={32} className="text-red-300 group-hover:text-white" />
-                 </div>
-                 <span className="font-black text-xs uppercase tracking-widest text-white/70 group-hover:text-white transition-colors">{isRtl ? 'لوحة تحكم' : 'Dashboard'}</span>
-              </div>
-           </div>
 
-           <div className="pt-8">
-              <button 
-                onClick={() => navigate(`/${lang}/how-to-start`)} 
-                className="group relative px-16 py-7 bg-white text-red-600 rounded-[2.5rem] font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.3)] overflow-hidden"
-              >
-                 <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-rose-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <span className="relative z-10 flex items-center gap-4">
-                    {isRtl ? 'اكتشف طريقة العمل معنا' : 'Discover How It Works'}
-                    <ArrowRight size={24} className={`transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-2' : 'group-hover:translate-x-2'}`} />
-                 </span>
-              </button>
+                 <div className="flex flex-wrap justify-center gap-6 md:gap-16">
+                    <div className="flex flex-col items-center gap-3">
+                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
+                          <UserPlus size={24} className="text-red-200" />
+                       </div>
+                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'تسجيل سريع' : 'Quick Signup'}</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
+                          <Palette size={24} className="text-red-200" />
+                       </div>
+                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'تصميم مخصص' : 'Custom Design'}</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
+                          <LayoutGrid size={24} className="text-red-200" />
+                       </div>
+                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'لوحة تحكم' : 'Dashboard'}</span>
+                    </div>
+                 </div>
+
+                 <button 
+                   onClick={() => navigate(`/${lang}/how-to-start`)} 
+                   className="group relative px-12 py-5 bg-white text-red-600 rounded-2xl font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-xl overflow-hidden"
+                 >
+                    <div className="absolute inset-0 bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <span className="relative z-10 flex items-center gap-3">
+                       {isRtl ? 'اكتشف طريقة العمل معنا' : 'Discover How It Works'}
+                       <ArrowRight size={20} className={`transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+                    </span>
+                 </button>
+              </div>
            </div>
         </div>
       </section>
