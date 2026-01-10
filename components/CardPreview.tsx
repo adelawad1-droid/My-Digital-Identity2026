@@ -1,3 +1,4 @@
+
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -264,6 +265,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const showOccasion = isVisible(data.showOccasion, config.showOccasionByDefault);
   const showLocation = isVisible(data.showLocation, config.showLocationByDefault);
   const showMembership = isVisible(data.showMembership, config.showMembershipByDefault);
+  const showFloatingAsset = isVisible(data.showFloatingAsset, config.showFloatingAssetByDefault);
 
   const hasContactButtons = (showPhone && data.phone) || 
                            (showWhatsapp && data.whatsapp) || 
@@ -506,6 +508,26 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         </div>
       )}
 
+      {/* الملحق العائم (Floating Asset) - يجب أن يكون خارج حاوية الـ padding ليكون حراً بالكامل */}
+      {showFloatingAsset && (data.floatingAssetUrl || config.floatingAssetUrl) && (
+        <div 
+          data-element-id="floatingAsset"
+          className="absolute z-[100] transition-all"
+          style={{
+            transform: `translate(${data.floatingAssetOffsetX ?? config.floatingAssetOffsetX ?? 0}px, ${data.floatingAssetOffsetY ?? config.floatingAssetOffsetY ?? 0}px)`,
+            width: `${data.floatingAssetSize ?? config.floatingAssetSize ?? 100}px`,
+            opacity: (data.floatingAssetOpacity ?? config.floatingAssetOpacity ?? 100) / 100,
+            pointerEvents: 'auto'
+          }}
+        >
+          <img 
+            src={data.floatingAssetUrl || config.floatingAssetUrl} 
+            className="w-full h-auto object-contain pointer-events-none" 
+            alt="Floating Asset" 
+          />
+        </div>
+      )}
+
       {/* حاوية فرعية تفرض الخط بالوراثة على كل العناصر الداخلية */}
       <div className="flex flex-col flex-1 px-4 sm:px-6" style={{ ...bodyContentStyles, fontFamily: 'inherit' }}>
         {showProfileImage && (
@@ -681,13 +703,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                 }}
               >
                 {showPhone && data.phone && (
-                  // Fix: Removed redundant style attribute to resolve duplicate key error
                   <a href={`tel:${data.phone}`} className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(phoneBtnColor), fontFamily: 'inherit' }}>
                     <Phone size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('call')}</span>
                   </a>
                 )}
                 {showWhatsapp && data.whatsapp && (
-                  // Fix: Removed redundant style attribute to resolve duplicate key error
                   <a href={`https://wa.me/${data.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(whatsappBtnColor), fontFamily: 'inherit' }}>
                     <MessageCircle size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')}</span>
                   </a>

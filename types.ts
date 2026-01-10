@@ -120,6 +120,14 @@ export interface TemplateConfig {
   specialLinksOffsetX?: number;
   defaultSpecialLinks?: SpecialLinkItem[];
 
+  // Floating Asset Config
+  floatingAssetUrl?: string;
+  floatingAssetSize?: number;
+  floatingAssetOffsetY?: number;
+  floatingAssetOffsetX?: number;
+  floatingAssetOpacity?: number;
+  showFloatingAssetByDefault?: boolean;
+
   // Membership & Subscription Config
   showMembershipByDefault?: boolean;
   membershipTitleAr?: string;
@@ -331,6 +339,14 @@ export interface CardData {
   specialLinksOffsetY?: number;
   specialLinksOffsetX?: number;
   specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
+
+  // Floating Asset
+  floatingAssetUrl?: string;
+  floatingAssetSize?: number;
+  floatingAssetOffsetX?: number;
+  floatingAssetOffsetY?: number;
+  floatingAssetOpacity?: number;
+  showFloatingAsset?: boolean;
 
   // Membership & Subscription
   showMembership?: boolean;

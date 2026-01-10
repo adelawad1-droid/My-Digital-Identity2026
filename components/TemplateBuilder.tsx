@@ -15,7 +15,7 @@ import {
   Phone, Globe, MessageCircle, Camera, Download, Tablet, Monitor, 
   Eye, QrCode, Wind, GlassWater, ChevronRight, ChevronLeft, 
   Waves, Square, Columns, Minus, ToggleLeft, ToggleRight, Calendar, MapPin, Timer, PartyPopper, Link as LinkIcon, FolderOpen, Plus, Tag, Settings2, SlidersHorizontal, Share2, FileCode, HardDrive, Database,
-  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search, Grab, ChevronDown
+  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search, Grab, ChevronDown, Sticker
 } from 'lucide-react';
 
 // --- المكونات المساعدة ---
@@ -31,6 +31,7 @@ type BuilderTab =
   | 'membership-lab' 
   | 'contact-lab' 
   | 'special-links' 
+  | 'floating-asset-lab'
   | 'occasion-lab'
   | 'location' 
   | 'social-lab' 
@@ -146,6 +147,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const bodyBgInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const specialLinkInputRef = useRef<HTMLInputElement>(null);
+  const floatingAssetInputRef = useRef<HTMLInputElement>(null);
   
   const ADMIN_PRESET_COLORS = ['#2563eb', '#1e40af', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6', '#10b981', '#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444', '#f43f5e', '#db2777', '#d946ef', '#a855f7', '#7c3aed', '#6366f1', '#4b5563', '#0f172a'];
 
@@ -161,6 +163,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const [uploadingBodyBg, setUploadingBodyBg] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingSpecialImg, setUploadingSpecialImg] = useState(false);
+  const [uploadingFloating, setUploadingFloating] = useState(false);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [visualStyles, setVisualStyles] = useState<VisualStyle[]>([]);
   const [selectedStyleId, setSelectedStyleId] = useState<string>(initialTemplate?.parentStyleId || '');
@@ -266,6 +269,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       specialLinksOffsetY: 0,
       specialLinksOffsetX: 0,
       defaultSpecialLinks: [],
+      // Floating Asset Default
+      floatingAssetUrl: '',
+      floatingAssetSize: 100,
+      floatingAssetOffsetX: 0,
+      floatingAssetOffsetY: 0,
+      floatingAssetOpacity: 100,
+      showFloatingAssetByDefault: false,
       showMembershipByDefault: false,
       membershipTitleAr: 'اشتراك مفعل',
       membershipTitleEn: 'Active Subscription',
@@ -453,6 +463,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       bodyFeaturePaddingX: 0,
       specialLinksOffsetY: 0,
       specialLinksOffsetX: 0,
+      floatingAssetOffsetX: 0,
+      floatingAssetOffsetY: 0,
       occasionOffsetY: 0,
       occasionOffsetX: 0,
       locationOffsetY: 0,
@@ -538,6 +550,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     }
   };
 
+  const handleFloatingAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFloating(true);
+    try {
+      const b = await uploadImageToCloud(file, 'logo', uploadConfig as any);
+      if (b) {
+        updateConfig('floatingAssetUrl', b);
+        updateConfig('showFloatingAssetByDefault', true);
+        setActiveTab('floating-asset-lab');
+      }
+    } finally {
+      setUploadingFloating(false);
+    }
+  };
+
   const handleSpecialLinkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -614,6 +642,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       case 'membership': ox = config.membershipOffsetX || 0; oy = config.membershipOffsetY || 0; break;
       case 'occasion': ox = config.occasionOffsetX || 0; oy = config.occasionOffsetY || 0; break;
       case 'specialLinks': ox = config.specialLinksOffsetX || 0; oy = config.specialLinksOffsetY || 0; break;
+      case 'floatingAsset': ox = config.floatingAssetOffsetX || 0; oy = config.floatingAssetOffsetY || 0; break;
       case 'location': ox = config.locationOffsetX || 0; oy = config.locationOffsetY || 0; break;
       case 'socialLinks': ox = config.socialLinksOffsetX || 0; oy = config.socialLinksOffsetY || 0; break;
       case 'qrCode': ox = config.qrOffsetX || 0; oy = config.qrOffsetY || 0; break;
@@ -643,6 +672,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       case 'membership': updateConfig('membershipOffsetX', newX); updateConfig('membershipOffsetY', newY); break;
       case 'occasion': updateConfig('occasionOffsetX', newX); updateConfig('occasionOffsetY', newY); break;
       case 'specialLinks': updateConfig('specialLinksOffsetX', newX); updateConfig('specialLinksOffsetY', newY); break;
+      case 'floatingAsset': updateConfig('floatingAssetOffsetX', newX); updateConfig('floatingAssetOffsetY', newY); break;
       case 'location': updateConfig('locationOffsetX', newX); updateConfig('locationOffsetY', newY); break;
       case 'socialLinks': updateConfig('socialLinksOffsetX', newX); updateConfig('socialLinksOffsetY', newY); break;
       case 'qrCode': updateConfig('qrOffsetX', newX); updateConfig('qrOffsetY', newY); break;
@@ -698,7 +728,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
       { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
       { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
-      { id: 'group4', tabs: ['special-links', 'occasion-lab'] },
+      { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
     
@@ -762,6 +792,17 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {/* زر إضافة ملحق خاص بجانب التحريك الحر */}
+          <button 
+            type="button" 
+            onClick={() => checkAuthAndClick(floatingAssetInputRef)} 
+            className="px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl font-black text-xs uppercase border border-indigo-100 dark:border-indigo-800/30 transition-all flex items-center gap-2 hover:bg-indigo-600 hover:text-white shadow-sm"
+          >
+             {uploadingFloating ? <Loader2 size={18} className="animate-spin" /> : <Sticker size={18} />}
+             {isRtl ? 'إضافة ملحق خاص' : 'Add Custom Asset'}
+          </button>
+          <input type="file" ref={floatingAssetInputRef} className="hidden" accept="image/*" onChange={handleFloatingAssetUpload} />
+
           <button 
             type="button" 
             onClick={() => setIsDragMode(!isDragMode)} 
@@ -865,6 +906,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              {openGroups['group4'] && (
                 <div className="px-4 pb-4 pt-2 space-y-1 animate-fade-in bg-rose-50/20 dark:bg-rose-900/5">
                    <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} activeColor="bg-rose-600" />
+                   {/* تبويب ملحق خاص العائم */}
+                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'ملحق خاص عائم (Floating)' : 'Floating Asset'} icon={Sticker} activeColor="bg-rose-600" />
                    <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} activeColor="bg-rose-600" />
                 </div>
              )}
@@ -938,7 +981,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                            {id: 'split-left', icon: AlignLeft, label: 'قطري يسار'},
                            {id: 'split-right', icon: AlignRight, label: 'قطري يمين'},
                            {id: 'floating', icon: Square, label: 'عائم'},
-                           {id: 'glass-card', icon: GlassWater, label: 'ججاجي'},
+                           {id: 'glass-card', icon: GlassWater, label: 'زجاجي'},
                            {id: 'modern-split', icon: Columns, label: 'حديث'}
                          ].map(item => (
                            <button 
@@ -1356,6 +1399,44 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <ColorPicker label={t('لون نص النبذة', 'Bio Text Color')} value={template.config.bioTextColor} onChange={(v: string) => updateConfig('bioTextColor', v)} />
                           <ColorPicker label={t('لون البرواز (الحدود)', 'Border Color')} value={template.config.bioBorderColor} onChange={(v: string) => updateConfig('bioBorderColor', v)} />
                        </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'floating-asset-lab' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Sticker size={24} /></div>
+                       <div>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'}</h2>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'تحكم كامل في الملحق العائم الذي رفعته' : 'Full control over your uploaded floating asset'}</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-8">
+                       <ToggleSwitch label={t('تفعيل الملحق', 'Enable Asset')} value={template.config.showFloatingAssetByDefault} onChange={(v: boolean) => updateConfig('showFloatingAssetByDefault', v)} icon={Eye} color="bg-emerald-600" isRtl={isRtl} />
+
+                       <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-3xl border border-gray-100 dark:border-white/10 flex flex-col items-center gap-4">
+                          <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl bg-white dark:bg-gray-900 flex items-center justify-center">
+                             {template.config.floatingAssetUrl ? <img src={template.config.floatingAssetUrl} className="max-w-full max-h-full object-contain" /> : <Sticker size={40} className="text-gray-200" />}
+                          </div>
+                          <button onClick={() => checkAuthAndClick(floatingAssetInputRef)} className="px-6 py-2 bg-white dark:bg-gray-800 border rounded-xl text-[10px] font-black uppercase shadow-sm">
+                             {isRtl ? 'تغيير الملحق' : 'Change Asset'}
+                          </button>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <RangeControl label={t('حجم الملحق', 'Asset Size')} min={20} max={600} value={template.config.floatingAssetSize || 100} onChange={(v: number) => updateConfig('floatingAssetSize', v)} icon={Maximize2} />
+                          <RangeControl label={t('الشفافية', 'Opacity')} min={0} max={100} unit="%" value={template.config.floatingAssetOpacity ?? 100} onChange={(v: number) => updateConfig('floatingAssetOpacity', v)} icon={Sun} />
+                          <RangeControl label={t('إزاحة رأسية', 'Vertical Offset')} min={-2000} max={2000} value={template.config.floatingAssetOffsetY || 0} onChange={(v: number) => updateConfig('floatingAssetOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة أفقية', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.floatingAssetOffsetX || 0} onChange={(v: number) => updateConfig('floatingAssetOffsetX', v)} icon={ArrowLeftRight} />
+                       </div>
+                       
+                       <p className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-800/30 text-[10px] font-bold text-amber-700 dark:text-amber-400 text-center leading-relaxed">
+                          {isRtl ? "* تلميح: يمكنك تحريك الملحق مباشرة باليد عند تفعيل 'وضع التحريك الحر' من الأعلى." : "* Pro Tip: Use 'Free Drag Mode' at the top to move this asset by hand."}
+                       </p>
                     </div>
                  </div>
               </div>
@@ -2007,10 +2088,11 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      backgroundColor: previewPageBg
                    }}>
                 
-                {/* Drag Overlays */}
+                {/* Drag Overlays - تظهر فقط في وضع التحريك الحر */}
                 {isDragMode && (
                    <div className="absolute inset-0 z-[100] pointer-events-none">
-                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode'].map(elId => {
+                      {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
+                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'floatingAsset', 'location', 'socialLinks', 'qrCode'].map(elId => {
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;
                          const rect = element.getBoundingClientRect();
@@ -2044,7 +2126,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                       <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
                         <div className="absolute inset-0 z-0">
                           {template.config.defaultThemeType === 'image' && template.config.defaultBackgroundImage && (
-                            <img src={template.config.defaultBackgroundImage} className="w-full h-full object-cover" alt="Full Header" />
+                            <img src={template.config.defaultThemeType === 'image' ? template.config.defaultBackgroundImage : undefined} className="w-full h-full object-cover" alt="Full Header" />
                           )}
                           {template.config.defaultThemeType === 'gradient' && (
                             <div className="w-full h-full" style={{ background: template.config.defaultThemeGradient }} />
@@ -2098,6 +2180,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          specialLinks: currentSpecialLinks,
                          showSpecialLinks: template.config.showSpecialLinksByDefault,
                          showSocialLinks: template.config.showSocialLinksByDefault,
+                         showFloatingAsset: template.config.showFloatingAssetByDefault,
+                         floatingAssetUrl: template.config.floatingAssetUrl,
+                         floatingAssetSize: template.config.floatingAssetSize,
+                         floatingAssetOffsetX: template.config.floatingAssetOffsetX,
+                         floatingAssetOffsetY: template.config.floatingAssetOffsetY,
+                         floatingAssetOpacity: template.config.floatingAssetOpacity,
                          showMembership: template.config.showMembershipByDefault,
                          membershipTitleAr: template.config.membershipTitleAr,
                          membershipTitleEn: template.config.membershipTitleEn,
@@ -2133,6 +2221,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          cardBodyThemeType: template.config.cardBodyThemeType,
                          cardBgColor: template.config.cardBgColor,
                          linksSectionPaddingV: template.config.linksSectionPaddingV,
+                         // Pass down all offsets for interactive dragging
                          avatarOffsetX: template.config.avatarOffsetX,
                          avatarOffsetY: template.config.avatarOffsetY,
                          nameOffsetX: template.config.nameOffsetX,
@@ -2230,10 +2319,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
+                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label>
                           <input type="text" value={template.nameAr} onChange={e => updateTemplate('nameAr', e.target.value)} className={inputClasses} />
                        </div>
                        <div className="space-y-2">
+                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label>
                           <input type="text" value={template.nameEn} onChange={e => updateTemplate('nameEn', e.target.value)} className={inputClasses} />
                        </div>
@@ -2241,6 +2332,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
+                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('القسم (CATEGORY)', 'Template Category')}</label>
                           <select 
                              value={template.categoryId} 
@@ -2252,6 +2344,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           </select>
                        </div>
                        <div className="space-y-2">
+                          {/* Fix: Use defined labelTextClasses instead of undefined labelClasses */}
                           <label className={labelTextClasses}>{t('ترتيب العرض', 'Display Order')}</label>
                           <input type="number" value={template.order} onChange={e => updateTemplate('order', parseInt(e.target.value) || 0)} className={inputClasses} />
                        </div>
