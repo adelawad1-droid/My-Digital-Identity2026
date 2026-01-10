@@ -7,10 +7,16 @@ export const LANGUAGES_CONFIG: Record<Language, { name: string, native: string, 
 } as any;
 
 export const AVAILABLE_FONTS = [
-  { id: 'Cairo', name: 'Cairo (Default)', nameAr: 'خط كاييرو (الافتراضي)' },
+  { id: 'Cairo', name: 'Cairo (Modern)', nameAr: 'خط كاييرو (عصري)' },
   { id: 'Almarai', name: 'Almarai', nameAr: 'خط المراعي' },
   { id: 'Tajawal', name: 'Tajawal', nameAr: 'خط تجول' },
   { id: 'IBM Plex Sans Arabic', name: 'IBM Plex Sans', nameAr: 'خط آي بي إم' },
+  { id: 'Vazirmatn', name: 'Vazirmatn', nameAr: 'خط وزير متن' },
+  { id: 'Noto Sans Arabic', name: 'Noto Sans', nameAr: 'خط نوتو سانز' },
+  { id: 'Amiri', name: 'Amiri (Classic)', nameAr: 'خط أميري (كلاسيك)' },
+  { id: 'Lalezar', name: 'Lalezar (Bold)', nameAr: 'خط لاليزار (عريض)' },
+  { id: 'Changa', name: 'Changa', nameAr: 'خط تشانغا' },
+  { id: 'Lemonada', name: 'Lemonada', nameAr: 'خط ليمونادا' },
   { id: 'Montserrat', name: 'Montserrat', nameAr: 'خط مونتيسرات' },
   { id: 'Roboto', name: 'Roboto', nameAr: 'خط روبوتو' }
 ];
@@ -119,8 +125,8 @@ export const PATTERN_PRESETS = [
 ];
 
 export const SVG_PRESETS = [
-  { id: 'wave', name: 'Wave', svg: '<svg viewBox="0 0 1440 320"><path fill="currentColor" d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,165.3C672,139,768,117,864,128C960,139,1056,181,1152,197.3C1248,213,1344,203,1392,197.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>' },
-  { id: 'curve', name: 'Curve', svg: '<svg viewBox="0 0 1440 320"><path fill="currentColor" d="M0,96L120,122.7C240,149,480,203,720,213.3C960,224,1200,192,1320,176L1440,160L1440,0L1320,0C1200,0,960,0,720,0C480,0,240,0,120,0L0,0Z"></path></svg>' }
+  { id: 'wave', name: 'Wave', icon: 'Waves' },
+  { id: 'curve', name: 'Curve', icon: 'Wind' }
 ];
 
 export const SAMPLE_DATA: Record<string, Partial<CardData>> = {
