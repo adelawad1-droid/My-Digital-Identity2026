@@ -667,6 +667,15 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     };
   }, [activeDragElement]);
 
+  const [mouseYPercentage, setMouseYPercentage] = useState(0);
+
+  const handlePreviewMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+    setMouseYPercentage(percentage);
+  };
+
   // --- Accordion Logic ---
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'group1': true, // Open first group by default
@@ -916,7 +925,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  </div>
 
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                    <div className="flex items-center gap-3"><Shapes className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('هندسة الترويسة', 'Header Geometry')}</h4></div>
+                    <div className="flex items-center gap-4"><Shapes className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('هندسة الترويسة', 'Header Geometry')}</h4></div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                          {[
                            {id: 'classic', icon: LayoutTemplate, label: 'كلاسيك'},
@@ -929,7 +938,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                            {id: 'split-left', icon: AlignLeft, label: 'قطري يسار'},
                            {id: 'split-right', icon: AlignRight, label: 'قطري يمين'},
                            {id: 'floating', icon: Square, label: 'عائم'},
-                           {id: 'glass-card', icon: GlassWater, label: 'زجاجي'},
+                           {id: 'glass-card', icon: GlassWater, label: 'ججاجي'},
                            {id: 'modern-split', icon: Columns, label: 'حديث'}
                          ].map(item => (
                            <button 
@@ -998,7 +1007,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal boxed desktop"} />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal content overlap"} />
                         </div>
                      </div>
 
@@ -1154,7 +1163,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <Shapes className="text-blue-600" size={18} />
                           <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{isRtl ? 'مكتبة الكركترات والايموجي' : 'Emoji & Character Library'}</h4>
                        </div>
-                       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-[160px] overflow-y-auto no-scrollbar p-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner">
+                       <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-[160px] overflow-y-auto no-scrollbar p-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner">
                           {AVATAR_PRESETS.map((url, i) => (
                              <button 
                                key={i} 
@@ -1594,7 +1603,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                                       />
                                    </div>
                                    <div className="space-y-1">
-                                      <label className={isRtl ? 'أدخل اسم العرض' : 'Display Title'}>{t('العنوان الافتراضى (AR)', 'Default Title (AR)')}</label>
+                                      <label className={labelTextClasses}>{t('العنوان الافتراضى (AR)', 'Default Title (AR)')}</label>
                                       <input 
                                         type="text" 
                                         value={link.titleAr || ''} 
@@ -1985,7 +1994,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 </div>
               </div>
               
-              <div className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-900 dark:border-gray-800 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : ''}`} 
+              <div 
+                   onMouseMove={handlePreviewMouseMove}
+                   onMouseLeave={() => setMouseYPercentage(0)}
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
@@ -1995,15 +2007,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      backgroundColor: previewPageBg
                    }}>
                 
-                {/* Drag Overlays - تظهر فقط في وضع التحريك الحر */}
+                {/* Drag Overlays */}
                 {isDragMode && (
                    <div className="absolute inset-0 z-[100] pointer-events-none">
-                      {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
                       {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode'].map(elId => {
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;
                          const rect = element.getBoundingClientRect();
-                         const parentRect = element.closest('.themed-scrollbar')?.getBoundingClientRect();
+                         const parentRect = element.closest('.no-scrollbar')?.getBoundingClientRect();
                          if (!parentRect) return null;
                          
                          return (
@@ -2028,12 +2039,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    </div>
                 )}
 
-                <div className="themed-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem' }}>
+                <div className="no-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem' }}>
                    {isFullHeaderPreview && (
                       <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
                         <div className="absolute inset-0 z-0">
                           {template.config.defaultThemeType === 'image' && template.config.defaultBackgroundImage && (
-                            <img src={template.config.defaultThemeType === 'image' ? template.config.defaultBackgroundImage : undefined} className="w-full h-full object-cover" alt="Full Header" />
+                            <img src={template.config.defaultBackgroundImage} className="w-full h-full object-cover" alt="Full Header" />
                           )}
                           {template.config.defaultThemeType === 'gradient' && (
                             <div className="w-full h-full" style={{ background: template.config.defaultThemeGradient }} />
@@ -2047,14 +2058,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    
                    <div 
                      style={{ 
-                        transform: previewDevice === 'desktop' ? `translateY(${previewDesktopPullUp}px)` : 'none',
                         maxWidth: previewDevice === 'desktop' ? `${template.config.cardMaxWidth || 500}px` : '100%',
                         marginRight: 'auto',
                         marginLeft: 'auto',
                         paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
                         position: 'relative',
                         zIndex: 10,
-                        transition: activeDragElement ? 'none' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: activeDragElement ? 'none' : 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                        transform: activeDragElement ? 'none' : `translateY(${(previewDevice === 'desktop' ? previewDesktopPullUp : 0) - (mouseYPercentage * (previewDevice === 'desktop' ? 0.3 : 0.7))}px)`
                      }}
                    >
                      <CardPreview 
@@ -2122,7 +2133,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          cardBodyThemeType: template.config.cardBodyThemeType,
                          cardBgColor: template.config.cardBgColor,
                          linksSectionPaddingV: template.config.linksSectionPaddingV,
-                         // Pass down all offsets for interactive dragging
                          avatarOffsetX: template.config.avatarOffsetX,
                          avatarOffsetY: template.config.avatarOffsetY,
                          nameOffsetX: template.config.nameOffsetX,
@@ -2149,7 +2159,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        lang={lang} 
                        customConfig={template.config} 
                        hideSaveButton={true} 
-                       isFullFrame={true}
+                       isFullFrame={isFullHeaderPreview}
                        hideHeader={isFullHeaderPreview}
                        bodyOffsetYOverride={previewBodyOffsetY}
                      />
@@ -2188,7 +2198,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <button 
                          key={user.uid} 
                          onClick={() => { setSelectedUser(user); updateTemplate('restrictedUserId', user.uid); }}
-                         className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between group ${selectedUser?.uid === user.uid ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-500 hover:border-indigo-200'}`}
+                         className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between group ${selectedUser?.uid === user.uid ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500 hover:border-indigo-200'}`}
                        >
                           <div className="flex items-center gap-3 min-w-0">
                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedUser?.uid === user.uid ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-900'}`}>
@@ -2270,31 +2280,26 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       )}
 
       {showResetConfirm && (
-        <div className="fixed inset-0 z-[700] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-2xl border border-orange-100 dark:border-orange-900/20 animate-zoom-in">
-             <div className="w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle size={40} />
-             </div>
-             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد إعادة الضبط', 'Confirm Reset')}</h3>
-             <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                {t('هل أنت متأكد من تصفير كافة قيم الإزاحة والتباعد؟ هذا الإجراء سيعيد العناصر لمواقعها الافتراضية.', 'Are you sure? This will reset all offsets and spacing to their original default values.')}
-             </p>
-             <div className="flex flex-col gap-3">
-                <button 
-                  onClick={handleActualReset}
-                  className="w-full py-5 bg-orange-600 text-white rounded-3xl font-black text-sm uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
-                >
-                  <RotateCcw size={18} />
-                  {t('نعم، قم بإعادة الضبط', 'Yes, Reset Now')}
-                </button>
-                <button 
-                  onClick={() => setShowResetConfirm(false)}
-                  className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-3xl font-black text-[10px] uppercase transition-all"
-                >
-                  {t('إلغاء', 'Cancel')}
-                </button>
-             </div>
-          </div>
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-[#121215] w-full max-w-sm rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
+                 <AlertTriangle size={40} />
+              </div>
+              <div className="space-y-2">
+                 <h3 className="text-xl font-black dark:text-white leading-relaxed">{isRtl ? "إعادة ضبط الإزاحات" : "Reset Offsets"}</h3>
+                 <p className="text-xs font-bold text-gray-400 leading-relaxed px-4">
+                    {isRtl ? "هل أنت متأكد من رغبتك في إعادة ضبط كافة إزاحات العناصر إلى الصفر؟" : "Are you sure you want to reset all element offsets to zero?"}
+                 </p>
+              </div>
+              <div className="flex flex-col gap-3 pt-4 items-center">
+                 <button onClick={handleActualReset} className="w-full max-w-[280px] py-4 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                    <RotateCcw size={18} /> {isRtl ? "نعم، إعادة ضبط" : "Yes, Reset All"}
+                 </button>
+                 <button onClick={() => setShowResetConfirm(false)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase hover:bg-gray-100 transition-all">
+                    {isRtl ? "تراجع" : "Cancel"}
+                 </button>
+              </div>
+           </div>
         </div>
       )}
     </div>

@@ -473,8 +473,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   return (
     <div 
-      className={`w-full min-h-full flex flex-col transition-all duration-500 relative overflow-hidden ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
-      style={{ backgroundColor: finalCardBaseGroundColor }}
+      className={`w-full min-h-full flex flex-col transition-all duration-500 relative overflow-hidden isolate ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
+      style={{ 
+        backgroundColor: finalCardBaseGroundColor,
+        // منع أي عنصر من الخروج عن حدود الفريم
+        clipPath: isFullFrame ? 'none' : 'inset(0 round 2.25rem)' 
+      }}
     >
       
       {!hideHeader && (

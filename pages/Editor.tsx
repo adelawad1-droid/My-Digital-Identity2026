@@ -275,11 +275,12 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                   className="relative h-full max-h-[85vh] aspect-[9/19.5] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 overflow-hidden bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col cursor-ns-resize"
                 >
                     <div 
-                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-y-auto no-scrollbar"
+                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-hidden"
                       style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
                     >
                         <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} />
                     </div>
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-20 pointer-events-none"></div>
                 </div>
             </div>
@@ -826,16 +827,21 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               <div 
                    onMouseMove={handleSidebarPreviewMouseMove}
                    onMouseLeave={() => setSidebarMouseYPercentage(0)}
-                   className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5] cursor-ns-resize" 
+                   className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5] cursor-ns-resize isolate" 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg
                    }}>
                 
-                {/* Dynamic Island Mockup */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-50 border border-white/5 shadow-inner"></div>
+                {/* Dynamic Island Mockup - أعلى طبقة */}
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
 
-                <div className="no-scrollbar overflow-x-hidden h-full scroll-smooth relative z-0">
+                <div className="no-scrollbar h-full scroll-smooth relative z-0" 
+                     style={{ 
+                       borderRadius: '2.6rem', 
+                       overflow: 'hidden', // القناع الداخلي للشاشة
+                       clipPath: 'inset(0 round 2.6rem)' 
+                     }}>
                    <div 
                      style={{ 
                         maxWidth: '100%',
