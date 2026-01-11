@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   getAdminStats, ADMIN_EMAIL, deleteUserCard, 
@@ -28,7 +29,6 @@ import {
   Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud, MonitorDot
 } from 'lucide-react';
 
-// Add missing ColorPicker component to fix errors on lines 807, 808
 const ColorPicker = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => (
   <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
@@ -230,7 +230,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
         id: `tmpl_${Date.now()}_copy`,
         nameAr: `${tmpl.nameAr} (نسخة)`,
         nameEn: `${tmpl.nameEn} (Copy)`,
-        isActive: false, // يبدأ كغير نشط للتعديل
+        isActive: false, 
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         usageCount: 0
@@ -360,7 +360,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
               <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
                 <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3"><Activity className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('آخر البطاقات المحدثة', 'Recent Updates')}</h3></div>
+                  <div className="flex items-center gap-3"><Activity className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('إدارة كافة البطاقات', 'Cards Manager')}</h3></div>
                   <div className="relative w-full md:w-80">
                     <Search className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
                     <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder={t('ابحث في البطاقات...', 'Search cards...')} className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 transition-all`} />
@@ -371,24 +371,66 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                       <thead className="bg-gray-50/50 dark:bg-gray-800/20 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
                          <tr>
                             <td className="px-8 py-5">{t('البطاقة', 'Card')}</td>
-                            <td className="px-8 py-5">{t('الرابط', 'Link')}</td>
-                            <td className="px-8 py-5">{t('المشاهدات', 'Views')}</td>
-                            <td className="px-8 py-5">{t('الحالة', 'Status')}</td>
+                            <td className="px-8 py-5 text-center">{t('المشاهدات', 'Views')}</td>
+                            <td className="px-8 py-5 text-center">{t('الحالة', 'Status')}</td>
                             <td className="px-8 py-5">{t('الإجراءات', 'Actions')}</td>
                          </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                          {(stats?.recentCards || []).filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.id.toLowerCase().includes(searchTerm.toLowerCase())).map((card) => (
                             <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                               <td className="px-8 py-6"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">{card.profileImage ? <img src={card.profileImage} className="w-full h-full object-cover" /> : <UserIcon className="text-gray-300" size={18}/>}</div><div><p className="font-black dark:text-white leading-none">{card.name || '---'}</p><p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{card.ownerEmail}</p></div></div></td>
-                               <td className="px-8 py-6"><a href={generateShareUrl(card)} target="_blank" className="text-blue-600 font-black text-xs hover:underline uppercase">/{card.id}</a></td>
-                               <td className="px-8 py-6"><div className="flex items-center gap-1 font-black text-indigo-600"><Eye size={12}/>{card.viewCount || 0}</div></td>
                                <td className="px-8 py-6">
-                                  <button onClick={() => toggleCardStatus(card.id, card.ownerId, card.isActive === false)} className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase ${card.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                     {card.isActive !== false ? t('نشط', 'Active') : t('معطل', 'Disabled')}
-                                  </button>
+                                  <div className="flex items-center gap-4">
+                                     <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                                        {card.profileImage ? <img src={card.profileImage} className="w-full h-full object-cover" /> : <UserIcon className="text-gray-300" size={18}/>}
+                                     </div>
+                                     <div>
+                                        <p className="font-black dark:text-white leading-none">{card.name || '---'}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">{card.ownerEmail}</p>
+                                        <p className="text-[9px] font-black text-blue-600 uppercase tracking-tighter">ID: {card.id}</p>
+                                     </div>
+                                  </div>
                                </td>
-                               <td className="px-8 py-6"><div className="flex gap-2"><button onClick={() => onEditCard(card)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={18}/></button><button onClick={() => setCardToDelete({id: card.id, ownerId: card.ownerId})} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={18}/></button></div></td>
+                               <td className="px-8 py-6 text-center font-black text-indigo-600"><div className="flex items-center justify-center gap-1"><Eye size={12}/>{card.viewCount || 0}</div></td>
+                               <td className="px-8 py-6 text-center">
+                                  <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase ${card.isActive !== false ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                     {card.isActive !== false ? t('نشط', 'Active') : t('معطل', 'Disabled')}
+                                  </div>
+                               </td>
+                               <td className="px-8 py-6">
+                                  <div className="flex gap-2">
+                                     <a 
+                                        href={generateShareUrl(card)} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="p-2 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                        title={t('عرض البطاقة', 'View Card')}
+                                     >
+                                        <Eye size={18}/>
+                                     </a>
+                                     <button 
+                                        onClick={() => toggleCardStatus(card.id, card.ownerId, card.isActive === false)} 
+                                        className={`p-2 rounded-xl transition-all shadow-sm ${card.isActive !== false ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white' : 'text-red-500 bg-red-50 hover:bg-red-500 hover:text-white'}`}
+                                        title={card.isActive !== false ? t('إيقاف البطاقة', 'Disable Card') : t('تنشيط البطاقة', 'Enable Card')}
+                                     >
+                                        <Power size={18}/>
+                                     </button>
+                                     <button 
+                                        onClick={() => onEditCard(card)} 
+                                        className="p-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                        title={t('تعديل', 'Edit')}
+                                     >
+                                        <Edit3 size={18}/>
+                                     </button>
+                                     <button 
+                                        onClick={() => setCardToDelete({id: card.id, ownerId: card.ownerId})} 
+                                        className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                        title={t('حذف', 'Delete')}
+                                     >
+                                        <Trash2 size={18}/>
+                                     </button>
+                                  </div>
+                               </td>
                             </tr>
                          ))}
                       </tbody>
@@ -897,7 +939,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
              lang={lang} 
              initialTemplate={editingTemplate}
              onSave={async (tmpl) => {
-                setIsPlanSubmitting(true); // Reusing isPlanSubmitting for builder save state
+                setIsPlanSubmitting(true); 
                 try {
                   await saveCustomTemplate(tmpl);
                   alert(isRtl ? "تم حفظ القالب بنجاح" : "Template saved successfully");
@@ -1038,5 +1080,4 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   );
 };
 
-// Add missing default export to fix App.tsx error
 export default AdminDashboard;

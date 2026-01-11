@@ -192,6 +192,7 @@ export const TRANSLATIONS: TranslationStrings = {
   howToStart: { en: 'How to Start', ar: 'كيف تبدأ' },
   templates: { en: 'Templates', ar: 'القوالب' },
   myCards: { en: 'My Cards', ar: 'بطاقاتي' },
+  pricing: { en: 'Pricing', ar: 'الباقات' },
   admin: { en: 'Admin', ar: 'الإدارة' },
   account: { en: 'Account', ar: 'الحساب' },
   login: { en: 'Login / Register', ar: 'دخول / تسجيل' },

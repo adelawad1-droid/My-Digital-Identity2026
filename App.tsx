@@ -68,7 +68,7 @@ const AppContent: React.FC = () => {
 
   const isRtl = LANGUAGES_CONFIG[lang]?.dir === 'rtl';
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
-  // Fix: Updated definition of t to accept a second argument (en) to fix "Expected 1 arguments, but got 2" errors.
+  
   const t = (key: string, en?: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : (en || key);
 
   useEffect(() => {
@@ -198,7 +198,7 @@ const AppContent: React.FC = () => {
       { id: 'home', path: '/', icon: HomeIcon, label: t('home') },
       { id: 'templates', path: '/templates', icon: LayoutGrid, label: t('templates') },
       { id: 'my-cards', path: '/my-cards', icon: CreditCard, label: t('myCards'), private: true },
-      { id: 'pricing', path: '/pricing', icon: Zap, label: t('الباقات', 'Pricing') },
+      { id: 'pricing', path: '/pricing', icon: Zap, label: t('pricing') },
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
     return (
@@ -210,7 +210,7 @@ const AppContent: React.FC = () => {
               return (
                 <button key={item.id} onClick={() => setShowAuthModal(true)} className="flex flex-col items-center gap-1.5 py-3 px-2 text-gray-400">
                   <item.icon size={20} />
-                  <span className="text-[10px] font-black uppercase tracking-tighter">{item.label}</span>
+                  <span className="text-[11px] font-black uppercase tracking-tighter">{item.label}</span>
                 </button>
               );
             }
@@ -224,7 +224,7 @@ const AppContent: React.FC = () => {
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-b-full shadow-[0_2px_10px_rgba(37,99,235,0.4)]" />
                 )}
                 <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span className={`text-[10px] font-black uppercase tracking-tighter ${isActive ? 'scale-105' : ''}`}>{item.label}</span>
+                <span className={`text-[11px] font-black uppercase tracking-tighter ${isActive ? 'scale-105' : ''}`}>{item.label}</span>
               </button>
             );
           })}
@@ -249,7 +249,7 @@ const AppContent: React.FC = () => {
            <SidebarItem icon={HomeIcon} label={t('home')} onClick={() => navigateWithLang('/')} active={location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`)} />
            <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
            <SidebarItem icon={LayoutGrid} label={t('templates')} onClick={() => navigateWithLang('/templates')} active={location.pathname.includes('/templates')} />
-           <SidebarItem icon={Zap} label={t('الباقات', 'Pricing')} onClick={() => navigateWithLang('/pricing')} active={location.pathname.includes('/pricing')} color="text-amber-500" />
+           <SidebarItem icon={Zap} label={t('pricing')} onClick={() => navigateWithLang('/pricing')} active={location.pathname.includes('/pricing')} color="text-amber-500" />
            <SidebarItem icon={MessageSquare} label={t('customOrders')} onClick={() => navigateWithLang('/custom-orders')} active={location.pathname.includes('/custom-orders')} />
            {currentUser && (
              <>
@@ -298,12 +298,12 @@ const AppContent: React.FC = () => {
               </div>
             </div>
             <nav className="hidden xl:flex items-center gap-1 ml-4 mr-4">
-              <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('home')}</button>
-              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
-              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
-              <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('الباقات', 'Pricing')}</button>
-              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
-              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
+              <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('home')}</button>
+              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
+              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
+              <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
+              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
+              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
             </nav>
           </div>
           <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ const AppContent: React.FC = () => {
                 {isAdmin && (
                   <button 
                     onClick={() => navigateWithLang('/admin')} 
-                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/admin') ? 'bg-amber-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/admin') ? 'bg-amber-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                   >
                     <ShieldCheck size={14} />
                     {t('admin')}
@@ -321,15 +321,15 @@ const AppContent: React.FC = () => {
                 )}
                 <button 
                   onClick={() => navigateWithLang('/account')} 
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/account') ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                  className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/account') ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                 >
                   <UserIcon size={14} />
                   {t('account')}
                 </button>
-                <button onClick={() => signOut(auth)} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-100 transition-all">{t('logout')}</button>
+                <button onClick={() => signOut(auth)} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[11px] font-black uppercase hover:bg-red-100 transition-all">{t('logout')}</button>
               </div>
             ) : (
-              <button onClick={() => setShowAuthModal(true)} className="hidden md:block px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition-all">{t('login')}</button>
+              <button onClick={() => setShowAuthModal(true)} className="hidden md:block px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[11px] font-black uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition-all">{t('login')}</button>
             )}
           </div>
         </div>
@@ -341,12 +341,9 @@ const AppContent: React.FC = () => {
           <Route path="/pricing" element={<Pricing lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
-          {/* Fix: deleteUserCard expects a single object argument */}
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
-          {/* Fix: saveCardToDB expects a single object argument */}
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
-          {/* Fix: deleteUserCard expects a single object argument */}
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>
