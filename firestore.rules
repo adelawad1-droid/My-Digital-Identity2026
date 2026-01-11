@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // دالات التحقق
+    // دالات التحقق الأساسية
     function isSignedIn() {
       return request.auth != null;
     }
@@ -18,14 +18,15 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // البطاقات العامة: القراءة للجميع، الكتابة للمالك فقط أو الأدمن
+    // البطاقات العامة: الجميع يقرأ (للمشاركة)، المالك أو الأدمن يكتب
     match /public_cards/{cardId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // سجل المستخدمين: المالك يقرأ ويحدث بياناته، الأدمن يتحكم في الكل
+    // سجل المستخدمين: المالك يقرأ ويحدث بياناته، الأدمن يتحكم في كل شيء
     match /users_registry/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if isSignedIn() && request.auth.uid == userId;
@@ -33,7 +34,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // الإعدادات، القوالب، الخطط، والأنماط: قراءة للجميع، تعديل للأدمن فقط
+    // الإعدادات، القوالب، والخطط: قراءة للجميع، تعديل للأدمن فقط
     match /settings/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /custom_templates/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /template_categories/{docId} { allow read: if true; allow write: if isAdmin(); }
