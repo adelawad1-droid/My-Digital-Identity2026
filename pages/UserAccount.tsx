@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
-import { auth, updateUserSecurity, getAuthErrorMessage } from '../services/firebase';
+import React, { useState, useEffect } from 'react';
+import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
-import { Language } from '../types';
+import { Language, PricingPlan } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, 
-  AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X
+  AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
+  Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield
 } from 'lucide-react';
 
 interface UserAccountProps {
@@ -15,10 +17,15 @@ interface UserAccountProps {
 const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const isRtl = lang === 'ar';
   const user = auth.currentUser;
+  const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
+  const [fetchingProfile, setFetchingProfile] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [activePlan, setActivePlan] = useState<PricingPlan | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
     newEmail: user?.email || '',
@@ -27,6 +34,29 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   });
 
   const t = (ar: string, en: string) => isRtl ? ar : en;
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        try {
+          const [profile, plans] = await Promise.all([
+            getUserProfile(user.uid),
+            getAllPricingPlans()
+          ]);
+          setUserProfile(profile);
+          if (profile?.planId) {
+            const plan = plans.find(p => p.id === profile.planId);
+            if (plan) setActivePlan(plan);
+          }
+        } catch (e) {
+          console.error("Error loading account data:", e);
+        } finally {
+          setFetchingProfile(false);
+        }
+      }
+    };
+    loadData();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -41,7 +71,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!user) return;
     setLoading(true);
     try {
-      // ملاحظة: قد يطلب Firebase إعادة تسجيل الدخول (Re-authentication) إذا مر وقت طويل على الجلسة
       await deleteUser(user);
       window.location.reload();
     } catch (error: any) {
@@ -101,78 +130,141 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const inputClasses = "w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all";
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1";
 
+  if (fetchingProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40">
+        <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
+        <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">{t("جاري تحميل بيانات الحساب...", "Loading account data...")}</p>
+      </div>
+    );
+  }
+
+  const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin';
+  const roleName = userProfile?.role === 'admin' ? t('مسؤول النظام', 'System Admin') : (userProfile?.role === 'premium' ? t('عضو احترافي (برو)', 'Premium Pro Member') : t('مستخدم عادي (مجاني)', 'Standard Free Member'));
+
   return (
-    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in-up">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-10">
-        <div className="flex items-center gap-5">
-           <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-blue-500/20">
-              <UserCircle size={40} />
+    <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-60 relative z-10">
+      
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
+        <div className="flex items-center gap-6">
+           <div className={`w-20 h-20 rounded-[2.25rem] flex items-center justify-center text-white shadow-2xl ${isPremium ? 'bg-amber-500 shadow-amber-500/20' : 'bg-blue-600 shadow-blue-500/20'}`}>
+              {userProfile?.role === 'admin' ? <ShieldCheck size={36} /> : isPremium ? <Crown size={36} /> : <UserCircle size={36} />}
            </div>
            <div>
-              <h1 className="text-3xl font-black dark:text-white">{t('إعدادات الحساب', 'Account Settings')}</h1>
-              <p className="text-sm font-bold text-gray-400 mt-1">{user?.email}</p>
+              <h1 className="text-3xl md:text-4xl font-black dark:text-white leading-tight mb-1">{t('إعدادات الحساب', 'Account Center')}</h1>
+              <div className="flex items-center gap-2">
+                 <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isPremium ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>{roleName}</span>
+                 {userProfile?.role === 'admin' && <span className="bg-red-50 text-red-600 text-[10px] font-black px-2 py-1 rounded-lg uppercase">Admin</span>}
+              </div>
            </div>
         </div>
-        <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 rounded-full border border-emerald-100 dark:border-emerald-800/30">
-               <ShieldCheck size={16} />
-               <span className="text-[10px] font-black uppercase tracking-widest">{t('حساب محمي', 'Secure Account')}</span>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase shadow-sm hover:bg-red-600 hover:text-white transition-all"
-            >
-              <LogOut size={16} />
-              {t('خروج', 'Logout')}
-            </button>
-        </div>
+        <button 
+          onClick={handleLogout}
+          className="flex items-center justify-center gap-3 px-8 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-red-600 hover:text-white transition-all w-full md:w-auto"
+        >
+          <LogOut size={18} />
+          {t('تسجيل الخروج', 'Logout')}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-6">
-           <div className="bg-white dark:bg-gray-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-xl">
-              <h3 className="font-black text-gray-900 dark:text-white mb-4">{t('معلومات الدخول', 'Login Info')}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
-                {t('تستخدم هذه البيانات للوصول إلى لوحة التحكم الخاصة بك وإدارة بطاقاتك الرقمية.', 'Use these credentials to access your dashboard.')}
-              </p>
-           </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        {/* Sidebar Section */}
+        <div className="lg:col-span-4 space-y-8">
            
-           <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 flex gap-4">
-              <AlertTriangle className="text-amber-600 shrink-0" size={20} />
-              <p className="text-[10px] font-bold text-amber-800 dark:text-amber-400 leading-relaxed">
-                {t('لتغيير البريد أو كلمة المرور، يجب إدخال كلمة المرور الحالية أولاً لدواعي الأمان.', 'Current password is required to change email or password.')}
-              </p>
+           {/* Card 1: Subscription Info */}
+           <div className={`p-8 rounded-[3rem] border shadow-xl relative overflow-hidden transition-all duration-500 ${isPremium ? 'bg-amber-500 text-white border-amber-600' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}>
+              <div className="relative z-10 space-y-6">
+                 <div className="flex justify-between items-start">
+                    <div>
+                       <h3 className="text-xl font-black uppercase tracking-tighter">{t('حالة الاشتراك', 'Sub Status')}</h3>
+                       <p className={`text-[10px] font-black uppercase tracking-widest opacity-80 ${!isPremium ? 'text-blue-600' : 'text-white'}`}>
+                        {activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : t('باقة مجانية', 'Free Plan')}
+                       </p>
+                    </div>
+                    <div className={`p-3 rounded-2xl ${isPremium ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600'}`}>
+                       {isPremium ? <Sparkles size={24} /> : <Zap size={24} />}
+                    </div>
+                 </div>
+
+                 {userProfile?.premiumUntil && (
+                    <div className="space-y-4">
+                       <div className="flex items-center gap-3">
+                          <Calendar size={18} className="opacity-70" />
+                          <div className="flex flex-col">
+                             <span className="text-[9px] font-black uppercase opacity-60">{t('صالح حتى', 'Valid Until')}</span>
+                             <span className="text-sm font-black">{new Date(userProfile.premiumUntil).toLocaleDateString()}</span>
+                          </div>
+                       </div>
+                       <div className={`w-full h-1.5 rounded-full overflow-hidden ${isPremium ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                          <div className={`h-full ${isPremium ? 'bg-white' : 'bg-blue-600'}`} style={{ width: '100%' }}></div>
+                       </div>
+                    </div>
+                 )}
+
+                 {!isPremium ? (
+                    <button 
+                       onClick={() => navigate(`/${lang}/pricing`)}
+                       className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                       {t('ترقية الحساب الآن', 'Upgrade Account')}
+                       <ArrowUpRight size={16} />
+                    </button>
+                 ) : (
+                    <div className="p-4 bg-white/10 rounded-2xl border border-white/20 flex gap-3 items-center">
+                       <Shield size={20} className="shrink-0" />
+                       <p className="text-[10px] font-bold leading-tight">{t('حسابك مفعل بكامل الصلاحيات الاحترافية.', 'Pro membership is active.')}</p>
+                    </div>
+                 )}
+              </div>
+              {isPremium && <div className="absolute -bottom-6 -right-6 opacity-10 rotate-12"><Crown size={120} /></div>}
            </div>
 
-           {/* Danger Zone */}
-           <div className="bg-red-50/50 dark:bg-red-900/5 p-8 rounded-[2.5rem] border border-red-100 dark:border-red-900/20 space-y-4">
-              <h3 className="font-black text-red-600 text-sm uppercase tracking-widest">{t('منطقة الخطر', 'Danger Zone')}</h3>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
-                {t('سيتم حذف حسابك وكافة بطاقاتك الرقمية بشكل نهائي ولا يمكن استعادتها.', 'This will permanently delete your account and all your cards.')}
-              </p>
-              <button 
-                onClick={() => setShowDeleteConfirm(true)}
-                className="w-full py-3 bg-white dark:bg-gray-800 text-red-600 border border-red-100 dark:border-red-900/30 rounded-xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm"
-              >
-                {t('حذف الحساب نهائياً', 'Delete Account')}
-              </button>
+           {/* Card 2: Membership Features */}
+           <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                 <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-lg"><CheckCircle2 size={18} /></div>
+                 <h3 className="font-black text-xs uppercase tracking-widest dark:text-white">{t('مميزات العضوية', 'Plan Benefits')}</h3>
+              </div>
+              
+              <ul className="space-y-4">
+                 {(isPremium ? 
+                    (isRtl ? ["وصول للمحرر المتقدم", "نظام العضويات", "وسام التوثيق", "قوالب حصرية", "دعم أولوية"] : 
+                             ["Advanced Editor", "Member Systems", "Verified Badge", "Pro Templates", "Priority Support"]) : 
+                    (isRtl ? ["تعديل بيانات أساسية", "قوالب مجانية", "مشاركة برابط", "إحصائيات بسيطة"] : 
+                             ["Basic Editing", "Free Templates", "Link Sharing", "Basic Stats"])
+                 ).map((feat, idx) => (
+                    <li key={idx} className="flex items-center gap-3">
+                       <div className={`p-1 rounded-md ${isPremium ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                          <Check size={12} strokeWidth={4} />
+                       </div>
+                       <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{feat}</span>
+                    </li>
+                 ))}
+              </ul>
            </div>
         </div>
 
-        <div className="lg:col-span-2">
-           <form onSubmit={handleUpdate} className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-8">
+        {/* Form Section */}
+        <div className="lg:col-span-8">
+           <form onSubmit={handleUpdate} className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-10">
               
+              <div className="flex items-center gap-4">
+                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><Lock size={24} /></div>
+                 <h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('أمان الحساب والبيانات', 'Security & Privacy')}</h2>
+              </div>
+
               {status && (
-                <div className={`p-4 rounded-2xl flex items-center gap-3 animate-fade-in ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
-                  {status.type === 'success' ? <CheckCircle2 size={20} /> : <AlertTriangle size={20} />}
-                  <span className="text-xs font-bold">{status.message}</span>
+                <div className={`p-5 rounded-2xl flex items-center gap-4 animate-fade-in ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                  {status.type === 'success' ? <CheckCircle2 size={24} /> : <AlertTriangle size={24} />}
+                  <span className="text-sm font-bold">{status.message}</span>
                 </div>
               )}
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                  <div>
-                    <label className={labelClasses}>{t('كلمة المرور الحالية (مطلوب للتغيير)', 'Current Password (Required)')}</label>
+                    <label className={labelClasses}>{t('كلمة المرور الحالية (مطلوب للتعديل)', 'Current Password')}</label>
                     <div className="relative">
                        <Key className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
                        <input 
@@ -185,7 +277,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                     </div>
                  </div>
 
-                 <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-6">
+                 <div className="pt-8 border-t border-gray-100 dark:border-gray-800 space-y-8">
                     <div>
                        <label className={labelClasses}>{t('البريد الإلكتروني الجديد', 'New Email Address')}</label>
                        <div className="relative">
@@ -199,7 +291,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div>
                           <label className={labelClasses}>{t('كلمة سر جديدة', 'New Password')}</label>
                           <input 
@@ -207,7 +299,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                             value={securityData.newPassword}
                             onChange={e => setSecurityData({...securityData, newPassword: e.target.value})}
                             className={inputClasses}
-                            placeholder={t('6 أحرف على الأقل', 'Min 6 characters')}
+                            placeholder={t('6 أحرف على الأقل', 'Min 6 chars')}
                           />
                        </div>
                        <div>
@@ -225,25 +317,48 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
               <button 
                 type="submit" disabled={loading}
-                className="w-full py-5 bg-blue-600 text-white rounded-[2rem] font-black shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50"
               >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                {t('تحديث بيانات الحساب', 'Update Account Details')}
+                {loading ? <Loader2 className="animate-spin" size={24} /> : <CheckCircle2 size={24} />}
+                {t('تحديث بيانات الحساب', 'Update My Account')}
               </button>
            </form>
         </div>
       </div>
 
+      {/* Separate Container for Danger Zone to avoid any overlapping issues */}
+      <div className="max-w-4xl mx-auto mt-20">
+         <div className="bg-red-50/50 dark:bg-red-900/5 p-8 md:p-12 rounded-[3.5rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-10 shadow-sm relative">
+            <div className="flex items-center gap-6 text-center md:text-start flex-col md:flex-row">
+               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-[1.5rem] flex items-center justify-center shrink-0">
+                  <AlertTriangle size={32} />
+               </div>
+               <div>
+                  <h3 className="text-xl font-black text-red-600 uppercase tracking-tight">{t('منطقة الخطر', 'Danger Zone')}</h3>
+                  <p className="text-xs font-bold text-gray-500 dark:text-gray-400 leading-relaxed mt-1">
+                    {t('سيتم حذف حسابك وكافة بطاقاتك الرقمية بشكل نهائي ولا يمكن استعادتها.', 'Permanently delete your account and all associated data. This cannot be undone.')}
+                  </p>
+               </div>
+            </div>
+            <button 
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full md:w-auto px-10 py-5 bg-white dark:bg-gray-800 text-red-600 border border-red-200 dark:border-red-900/30 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm shrink-0"
+            >
+              {t('حذف الحساب نهائياً', 'Delete Account')}
+            </button>
+         </div>
+      </div>
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 size={40} />
              </div>
-             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد الحذف النهائي', 'Confirm Permanent Delete')}</h3>
+             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد الحذف النهائي', 'Confirm Delete')}</h3>
              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                {t('هل أنت متأكد من رغبتك في حذف حسابك؟ لا يمكن التراجع عن هذه الخطوة وسيتم مسح كافة بياناتك فوراً.', 'Are you sure? This action is permanent and all your data will be wiped immediately.')}
+                {t('هل أنت متأكد؟ لا يمكن التراجع عن هذه الخطوة وسيتم مسح كافة بياناتك فوراً.', 'Are you sure? This action is permanent and all your data will be wiped immediately.')}
              </p>
              <div className="flex flex-col gap-3">
                 <button 
