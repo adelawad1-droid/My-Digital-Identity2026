@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans } from '../services/firebase';
+import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, getUserPayments, PaymentRecord } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
 import { Language, PricingPlan } from '../types';
 import { 
@@ -26,6 +26,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [availablePlans, setAvailablePlans] = useState<PricingPlan[]>([]);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
 
   const [securityData, setSecurityData] = useState({
@@ -38,12 +39,14 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   useEffect(() => {
     const fetchData = async () => {
       if (user) {
-        const [profile, plans] = await Promise.all([
+        const [profile, plans, paymentHistory] = await Promise.all([
           getUserProfile(user.uid),
-          getAllPricingPlans()
+          getAllPricingPlans(),
+          getUserPayments(user.uid)
         ]);
         setUserProfile(profile);
         setAvailablePlans(plans);
+        setPayments(paymentHistory);
         setIsProfileLoading(false);
       }
     };
@@ -123,7 +126,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!userProfile?.premiumUntil) return 0;
     const expiry = new Date(userProfile.premiumUntil);
     const now = new Date();
-    const start = new Date(expiry.getTime() - 365 * 24 * 60 * 60 * 1000); // نفترض سنة كاملة
+    // Assuming annual sub
+    const start = new Date(expiry.getTime() - 365 * 24 * 60 * 60 * 1000); 
     const total = expiry.getTime() - start.getTime();
     const remaining = expiry.getTime() - now.getTime();
     return Math.max(0, Math.min(100, (remaining / total) * 100));
@@ -235,20 +239,22 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                           <CreditCard size={14} /> {t('billingHistory')}
                        </h4>
-                       <div className="space-y-3">
-                          {isPremium ? (
-                             <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700">
+                       <div className="space-y-3 max-h-[150px] overflow-y-auto no-scrollbar">
+                          {payments.length > 0 ? (
+                            payments.map(payment => (
+                             <div key={payment.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700">
                                 <div className="flex items-center gap-3">
                                    <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
                                       <CheckCircle2 size={16} />
                                    </div>
                                    <div>
-                                      <p className="text-[10px] font-black dark:text-white uppercase leading-none">Subscription Payment</p>
-                                      <p className="text-[8px] font-bold text-gray-400 mt-1">{new Date().toLocaleDateString()}</p>
+                                      <p className="text-[10px] font-black dark:text-white uppercase leading-none">{payment.planName}</p>
+                                      <p className="text-[8px] font-bold text-gray-400 mt-1">{new Date(payment.createdAt?.seconds * 1000 || payment.createdAt).toLocaleDateString()}</p>
                                    </div>
                                 </div>
-                                <span className="text-xs font-black text-blue-600">${currentPlan?.price || '--'}</span>
+                                <span className="text-xs font-black text-blue-600">${payment.amount}</span>
                              </div>
+                            ))
                           ) : (
                              <div className="text-center py-6">
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'لا توجد فواتير سابقة' : 'No billing history'}</p>
@@ -260,7 +266,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                     <a 
                       href="https://billing.stripe.com" 
                       target="_blank" 
-                      className="text-[10px] font-black text-blue-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest group"
+                      className="text-[10px] font-black text-blue-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest group mt-4"
                     >
                        {isRtl ? 'إدارة الفواتير عبر Stripe' : 'Manage Invoices via Stripe'}
                        <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -340,7 +346,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
               <button 
                 type="submit" disabled={loading}
-                className="w-full py-5 bg-blue-600 text-white rounded-[2rem] font-black shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-5 bg-blue-600 text-white rounded-[2rem] font-black shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50"
               >
                 {loading ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
                 {t('saveChanges')}
