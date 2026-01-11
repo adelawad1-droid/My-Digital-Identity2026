@@ -315,6 +315,8 @@ export interface CardData {
   emails?: string[];   
   websites?: string[]; 
   useSocialBrandColors?: boolean; 
+  // Fix: Add socialIconColumns to CardData to resolve type error in Editor.tsx
+  socialIconColumns?: number;
   ownerId?: string;
   ownerEmail?: string;
   updatedAt?: string;

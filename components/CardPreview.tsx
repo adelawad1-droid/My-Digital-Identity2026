@@ -391,7 +391,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const sSize = config.socialIconSize || 22;
   const sPadding = config.socialIconPadding || 14;
   const sGap = config.socialIconGap || 12;
-  const sCols = config.socialIconColumns || 0;
+  
+  // Update sCols to prioritize data.socialIconColumns from Editor
+  const sCols = data.socialIconColumns !== undefined ? data.socialIconColumns : (config.socialIconColumns || 0);
+  
   const sVariant = config.socialIconVariant || 'filled';
   const sBg = config.socialIconBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
   const sColor = config.socialIconColor || socialIconsColor;
@@ -843,10 +846,15 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            {showSocialLinks && data.socialLinks?.length > 0 && (
              <div 
                data-element-id="socialLinks"
-               className={`grid justify-center py-6 mx-auto ${sCols > 0 ? `grid-cols-${sCols}` : 'flex flex-wrap'}`} 
+               className="mx-auto py-6" 
                style={{ 
+                 display: sCols > 0 ? 'grid' : 'flex',
+                 flexWrap: sCols > 0 ? 'nowrap' : 'wrap',
+                 justifyContent: 'center',
+                 gridTemplateColumns: sCols > 0 ? `repeat(${sCols}, minmax(0, 1fr))` : 'none',
                  transform: `translate(${data.socialLinksOffsetX ?? config.socialLinksOffsetX ?? 0}px, ${data.socialLinksOffsetY ?? config.socialLinksOffsetY ?? 0}px)`,
                  gap: `${sGap}px`,
+                 width: 'fit-content',
                  maxWidth: '100%',
                  fontFamily: 'inherit'
                }}
@@ -856,7 +864,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    key={idx} 
                    href={link.url} 
                    target="_blank" 
-                   className="hover:scale-110 active:scale-95"
+                   className="hover:scale-110 active:scale-95 transition-transform"
                    style={{ ...getSocialBtnStyles(link.platformId), fontFamily: 'inherit' }}
                  >
                    <SocialIcon 

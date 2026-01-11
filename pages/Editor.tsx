@@ -97,7 +97,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [formData, setFormData] = useState<CardData>(() => {
     const targetTemplateId = initialData?.templateId || forcedTemplateId || templates[0]?.id || 'classic';
     const selectedTmpl = templates.find(t => t.id === targetTemplateId);
-    if (initialData) return { ...initialData, emails: initialData.emails || [], websites: initialData.websites || [], specialLinks: initialData.specialLinks || [] };
+    if (initialData) return { ...initialData, emails: initialData.emails || [], websites: initialData.websites || [], specialLinks: initialData.specialLinks || [], socialIconColumns: initialData.socialIconColumns || 0 };
     const baseData = { ...(SAMPLE_DATA[lang] || SAMPLE_DATA['en']), id: generateSerialId(), templateId: targetTemplateId } as CardData;
     if (selectedTmpl) {
        return {
@@ -113,7 +113,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
          specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
-         fontFamily: selectedTmpl.config.fontFamily || 'Cairo'
+         fontFamily: selectedTmpl.config.fontFamily || 'Cairo',
+         socialIconColumns: selectedTmpl.config.socialIconColumns || 0
        } as CardData;
     }
     return baseData;
@@ -167,12 +168,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     );
   };
 
-  const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px" }: any) => (
+  const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px", hint }: any) => (
     <div className="bg-white dark:bg-gray-900 p-5 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
            {Icon && <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Icon size={14} /></div>}
-           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+           <div className="flex flex-col">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+              {hint && <span className="text-[7px] text-gray-400 font-bold">{hint}</span>}
+           </div>
         </div>
         <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-3 py-0.5 border border-blue-100 dark:border-blue-800/30">
            <span className="text-xs font-black text-blue-600">{value}</span>
@@ -425,7 +429,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                 <div className="space-y-2">
                                    <div className="flex items-center justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('bio')}</label><VisibilityToggle field="showBio" label="" /></div>
-                                   <textarea rows={3} value={formData.bio} onChange={e => handleChange('bio', e.target.value)} className={inputClasses + " resize-none"} placeholder="Write something inspiring about yourself..." />
+                                   <textarea rows={3} value={formData.bio} onChange={e => handleChange('bio', e.target.value)} className={inputClasses} placeholder="Write something inspiring about yourself..." />
                                 </div>
 
                                 <div className="space-y-2">
@@ -568,6 +572,19 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                        {!formData.useSocialBrandColors && (
                                           <ColorPickerUI label={t('لون أيقونات التواصل', 'Social Icons Color')} field="socialIconsColor" icon={Pipette} />
                                        )}
+                                    </div>
+
+                                    {/* الخيار الجديد لعدد الأيقونات في الصف الواحد */}
+                                    <div className="grid grid-cols-1 gap-4 pt-2">
+                                       <RangeControl 
+                                          label={isRtl ? 'عدد الأيقونات في الصف' : 'Icons per row'} 
+                                          min={0} max={6} 
+                                          value={formData.socialIconColumns || 0} 
+                                          onChange={(v: number) => handleChange('socialIconColumns', v)} 
+                                          icon={Grid} 
+                                          unit="" 
+                                          hint={isRtl ? 'اختر 0 للتوزيع التلقائي' : 'Choose 0 for Flex layout'}
+                                       />
                                     </div>
                                  </div>
 
