@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
@@ -265,7 +264,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
               {isPremium ? (
                  <button 
-                   onClick={() => window.open('https://billing.stripe.com/', '_blank')}
+                   onClick={() => window.open('https://billing.stripe.com/p/login/28E7sMdXhgoE6E80dQ4c800', '_blank')}
                    className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
                  >
                     <span className="relative z-10">{t('إدارة الفواتير والاشتراك', 'Manage Billing & Subscription')}</span>
