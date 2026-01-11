@@ -337,5 +337,18 @@ export const TRANSLATIONS: TranslationStrings = {
   advancedEditorTitle: { ar: 'المحرر المتقدم (احترافي)', en: 'Advanced Editor (Pro)' },
   basicEditorDesc: { ar: 'يمكنك تعديل بياناتك الشخصية فقط. التنسيقات البصرية ثابتة في هذا الوضع.', en: 'You can only edit personal data. Visual styling is fixed in this mode.' },
   advancedEditorDesc: { ar: 'تحكم كامل في الألوان، التنسيقات، الأبعاد، ونظام العضويات.', en: 'Full control over colors, layouts, dimensions, and membership systems.' },
-  upgradeToCustomize: { ar: 'قم بالترقية لفتح أدوات التصميم', en: 'Upgrade to unlock design tools' }
+  upgradeToCustomize: { ar: 'قم بالترقية لفتح أدوات التصميم', en: 'Upgrade to unlock design tools' },
+  
+  // New billing translations
+  billingTitle: { ar: 'الفوترة والاشتراك', en: 'Billing & Subscription' },
+  currentPlan: { ar: 'الباقة الحالية', en: 'Current Plan' },
+  manageBilling: { ar: 'إدارة الفواتير والدفع', en: 'Manage Billing & Payments' },
+  activeUntil: { ar: 'نشط حتى', en: 'Active until' },
+  billingHistory: { ar: 'سجل الفواتير', en: 'Billing History' },
+  planExpired: { ar: 'انتهت صلاحية الباقة', en: 'Plan Expired' },
+  upgradePlan: { ar: 'ترقية الباقة', en: 'Upgrade Plan' },
+  subscriptionSummary: { ar: 'ملخص الاشتراك', en: 'Subscription Summary' },
+  totalSpent: { ar: 'إجمالي المبالغ', en: 'Total Spent' },
+  statusActive: { ar: 'نشط', en: 'Active' },
+  statusInactive: { ar: 'غير نشط', en: 'Inactive' }
 };
