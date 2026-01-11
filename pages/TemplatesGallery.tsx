@@ -156,7 +156,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
 
   return (
     <div className="group flex flex-col transition-all duration-500">
-      {/* Phone Mockup Container - Thinner black border for sleeker look */}
+      {/* Phone Mockup Container */}
       <div 
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -165,7 +165,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
         style={{ isolation: 'isolate' }}
       >
         
-        {/* Sleeker Phone Bezel - Reduced from 14px to 8px */}
+        {/* Phone Bezel */}
         <div className="absolute inset-0 border-[8px] border-gray-950 dark:border-gray-900 rounded-[3.8rem] pointer-events-none z-50">
            {/* Modern Island / Notch Mockup */}
            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
@@ -183,7 +183,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
           </div>
         )}
         
-        {/* Content Viewport with slim inset */}
+        {/* Content Viewport */}
         <div className="absolute inset-[2px] overflow-hidden pointer-events-none" 
              style={{ 
                borderRadius: '3.6rem', 
@@ -203,12 +203,24 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
                   ...sampleData, 
                   templateId: tmpl.id,
                   themeType: tmpl.config.defaultThemeType || sampleData.themeType,
+                  // Corrected: use sampleData instead of sampleCardData
                   themeColor: tmpl.config.defaultThemeColor || sampleData.themeColor,
+                  // Corrected: use sampleData instead of sampleCardData
                   themeGradient: tmpl.config.defaultThemeGradient || sampleData.themeGradient,
+                  // Corrected: use sampleData instead of sampleCardData
                   backgroundImage: tmpl.config.defaultBackgroundImage || sampleData.backgroundImage,
+                  // Corrected: use sampleData instead of sampleCardData
                   profileImage: tmpl.config.defaultProfileImage || sampleData.profileImage || '',
+                  // Corrected: use sampleData instead of sampleCardData
                   isDark: tmpl.config.defaultIsDark ?? sampleData.isDark,
                   showOccasion: tmpl.config.showOccasionByDefault ?? false,
+                  // دمج إعدادات الأعمدة الافتراضية للقالب لكي تظهر في المعاينة المصغرة
+                  specialLinksCols: tmpl.config.specialLinksCols || 2,
+                  socialIconColumns: tmpl.config.socialIconColumns || 0,
+                  // استخدام روابط الصور الافتراضية المحددة في هذا القالب بدلاً من البيانات العامة
+                  specialLinks: (tmpl.config.defaultSpecialLinks && tmpl.config.defaultSpecialLinks.length > 0) 
+                                 ? tmpl.config.defaultSpecialLinks 
+                                 : sampleData.specialLinks,
                   showName: true, showTitle: true, showBio: true, showQrCode: true, showButtons: true, showSocialLinks: true
                 }} 
                 lang={lang} 
@@ -237,8 +249,8 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
 
       {/* Template Info Card */}
       <div className="px-6 text-center sm:text-start flex flex-col gap-2">
-         <div className="flex items-center justify-center sm:justify-start gap-3">
-            <div className={`w-3 h-3 rounded-full ${isPrivate ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.5)]' : tmpl.isFeatured ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-blue-600'}`}></div>
+         <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${isPrivate ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.5)]' : tmpl.isFeatured ? 'bg-amber-50 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-blue-600'}`}></div>
             <h3 className="text-lg md:text-2xl font-black dark:text-white uppercase tracking-tight truncate">
               {isRtl ? tmpl.nameAr : tmpl.nameEn}
             </h3>

@@ -114,7 +114,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
          specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
          fontFamily: selectedTmpl.config.fontFamily || 'Cairo',
-         socialIconColumns: selectedTmpl.config.socialIconColumns || 0
+         socialIconColumns: selectedTmpl.config.socialIconColumns || 0,
+         qrColor: selectedTmpl.config.qrColor || baseData.qrColor || '#000000',
+         qrBgColor: selectedTmpl.config.qrBgColor || baseData.qrBgColor || 'transparent'
        } as CardData;
     }
     return baseData;
@@ -257,7 +259,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             <div className={`p-6 rounded-[2.5rem] border bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in`}>
                 <div className="flex items-center gap-5">
                    <div className={`p-4 rounded-2xl bg-blue-600 text-white shadow-lg`}>
-                      <UserIcon size={32}/>
+                      <UserIcon size={32} />
                    </div>
                    <div>
                       <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">
@@ -795,6 +797,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <ColorPickerUI label={t('المسمى الوظيفي', 'Job Color')} field="titleColor" icon={Briefcase} />
                                     <ColorPickerUI label={t('أزرار التواصل', 'Links Color')} field="linksColor" icon={Link2} />
                                     <ColorPickerUI label={t('نصوص النبذة', 'Bio Text Color')} field="bioTextColor" icon={FileText} />
+                                    <ColorPickerUI label={isRtl ? 'لون الباركود' : 'QR Code Color'} field="qrColor" icon={QrCode} />
+                                    <ColorPickerUI label={isRtl ? 'خلفية الباركود' : 'QR Background'} field="qrBgColor" icon={Box} />
                                  </div>
                                  
                                  <div className="pt-6 border-t dark:border-gray-800 space-y-6">
