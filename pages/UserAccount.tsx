@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans } from '../services/firebase';
+import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
 import { Language, PricingPlan } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, 
   AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
   Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield,
-  ExternalLink, CreditCard
+  ExternalLink, CreditCard, PartyPopper
 } from 'lucide-react';
 
 interface UserAccountProps {
@@ -19,6 +19,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const isRtl = lang === 'ar';
   const user = auth.currentUser;
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
@@ -26,6 +27,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activePlan, setActivePlan] = useState<PricingPlan | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
   
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
@@ -35,6 +37,46 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   });
 
   const t = (ar: string, en: string) => isRtl ? ar : en;
+
+  // منطق التحقق من الدفع القادم من URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('payment') === 'success' && user && userProfile) {
+      if (userProfile.role !== 'premium' && userProfile.role !== 'admin') {
+        handleAutoUpgrade();
+      }
+    }
+  }, [location.search, user, userProfile]);
+
+  const handleAutoUpgrade = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // تحديد تاريخ الانتهاء (سنة من الآن)
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      
+      // تحديث قاعدة البيانات
+      await updateUserSubscription(
+        user.uid, 
+        'premium', 
+        'pro_plan_yearly', // معرف الباقة الافتراضي
+        expiryDate.toISOString()
+      );
+      
+      // تحديث الحالة المحلية
+      const updatedProfile = await getUserProfile(user.uid);
+      setUserProfile(updatedProfile);
+      setShowCelebration(true);
+      
+      // تنظيف الرابط
+      navigate(`/${lang}/account`, { replace: true });
+    } catch (e) {
+      console.error("Auto upgrade error:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -75,7 +117,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       await deleteUser(user);
       window.location.reload();
     } catch (error: any) {
-      console.error("Delete Error:", error);
       setStatus({ 
         type: 'error', 
         message: error.code === 'auth/requires-recent-login' 
@@ -118,7 +159,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       });
       setSecurityData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
     } catch (error: any) {
-      console.error("Update Error:", error);
       setStatus({ 
         type: 'error', 
         message: getAuthErrorMessage(error.code, isRtl ? 'ar' : 'en') 
@@ -146,6 +186,27 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-60 relative z-10">
       
+      {/* نافذة الاحتفال بالترقية */}
+      {showCelebration && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-blue-600/90 backdrop-blur-xl animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
+              <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                 <PartyPopper size={48} />
+              </div>
+              <h2 className="text-3xl font-black dark:text-white">{t('مبروك! تم تفعيل اشتراكك', 'Congrats! Pro Activated')}</h2>
+              <p className="text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
+                 {t('أهلاً بك في عالم المحترفين. يمكنك الآن تخصيص بطاقاتك بشكل كامل واستخدام كافة الأدوات المتقدمة.', 'Welcome to the Pro world. You can now fully customize your cards and use all advanced tools.')}
+              </p>
+              <button 
+                onClick={() => setShowCelebration(false)}
+                className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl"
+              >
+                {t('ابدأ الآن', 'Start Now')}
+              </button>
+           </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
         <div className="flex items-center gap-6">
@@ -174,7 +235,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         {/* Sidebar Section */}
         <div className="lg:col-span-4 space-y-8">
            
-           {/* Card 1: Subscription Info (Redesigned based on Image) */}
+           {/* Card 1: Subscription Info */}
            <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
               <div className="flex items-start justify-between">
                  <div className="flex items-center gap-4">

@@ -36,29 +36,30 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
     if (plan.stripeLink) {
       const userId = auth.currentUser.uid;
+      // إضافة رابط العودة مع معامل النجاح للتحقق التلقائي
+      // ملاحظة: تأكد من ضبط الـ Success URL في Stripe Dashboard ليسمح بالعودة إلى حساب المستخدم
       const checkoutUrl = `${plan.stripeLink}?client_reference_id=${userId}`;
       window.open(checkoutUrl, '_blank');
     }
   };
 
   const faqs = isRtl ? [
-    { q: "كيف يتم تفعيل الباقة؟", a: "يتم التفعيل تلقائياً فور إتمام عملية الدفع عبر Stripe." },
+    { q: "كيف يتم تفعيل الباقة؟", a: "يتم التفعيل تلقائياً فور إتمام عملية الدفع والعودة لصفحة حسابك." },
     { q: "هل يمكنني إلغاء الاشتراك؟", a: "نعم، يمكنك إلغاء تجديد الاشتراك في أي وقت من إعدادات حسابك." },
-    { q: "هل السعر شامل ضريبة القيمة المضافة؟", a: "نعم، السعر الظاهر هو السعر النهائي للاشتراك السنوي." }
+    { q: "ماذا لو لم يتفعل حسابي؟", a: "إذا لم يتفعل حسابك تلقائياً، يرجى التواصل مع الدعم الفني وتزويدنا بإيصال الدفع." }
   ] : [
-    { q: "How is the plan activated?", a: "Activation is automatic immediately after completing the payment via Stripe." },
+    { q: "How is the plan activated?", a: "Activation is automatic immediately after payment and returning to your account page." },
     { q: "Can I cancel my subscription?", a: "Yes, you can cancel the subscription renewal at any time from your account settings." },
-    { q: "Is the price inclusive of VAT?", a: "Yes, the displayed price is the final price for the annual subscription." }
+    { q: "What if it didn't activate?", a: "If your account didn't activate automatically, please contact support with your payment receipt." }
   ];
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
-      <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
+      <div className="animate-spin text-blue-600 mb-4 h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
       <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">{isRtl ? 'جاري تحميل الأسعار...' : 'Loading Prices...'}</p>
     </div>
   );
 
-  // نستخدم أول باقة نشطة كباقة رئيسية لعرضها بشكل مميز
   const mainPlan = plans[0];
   const activeFeatures = isRtl ? mainPlan?.featuresAr : mainPlan?.featuresEn;
 
@@ -176,21 +177,5 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
     </div>
   );
 };
-
-const Loader2 = ({ className, size }: { className?: string, size?: number }) => (
-  <svg 
-    className={className} 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
 
 export default Pricing;
