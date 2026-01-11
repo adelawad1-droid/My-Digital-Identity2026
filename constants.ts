@@ -330,5 +330,11 @@ export const TRANSLATIONS: TranslationStrings = {
   websiteLink: { ar: 'رابط الموقع الإلكتروني (إن وجد)', en: 'Website URL (if any)' },
   socialLink: { ar: 'رابط منصات التواصل (إنستقرام/لينكدإن)', en: 'Social Media Link (IG/LinkedIn)' },
   logoLabel: { ar: 'شعار الجهة / الشركة', en: 'Company Logo' },
-  uploadAction: { ar: 'اختيار الشعار', en: 'Select Logo' }
+  uploadAction: { ar: 'اختيار الشعار', en: 'Select Logo' },
+  
+  basicEditorTitle: { ar: 'المحرر الأساسي (مجاني)', en: 'Basic Editor (Free)' },
+  advancedEditorTitle: { ar: 'المحرر المتقدم (احترافي)', en: 'Advanced Editor (Pro)' },
+  basicEditorDesc: { ar: 'يمكنك تعديل بياناتك الشخصية فقط. التنسيقات البصرية ثابتة في هذا الوضع.', en: 'You can only edit personal data. Visual styling is fixed in this mode.' },
+  advancedEditorDesc: { ar: 'تحكم كامل في الألوان، التنسيقات، الأبعاد، ونظام العضويات.', en: 'Full control over colors, layouts, dimensions, and membership systems.' },
+  upgradeToCustomize: { ar: 'قم بالترقية لفتح أدوات التصميم', en: 'Upgrade to unlock design tools' }
 };

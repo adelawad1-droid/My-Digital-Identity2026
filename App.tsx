@@ -12,13 +12,14 @@ import HowToStart from './pages/HowToStart';
 import MyCards from './pages/MyCards';
 import TemplatesGallery from './pages/TemplatesGallery';
 import CustomRequest from './pages/CustomRequest';
+import Pricing from './pages/Pricing';
 import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare } from 'lucide-react';
+import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap } from 'lucide-react';
 
 const getBrowserLanguage = (): Language => {
   const supportedLanguages = Object.keys(LANGUAGES_CONFIG);
@@ -81,13 +82,14 @@ const AppContent: React.FC = () => {
       title = isRtl ? `تصفح القوالب | ${displaySiteName}` : `Browse Templates | ${displaySiteName}`;
     } else if (path.includes('/my-cards')) {
       title = isRtl ? `بطاقاتي | ${displaySiteName}` : `My Cards | ${displaySiteName}`;
+    } else if (path.includes('/pricing')) {
+      title = isRtl ? `باقات الاشتراك | ${displaySiteName}` : `Pricing Plans | ${displaySiteName}`;
     }
 
     document.title = title;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', description);
 
-    // تحديث أيقونة المتصفح بناءً على إعدادات الموقع
     const favicon = document.getElementById('site-favicon') as HTMLLinkElement;
     if (siteConfig.siteIcon && favicon) {
       favicon.href = siteConfig.siteIcon;
@@ -195,7 +197,7 @@ const AppContent: React.FC = () => {
       { id: 'home', path: '/', icon: HomeIcon, label: t('home') },
       { id: 'templates', path: '/templates', icon: LayoutGrid, label: t('templates') },
       { id: 'my-cards', path: '/my-cards', icon: CreditCard, label: t('myCards'), private: true },
-      ...(isAdmin ? [{ id: 'admin', path: '/admin', icon: ShieldCheck, label: t('admin'), private: true }] : []),
+      { id: 'pricing', path: '/pricing', icon: Zap, label: t('الباقات', 'Pricing') },
       { id: 'account', path: '/account', icon: UserIcon, label: t('account'), private: true },
     ];
     return (
@@ -226,7 +228,6 @@ const AppContent: React.FC = () => {
             );
           })}
         </div>
-        {/* حشوة إضافية لدعم هواتف آيفون الحديثة (Home Indicator) */}
         <div className="h-[env(safe-area-inset-bottom)] bg-white/95 dark:bg-[#0a0a0c]/95" />
       </div>
     );
@@ -247,6 +248,7 @@ const AppContent: React.FC = () => {
            <SidebarItem icon={HomeIcon} label={t('home')} onClick={() => navigateWithLang('/')} active={location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`)} />
            <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
            <SidebarItem icon={LayoutGrid} label={t('templates')} onClick={() => navigateWithLang('/templates')} active={location.pathname.includes('/templates')} />
+           <SidebarItem icon={Zap} label={t('الباقات', 'Pricing')} onClick={() => navigateWithLang('/pricing')} active={location.pathname.includes('/pricing')} color="text-amber-500" />
            <SidebarItem icon={MessageSquare} label={t('customOrders')} onClick={() => navigateWithLang('/custom-orders')} active={location.pathname.includes('/custom-orders')} />
            {currentUser && (
              <>
@@ -298,6 +300,7 @@ const AppContent: React.FC = () => {
               <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('home')}</button>
               <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
               <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
+              <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('الباقات', 'Pricing')}</button>
               <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
               {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
             </nav>
@@ -334,11 +337,15 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home lang={lang} onStart={() => navigateWithLang('/templates')} />} />
           <Route path="/how-to-start" element={<HowToStart lang={lang} />} />
+          <Route path="/pricing" element={<Pricing lang={lang} />} />
           <Route path="/templates" element={<TemplatesGallery lang={lang} onSelect={(id) => { setSelectedTemplateId(id); setEditingCard(null); navigateWithLang('/editor'); }} />} />
           <Route path="/custom-orders" element={<CustomRequest lang={lang} />} />
+          {/* Fix: deleteUserCard expects a single object argument */}
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
+          {/* Fix: saveCardToDB expects a single object argument */}
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
+          {/* Fix: deleteUserCard expects a single object argument */}
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>

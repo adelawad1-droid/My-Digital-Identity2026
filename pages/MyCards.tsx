@@ -90,10 +90,10 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                  </p>
               </div>
               <button 
-                onClick={() => navigate(`/${lang}/custom-orders`)}
+                onClick={() => navigate(`/${lang}/pricing`)}
                 className="shrink-0 px-10 py-5 bg-white text-blue-600 rounded-[1.5rem] font-black text-sm uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
               >
-                 {isRtl ? 'اطلب الترقية الآن' : 'Upgrade Account'}
+                 {isRtl ? 'عرض الباقات والترقية' : 'View Plans & Upgrade'}
                  <ArrowUpRight size={18} />
               </button>
            </div>
