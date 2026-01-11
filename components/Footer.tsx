@@ -3,6 +3,7 @@ import React from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Heart, Coffee, Mail, Instagram, Twitter, Linkedin, Github } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface FooterProps {
   lang: Language;
@@ -27,7 +28,7 @@ const Footer: React.FC<FooterProps> = ({ lang }) => {
           </p>
         </div>
 
-        {/* Minimal Support Button */}
+        {/* Support Button & Terms/Privacy */}
         <div className="flex flex-col items-center gap-3">
           <a 
             href="https://buymeacoffee.com/guidai" 
@@ -38,6 +39,24 @@ const Footer: React.FC<FooterProps> = ({ lang }) => {
             <Coffee size={16} className="group-hover:rotate-12 transition-transform" />
             <span>{t('buyMeCoffee')}</span>
           </a>
+          
+          {/* Links to Terms & Privacy */}
+          <div className="flex items-center gap-4">
+            <Link 
+              to={`/${lang}/terms`} 
+              className="text-[10px] font-black text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase tracking-widest"
+            >
+              {t('termsOfService')}
+            </Link>
+            <div className="w-1 h-1 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+            <Link 
+              to={`/${lang}/privacy`} 
+              className="text-[10px] font-black text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase tracking-widest"
+            >
+              {t('privacyPolicy')}
+            </Link>
+          </div>
+
           <div className="flex items-center gap-1.5 opacity-40">
              <Heart size={10} className="text-red-500 fill-current" />
              <span className="text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">{isRtl ? 'صنع بكل حب للمبدعين' : 'Made with love for creators'}</span>
