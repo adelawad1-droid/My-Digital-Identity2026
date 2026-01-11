@@ -1,19 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
-import { Language, PricingPlan } from '../types';
+import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { getAllPricingPlans } from '../services/firebase';
 import { useNavigate } from 'react-router-dom';
-import * as LucideIcons from 'lucide-react';
 import { 
-  Zap, Smartphone, Share2, ShieldCheck, 
-  ArrowRight, Globe, Palette, QrCode,
-  Instagram, Twitter, Music, Youtube, MessageCircle,
-  Wand2, Sparkles, Sparkle, SmartphoneNfc, Check, Crown, Star, Shield,
-  Loader2, Ticket, CalendarDays, Percent, CreditCard, Mail, Phone, UserPlus,
-  Compass, MapPin, ExternalLink, ShoppingCart, Award, Gift, Link as LinkIcon,
-  MousePointer2, Layers, Cpu, Heart, Briefcase, Camera, Search, HelpCircle,
-  LayoutGrid, Coffee
+  Zap, Share2, ShieldCheck, 
+  ArrowRight, Globe, QrCode,
+  Instagram, MessageCircle,
+  Wand2, Sparkles, Sparkle, Check, Crown, Star,
+  CalendarDays, Percent, CreditCard, Mail, Phone, UserPlus,
+  MapPin, ShoppingCart, HelpCircle,
+  LayoutGrid, Coffee, Camera, Search, Palette, Heart
 } from 'lucide-react';
 
 interface HomeProps {
@@ -25,30 +22,6 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
   const isRtl = lang === 'ar';
   const navigate = useNavigate();
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      const plans = await getAllPricingPlans();
-      setPricingPlans(plans.filter(p => p.isActive));
-      setLoadingPlans(false);
-    };
-    fetchPlans();
-  }, []);
-
-  const getIcon = (name: string) => {
-    const Icon = (LucideIcons as any)[name] || Shield;
-    return Icon;
-  };
-
-  const handleSubscribe = (plan: PricingPlan) => {
-    if (plan.stripeLink) {
-      window.open(plan.stripeLink, '_blank');
-    } else {
-      onStart();
-    }
-  };
 
   const phrases = isRtl 
     ? ["بطاقات عمل احترافية", "عضويات رقمية ذكية", "دعوات مناسبات فاخرة", "بطاقات خصم وتوفير"]
@@ -83,7 +56,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
     { Icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', size: 48, delay: '0s', pos: 'top-0 left-10', glow: 'shadow-emerald-500/20' },
     { Icon: QrCode, color: 'text-blue-500', bg: 'bg-blue-500/10', size: 64, delay: '1.2s', pos: 'top-10 right-20', glow: 'shadow-blue-500/20' },
     { Icon: Phone, color: 'text-indigo-500', bg: 'bg-indigo-500/10', size: 36, delay: '0.5s', pos: 'bottom-10 left-10', glow: 'shadow-indigo-500/20' },
-    { Icon: Ticket, color: 'text-purple-500', bg: 'bg-purple-500/10', size: 52, delay: '2s', pos: 'bottom-5 right-24', glow: 'shadow-purple-500/20' },
+    { Icon: CalendarDays, color: 'text-purple-500', bg: 'bg-purple-500/10', size: 52, delay: '2s', pos: 'bottom-5 right-24', glow: 'shadow-purple-500/20' },
     { Icon: Percent, color: 'text-orange-500', bg: 'bg-orange-500/10', size: 42, delay: '1.5s', pos: 'top-1/2 -left-10', glow: 'shadow-orange-500/20' },
     { Icon: Mail, color: 'text-red-500', bg: 'bg-red-500/10', size: 32, delay: '0.8s', pos: '-top-10 right-1/2', glow: 'shadow-red-500/20' },
     { Icon: ShieldCheck, color: 'text-teal-500', bg: 'bg-teal-500/10', size: 56, delay: '2.5s', pos: 'bottom-1/2 -right-12', glow: 'shadow-teal-500/20' },
@@ -321,7 +294,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
                            <div className="h-2 w-2/3 bg-gray-100 dark:bg-gray-800 rounded-full"></div>
                         </div>
                      </div>
-                     <div className="h-48 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2.5rem] shadow-xl p-6">
+                     <div className="h-48 bg-gradient-to-br from-indigo-50 to-purple-600 rounded-[2.5rem] shadow-xl p-6">
                         <Star className="text-white/30" size={32} />
                      </div>
                   </div>
@@ -337,120 +310,6 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
                </div>
             </div>
          </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="relative z-10 py-24 px-6 bg-white dark:bg-transparent">
-        <div className="max-w-7xl mx-auto">
-           <div className="text-center mb-16 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100">
-                 <Crown size={12} /> {isRtl ? 'باقات مرنة' : 'Flexible Plans'}
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black">{isRtl ? 'اختر خطة نجاحك' : 'Choose Your Success Plan'}</h2>
-              <p className="text-gray-400 font-bold max-w-xl mx-auto">{isRtl ? 'باقات تناسب الأفراد، الفرق والشركات الكبرى بمميزات حصرية.' : 'Plans for individuals, teams, and corporations with exclusive features.'}</p>
-           </div>
-           
-           {loadingPlans ? (
-             <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
-           ) : (
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {pricingPlans.map((plan, idx) => {
-                  const Icon = getIcon(plan.iconName);
-                  return (
-                    <div key={idx} className={`relative p-8 md:p-10 rounded-[3rem] border transition-all duration-500 hover:-translate-y-2 flex flex-col ${plan.isPopular ? 'bg-white dark:bg-[#0a0d15] border-blue-200 dark:border-blue-900/50 scale-105 z-10 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)]' : 'bg-gray-50/50 dark:bg-white/[0.02] border-gray-100 dark:border-white/5'}`}>
-                       {plan.isPopular && (
-                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            {isRtl ? 'الأكثر طلباً' : 'Most Popular'}
-                         </div>
-                       )}
-                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 ${plan.isPopular ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-slate-100 text-slate-600'}`}>
-                          <Icon size={28} />
-                       </div>
-                       <h3 className="text-2xl font-black mb-2">{isRtl ? plan.nameAr : plan.nameEn}</h3>
-                       <div className="flex items-baseline gap-1 mb-8">
-                          <span className="text-4xl font-black">${plan.price}</span>
-                          <span className="text-gray-400 font-bold text-sm">/{isRtl ? plan.billingCycleAr : plan.billingCycleEn}</span>
-                       </div>
-                       <ul className="space-y-4 mb-10 flex-1">
-                          {(isRtl ? plan.featuresAr : plan.featuresEn).map((f, i) => (
-                            <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-500 dark:text-slate-400">
-                               <div className="p-1 bg-emerald-50 text-emerald-600 rounded-lg"><Check size={12} strokeWidth={4} /></div>
-                               {f}
-                            </li>
-                          ))}
-                       </ul>
-                       <button 
-                         onClick={() => handleSubscribe(plan)} 
-                         className={`w-full py-5 rounded-2xl font-black text-sm uppercase transition-all active:scale-95 ${plan.isPopular ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20 hover:brightness-110' : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
-                       >
-                          {isRtl ? (plan.buttonTextAr || 'اشترك الآن') : (plan.buttonTextEn || 'Subscribe Now')}
-                       </button>
-                    </div>
-                  );
-                })}
-             </div>
-           )}
-        </div>
-      </section>
-
-      {/* CTA Section - Redesigned to be less annoying and more professional */}
-      <section className="relative py-12 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-           {/* Section Background Card */}
-           <div className="bg-red-950 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-800 via-rose-900 to-red-950 opacity-95"></div>
-              <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/20 rounded-full blur-[80px] group-hover:scale-110 transition-transform duration-1000"></div>
-              
-              <div className="relative z-10 flex flex-col items-center text-center space-y-8">
-                 <div className="space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white text-[9px] font-black uppercase tracking-widest border border-white/20 mx-auto">
-                       <HelpCircle size={12} className="text-white animate-bounce" />
-                       {isRtl ? 'خطوتك الأولى تبدأ هنا' : 'YOUR FIRST STEP STARTS HERE'}
-                    </div>
-                    <h2 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tighter">
-                       {isRtl ? 'تريد معرفة كيف تبدأ معنا؟' : 'Want to Know How to Start?'}
-                    </h2>
-                    <p className="text-red-100/70 font-bold max-w-2xl mx-auto text-sm md:text-lg leading-relaxed">
-                       {isRtl 
-                         ? 'اكتشف رحلة التحول الرقمي، من اختيار القالب المثالي إلى امتلاك لوحة تحكم ذكية تدير بها هويتك بسهولة.' 
-                         : 'Discover your digital transformation journey, from selecting the perfect template to owning a smart dashboard easily.'}
-                    </p>
-                 </div>
-
-                 <div className="flex flex-wrap justify-center gap-6 md:gap-16">
-                    <div className="flex flex-col items-center gap-3">
-                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
-                          <UserPlus size={24} className="text-red-200" />
-                       </div>
-                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'تسجيل سريع' : 'Quick Signup'}</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-3">
-                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
-                          <Palette size={24} className="text-red-200" />
-                       </div>
-                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'تصميم مخصص' : 'Custom Design'}</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-3">
-                       <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 group-hover:bg-red-600 transition-all shadow-lg">
-                          <LayoutGrid size={24} className="text-red-200" />
-                       </div>
-                       <span className="font-black text-[9px] uppercase tracking-widest text-white/50">{isRtl ? 'لوحة تحكم' : 'Dashboard'}</span>
-                    </div>
-                 </div>
-
-                 <button 
-                   onClick={() => navigate(`/${lang}/how-to-start`)} 
-                   className="group relative px-12 py-5 bg-white text-red-600 rounded-2xl font-black text-lg hover:scale-105 active:scale-95 transition-all shadow-xl overflow-hidden"
-                 >
-                    <div className="absolute inset-0 bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <span className="relative z-10 flex items-center gap-3">
-                       {isRtl ? 'اكتشف طريقة العمل معنا' : 'Discover How It Works'}
-                       <ArrowRight size={20} className={`transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
-                    </span>
-                 </button>
-              </div>
-           </div>
-        </div>
       </section>
 
       {/* Support Section - Redesigned to be horizontal like the provided image */}

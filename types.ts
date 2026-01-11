@@ -1,5 +1,4 @@
 
-
 export type Language = 'en' | 'ar' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'pt' | 'ru' | 'hi';
 
 export interface SocialLink {
@@ -24,6 +23,7 @@ export interface PricingPlan {
   nameAr: string;
   nameEn: string;
   price: string;
+  originalPrice?: string; // السعر قبل الخصم (يظهر مشطوباً)
   billingCycleAr: string;
   billingCycleEn: string;
   featuresAr: string[];
@@ -34,7 +34,7 @@ export interface PricingPlan {
   iconName: string;
   buttonTextAr?: string;
   buttonTextEn?: string;
-  stripeLink?: string; // رابط الدفع المباشر من Stripe
+  stripeLink?: string; 
 }
 
 export interface TemplateConfig {
@@ -284,7 +284,6 @@ export interface TemplateConfig {
   pageBgColor?: string; 
   pageBgStrategy?: PageBgStrategy; 
   
-  // Added fontFamily to TemplateConfig to fix TS errors in CardPreview.tsx and Editor.tsx
   fontFamily?: string;
 
   customCss?: string;
@@ -339,12 +338,10 @@ export interface CardData {
   specialLinksCols?: number;
   fontFamily?: string;
 
-  // Added missing special links config overrides for CardData
   specialLinksOffsetY?: number;
   specialLinksOffsetX?: number;
   specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
 
-  // Floating Asset
   floatingAssetUrl?: string;
   floatingAssetSize?: number;
   floatingAssetOffsetX?: number;
@@ -352,7 +349,6 @@ export interface CardData {
   floatingAssetOpacity?: number;
   showFloatingAsset?: boolean;
 
-  // Membership & Subscription
   showMembership?: boolean;
   membershipTitleAr?: string;
   membershipTitleEn?: string;
@@ -366,7 +362,6 @@ export interface CardData {
   membershipTextColor?: string;
   membershipAccentColor?: string;
 
-  // Premium Overrides
   showStars?: boolean;
   isVerified?: boolean;
   hasGoldenFrame?: boolean;
@@ -395,13 +390,11 @@ export interface CardData {
 
   showBodyFeature?: boolean;
   bodyFeatureText?: string;
-  // Added missing body feature offset properties to fix TS errors in CardPreview.tsx
   bodyFeatureOffsetX?: number;
   bodyFeatureOffsetY?: number;
 
   bodyGlassy?: boolean;
   bodyOpacity?: number;
-  /** Added bodyBorderRadius and bodyOffsetY to CardData to fix compile errors and support per-card overrides */
   bodyBorderRadius?: number;
   bodyOffsetY?: number;
   bodyOffsetX?: number;
@@ -415,7 +408,6 @@ export interface CardData {
   contactPhoneColor?: string;
   contactWhatsappColor?: string;
 
-  // Bio Advanced Overrides
   bioBorderRadius?: number;
   bioBorderWidth?: number;
   bioBorderColor?: string;
@@ -458,7 +450,6 @@ export interface CardData {
   contactButtonsOffsetX?: number;
   socialLinksOffsetY?: number;
   socialLinksOffsetX?: number;
-  // Added missing avatar and location offset properties to fix TS errors in CardPreview.tsx
   avatarOffsetX?: number;
   avatarOffsetY?: number;
   locationOffsetX?: number;
@@ -487,7 +478,7 @@ export interface CustomTemplate {
   id: string;
   categoryId?: string; 
   parentStyleId?: string; 
-  restrictedUserId?: string; // ID المستخدم المخصص له القالب
+  restrictedUserId?: string; 
   nameAr: string;
   nameEn: string;
   descAr: string;

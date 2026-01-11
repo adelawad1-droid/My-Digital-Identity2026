@@ -72,7 +72,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
   
   const [planData, setPlanData] = useState<Partial<PricingPlan>>({ 
-    id: '', nameAr: '', nameEn: '', price: '0', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
+    id: '', nameAr: '', nameEn: '', price: '0', originalPrice: '', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
     featuresAr: [], featuresEn: [], isPopular: false, isActive: true, order: 0, iconName: 'Shield',
     buttonTextAr: 'اشترك الآن', buttonTextEn: 'Subscribe Now', stripeLink: ''
   });
@@ -191,6 +191,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       });
       alert(isRtl ? "تم حفظ الباقة بنجاح" : "Plan saved successfully");
       setEditingPlanId(null);
+      setPlanData({ 
+        id: '', nameAr: '', nameEn: '', price: '0', originalPrice: '', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
+        featuresAr: [], featuresEn: [], isPopular: false, isActive: true, order: 0, iconName: 'Shield',
+        buttonTextAr: 'اشترك الآن', buttonTextEn: 'Subscribe Now', stripeLink: ''
+      });
       await fetchData(true);
     } catch (e: any) { 
       alert(isRtl ? `حدث خطأ أثناء الحفظ: ${e.message}` : `Error during save: ${e.message}`); 
@@ -281,11 +286,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       const url = await uploadImageToCloud(file, 'logo', { storageType: settings.imageStorageType, uploadUrl: settings.serverUploadUrl });
       if (url) setSettings(prev => ({ ...prev, [field]: url }));
     } catch (e) { alert("Upload failed"); }
-  };
-
-  const getIcon = (name: string) => {
-    const Icon = (LucideIcons as any)[name] || Shield;
-    return Icon;
   };
 
   if (loading && !planToDelete && !subEditUser) return (
@@ -523,10 +523,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                 </div>
 
                 <form onSubmit={handleSavePlan} className="space-y-8">
-                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                       <div><label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label><input type="text" required value={planData.nameAr} onChange={e => setPlanData({...planData, nameAr: e.target.value})} className={inputClasses} placeholder="باقة المحترفين" /></div>
                       <div><label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label><input type="text" required value={planData.nameEn} onChange={e => setPlanData({...planData, nameEn: e.target.value})} className={inputClasses} placeholder="Pro Plan" /></div>
-                      <div><label className={labelTextClasses}>{t('السعر (USD)', 'Price')}</label><input type="text" required value={planData.price} onChange={e => setPlanData({...planData, price: e.target.value})} className={inputClasses} placeholder="29" /></div>
+                      <div><label className={labelTextClasses}>{t('السعر الحالي (USD)', 'Current Price')}</label><input type="text" required value={planData.price} onChange={e => setPlanData({...planData, price: e.target.value})} className={inputClasses} placeholder="29" /></div>
+                      <div>
+                        <label className={labelTextClasses}>{t('السعر الأصلي (للخصم)', 'Original Price (for discount)')}</label>
+                        <input type="text" value={planData.originalPrice || ''} onChange={e => setPlanData({...planData, originalPrice: e.target.value})} className={inputClasses} placeholder="49" />
+                        <p className="text-[8px] text-gray-400 mt-1">{isRtl ? "* اتركه فارغاً إذا لا يوجد خصم" : "* Leave empty if no discount"}</p>
+                      </div>
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -610,7 +615,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                      </div>
                                   </div>
                                </td>
-                               <td className="px-10 py-6 text-center font-black text-xl text-blue-600">${plan.price}</td>
+                               <td className="px-10 py-6 text-center font-black">
+                                  <div className="flex flex-col">
+                                    <span className="text-xl text-blue-600">${plan.price}</span>
+                                    {plan.originalPrice && <span className="text-[10px] text-gray-400 line-through">${plan.originalPrice}</span>}
+                                  </div>
+                               </td>
                                <td className="px-10 py-6 text-center">
                                   <button onClick={() => handleTogglePlanActive(plan)} className={`inline-flex items-center gap-2 px-6 py-2 rounded-2xl text-[9px] font-black uppercase shadow-sm ${plan.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                                       {plan.isActive !== false ? t('نشط', 'Active') : t('معطل', 'Disabled')}
@@ -660,8 +670,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                           <TestIcon size={16} className="text-amber-500" />
                           <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{t('مفاتيح الاختبار', 'Test Mode Credentials')}</h4>
                        </div>
-                       <div><label className={labelTextClasses}>{t('المفتاح العام للاختبار', 'Test Publishable Key')}</label><input type="text" value={settings.stripeTestPublishableKey} onChange={e => setSettings({...settings, stripeTestPublishableKey: e.target.value})} className={inputClasses} placeholder="pk_test_..." /></div>
-                       <div><label className={labelTextClasses}>{t('المفتاح السري للاختبار', 'Test Secret Key')}</label><input type="password" value={settings.stripeTestSecretKey} onChange={e => setSettings({...settings, stripeTestSecretKey: e.target.value})} className={inputClasses} placeholder="sk_test_..." /></div>
+                       <div><label className={labelTextClasses}>{t('المفتاح العام للاختبار', 'Test Publishable Key')}</label><input type="text" value={settings.stripeLiveMode ? '' : '...'} readOnly className={inputClasses + " opacity-50"} /></div>
+                       <div><label className={labelTextClasses}>{t('المفتاح السري للاختبار', 'Test Secret Key')}</label><input type="password" value={settings.stripeLiveMode ? '' : '...'} readOnly className={inputClasses + " opacity-50"} /></div>
                     </div>
 
                     <div className="pt-10 border-t dark:border-gray-800 space-y-6">
@@ -685,9 +695,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                              <input type="text" readOnly value={`${window.location.origin}/api/webhook/stripe`} className={inputClasses + " bg-gray-100/50 dark:bg-black/20 font-mono text-xs cursor-default"} />
                              <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/webhook/stripe`); alert("Copied!"); }} className="p-4 bg-white dark:bg-gray-800 border rounded-2xl text-indigo-600 hover:bg-indigo-50 transition-all"><Copy size={18}/></button>
                           </div>
-                          <p className="text-[9px] font-bold text-gray-400 italic px-2">
-                             {isRtl ? "* قم بنسخ هذا الرابط ووضعه في لوحة تحكم Stripe لإرسال إشعارات الدفع التلقائية." : "* Copy this URL to your Stripe Dashboard to handle automatic payment notifications."}
-                          </p>
                        </div>
 
                        <div><label className={labelTextClasses}>{t('السر الخاص بالتوقيع (Signing Secret)', 'Webhook Signing Secret')}</label><input type="password" value={settings.stripeWebhookSecret} onChange={e => setSettings({...settings, stripeWebhookSecret: e.target.value})} className={inputClasses} placeholder="whsec_..." /></div>
@@ -863,10 +870,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                              <input type="file" ref={iconInputRef} onChange={e => handleLogoUpload(e, 'siteIcon')} className="hidden" accept="image/*" /><button onClick={() => iconInputRef.current?.click()} className="w-full py-2 bg-white dark:bg-gray-900 border rounded-xl text-[9px] font-black uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الأيقونة', 'Upload')}</button>
                           </div>
                        </div>
-                       <div className="grid grid-cols-2 gap-4">
-                          <ColorPicker label={t('اللون الأساسي', 'Primary Color')} value={settings.primaryColor} onChange={(v: string) => setSettings({...settings, primaryColor: v})} />
-                          <ColorPicker label={t('اللون الثانوي', 'Secondary Color')} value={settings.secondaryColor} onChange={(v: string) => setSettings({...settings, secondaryColor: v})} />
-                       </div>
                     </div>
                  </div>
 
@@ -908,12 +911,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                           </button>
                        ))}
                     </div>
-                    {settings.imageStorageType === 'server' && (
-                       <div className="animate-fade-in">
-                          <label className={labelTextClasses}>{t('رابط الرفع للسيرفر', 'Server Upload URL')}</label>
-                          <input type="text" value={settings.serverUploadUrl} onChange={e => setSettings({...settings, serverUploadUrl: e.target.value})} className={inputClasses} placeholder="https://domain.com/upload.php" />
-                       </div>
-                    )}
                  </div>
 
                  <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all">

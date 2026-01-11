@@ -247,8 +247,8 @@ const AppContent: React.FC = () => {
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-2">
            <SidebarItem icon={HomeIcon} label={t('home')} onClick={() => navigateWithLang('/')} active={location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`)} />
-           <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
            <SidebarItem icon={LayoutGrid} label={t('templates')} onClick={() => navigateWithLang('/templates')} active={location.pathname.includes('/templates')} />
+           <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
            <SidebarItem icon={Zap} label={t('pricing')} onClick={() => navigateWithLang('/pricing')} active={location.pathname.includes('/pricing')} color="text-amber-500" />
            <SidebarItem icon={MessageSquare} label={t('customOrders')} onClick={() => navigateWithLang('/custom-orders')} active={location.pathname.includes('/custom-orders')} />
            {currentUser && (
@@ -299,8 +299,8 @@ const AppContent: React.FC = () => {
             </div>
             <nav className="hidden xl:flex items-center gap-1 ml-4 mr-4">
               <button onClick={() => navigateWithLang('/')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`) ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('home')}</button>
+              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
               <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
-              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
               <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
               <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
               {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
