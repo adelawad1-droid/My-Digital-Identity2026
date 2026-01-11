@@ -409,7 +409,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                         <Eye size={18}/>
                                      </a>
                                      <button 
-                                        onClick={() => toggleCardStatus(card.id, card.ownerId, card.isActive === false)} 
+                                        onClick={async () => {
+                                          const newStatus = card.isActive === false;
+                                          await toggleCardStatus(card.id, card.ownerId, newStatus);
+                                          fetchData(true);
+                                        }} 
                                         className={`p-2 rounded-xl transition-all shadow-sm ${card.isActive !== false ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white' : 'text-red-500 bg-red-50 hover:bg-red-500 hover:text-white'}`}
                                         title={card.isActive !== false ? t('إيقاف البطاقة', 'Disable Card') : t('تنشيط البطاقة', 'Enable Card')}
                                      >
