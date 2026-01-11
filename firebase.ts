@@ -28,10 +28,12 @@ import {
   updateDoc,
   getAggregateFromServer,
   sum,
-  serverTimestamp
+  serverTimestamp,
+  startAt,
+  endAt
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { CardData, TemplateCategory, VisualStyle, PricingPlan } from "./types";
+import { CardData, TemplateCategory, VisualStyle } from "./types";
 
 export { doc, getDoc };
 
@@ -66,58 +68,33 @@ const sanitizeData = (data: any) => {
   return clean;
 };
 
-// --- Billing & Payments ---
-
-export interface PaymentRecord {
-  id: string;
-  userId: string;
-  userEmail: string;
-  planId: string;
-  planName: string;
-  amount: number;
-  currency: string;
-  status: 'succeeded' | 'pending' | 'failed';
-  createdAt: any;
-  stripeSessionId: string;
-}
-
-export const getUserPayments = async (uid: string): Promise<PaymentRecord[]> => {
-  try {
-    const q = query(
-      collection(db, "payments"),
-      where("userId", "==", uid),
-      orderBy("createdAt", "desc")
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PaymentRecord));
-  } catch (e) {
-    console.error("Error fetching user payments:", e);
-    return [];
-  }
-};
-
-export const getAllPayments = async (max: number = 100): Promise<PaymentRecord[]> => {
-  try {
-    const q = query(
-      collection(db, "payments"),
-      orderBy("createdAt", "desc"),
-      limit(max)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PaymentRecord));
-  } catch (e) {
-    console.error("Error fetching all payments:", e);
-    return [];
-  }
-};
-
 // --- User Management ---
+
+export const searchUsersByEmail = async (emailSearch: string) => {
+  if (!auth.currentUser) return [];
+  if (!emailSearch || emailSearch.length < 3) return [];
+  
+  try {
+    const q = query(
+      collection(db, "users_registry"),
+      where("email", ">=", emailSearch.toLowerCase()),
+      where("email", "<=", emailSearch.toLowerCase() + "\uf8ff"),
+      limit(5)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
+  } catch (e) {
+    console.error("Search error:", e);
+    return [];
+  }
+};
 
 export const syncUserProfile = async (user: User) => {
   if (!user) return;
   try {
     const userRef = doc(db, "users_registry", user.uid);
     const snap = await getDoc(userRef);
+    
     const isCurrentAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
     const userData: any = {
@@ -131,37 +108,17 @@ export const syncUserProfile = async (user: User) => {
       await setDoc(userRef, {
         ...userData,
         createdAt: userData.lastLogin,
-        role: isCurrentAdmin ? 'admin' : 'user',
-        planId: null,
-        premiumUntil: null,
-        isActive: true
+        role: isCurrentAdmin ? 'admin' : 'user'
       });
     } else {
-      if (isCurrentAdmin) userData.role = 'admin';
+      if (isCurrentAdmin) {
+        userData.role = 'admin';
+      }
       await updateDoc(userRef, userData);
     }
   } catch (error) {
     console.warn("Registry sync failed:", error);
   }
-};
-
-export const getUserProfile = async (uid: string) => {
-  try {
-    const snap = await getDoc(doc(db, "users_registry", uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      // Check for expiry
-      if ((data.role === 'premium' || data.planId) && data.premiumUntil) {
-        const expiry = new Date(data.premiumUntil);
-        if (expiry < new Date()) {
-          await updateDoc(doc(db, "users_registry", uid), { role: 'user', planId: null });
-          return { ...data, role: 'user', planId: null };
-        }
-      }
-      return data;
-    }
-    return null;
-  } catch (e) { return null; }
 };
 
 export const getAllUsersWithStats = async () => {
@@ -180,29 +137,29 @@ export const getAllUsersWithStats = async () => {
         lastCardUpdate: userCards.length > 0 ? userCards.sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt : null
       };
     });
-  } catch (error) { throw error; }
+  } catch (error) {
+    throw error;
+  }
 };
 
-export const getAllPricingPlans = async () => {
-  try {
-    const snap = await getDocs(query(collection(db, "pricing_plans"), orderBy("order", "asc")));
-    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PricingPlan));
-  } catch (error) { return []; }
+// --- Auth Helpers ---
+
+export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
+  const isAr = lang === 'ar';
+  switch (code) {
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
+    case 'auth/email-already-in-use':
+      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
+    case 'auth/weak-password':
+      return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
+    default:
+      return isAr ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.';
+  }
 };
 
-export const savePricingPlan = async (plan: Partial<PricingPlan>) => {
-  const planId = plan.id || `plan_${Date.now()}`;
-  await setDoc(doc(db, "pricing_plans", planId), { 
-    ...sanitizeData(plan), 
-    id: planId,
-    updatedAt: new Date().toISOString() 
-  }, { merge: true });
-  return planId;
-};
-
-export const deletePricingPlan = async (id: string) => {
-  await deleteDoc(doc(db, "pricing_plans", id));
-};
+// --- App Core ---
 
 export const getSiteSettings = async () => {
   try {
@@ -311,7 +268,9 @@ export const getAdminStats = async () => {
       totalViews: viewSumSnap.data().totalViews || 0,
       recentCards: recentDocs.docs.map(doc => doc.data()) 
     };
-  } catch (error) { throw error; }
+  } catch (error) { 
+    throw error;
+  }
 };
 
 export const getAllCategories = async () => {
@@ -372,43 +331,6 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   if (!user || !user.email) throw new Error("auth/no-user");
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
-  if (newEmail && newEmail !== user.email) {
-    await verifyBeforeUpdateEmail(user, newEmail);
-  }
+  if (newEmail && newEmail !== user.email) await verifyBeforeUpdateEmail(user, newEmail);
   if (newPassword) await updatePassword(user, newPassword);
-};
-
-export const searchUsersByEmail = async (emailSearch: string) => {
-  if (!auth.currentUser) return [];
-  try {
-    const q = query(
-      collection(db, "users_registry"),
-      where("email", ">=", emailSearch.toLowerCase()),
-      where("email", "<=", emailSearch.toLowerCase() + "\uf8ff"),
-      limit(5)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
-  } catch (e) {
-    console.error("Search error:", e);
-    return [];
-  }
-};
-
-export const updateUserSubscription = async (uid: string, role: string, planId: string | null, premiumUntil: string | null) => {
-  const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    role, 
-    planId,
-    premiumUntil,
-    updatedAt: serverTimestamp()
-  });
-};
-
-export const toggleUserStatus = async (uid: string, isActive: boolean) => {
-  const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    isActive,
-    updatedAt: serverTimestamp()
-  });
 };

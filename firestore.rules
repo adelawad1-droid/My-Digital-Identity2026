@@ -34,12 +34,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // سجل الفواتير والدفع: المستخدم يقرأ فواتيره فقط، الأدمن يقرأ ويكتب الجميع
-    match /payments/{paymentId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAdmin();
-    }
-
     // الإعدادات، القوالب، والخطط: قراءة للجميع، تعديل للأدمن فقط
     match /settings/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /custom_templates/{docId} { allow read: if true; allow write: if isAdmin(); }

@@ -70,50 +70,6 @@ const sanitizeData = (data: any) => {
   return clean;
 };
 
-// Added PaymentRecord interface and related functions for payments and billing
-export interface PaymentRecord {
-  id: string;
-  userId: string;
-  userEmail: string;
-  planId: string;
-  planName: string;
-  amount: number;
-  currency: string;
-  status: 'succeeded' | 'pending' | 'failed';
-  createdAt: any;
-  stripeSessionId: string;
-}
-
-export const getUserPayments = async (uid: string): Promise<PaymentRecord[]> => {
-  try {
-    const q = query(
-      collection(db, "payments"),
-      where("userId", "==", uid),
-      orderBy("createdAt", "desc")
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PaymentRecord));
-  } catch (e) {
-    console.error("Error fetching user payments:", e);
-    return [];
-  }
-};
-
-export const getAllPayments = async (max: number = 100): Promise<PaymentRecord[]> => {
-  try {
-    const q = query(
-      collection(db, "payments"),
-      orderBy("createdAt", "desc"),
-      limit(max)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PaymentRecord));
-  } catch (e) {
-    console.error("Error fetching all payments:", e);
-    return [];
-  }
-};
-
 export const syncUserProfile = async (user: User) => {
   if (!user) return;
   try {
