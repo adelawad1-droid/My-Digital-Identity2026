@@ -1,4 +1,5 @@
 
+
 export type Language = 'en' | 'ar' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'pt' | 'ru' | 'hi';
 
 export interface SocialLink {
@@ -283,6 +284,9 @@ export interface TemplateConfig {
   pageBgColor?: string; 
   pageBgStrategy?: PageBgStrategy; 
   
+  // Added fontFamily to TemplateConfig to fix TS errors in CardPreview.tsx and Editor.tsx
+  fontFamily?: string;
+
   customCss?: string;
 }
 

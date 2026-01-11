@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // دالات مساعدة
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "adelawad1@gmail.com" || 
+        get(/databases/$(database)/documents/users_registry/$(request.auth.uid)).data.role == "admin"
+      );
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // قواعد البطاقات العامة: الجميع يقرأ (للمشاركة)، المالك أو الأدمن يكتب
+    match /public_cards/{cardId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+    }
+
+    // قواعد سجل المستخدمين: المالك يقرأ ويكتب بياناته، الأدمن يتحكم في الكل
+    match /users_registry/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+    }
+
+    // القوالب، الأقسام، الخطط، والأنماط: قراءة للجميع، كتابة للأدمن فقط
+    match /settings/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /custom_templates/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /template_categories/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /visual_styles/{docId} { allow read: if true; allow write: if isAdmin(); }
+    match /pricing_plans/{docId} { allow read: if true; allow write: if isAdmin(); }
+
+    // المسار الخاص بالكروت داخل مجلد المستخدم
+    match /users/{userId}/cards/{cardId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+  }
+}

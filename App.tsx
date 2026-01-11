@@ -68,7 +68,8 @@ const AppContent: React.FC = () => {
 
   const isRtl = LANGUAGES_CONFIG[lang]?.dir === 'rtl';
   const displaySiteName = isRtl ? siteConfig.siteNameAr : siteConfig.siteNameEn;
-  const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
+  // Fix: Updated definition of t to accept a second argument (en) to fix "Expected 1 arguments, but got 2" errors.
+  const t = (key: string, en?: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : (en || key);
 
   useEffect(() => {
     if (publicCard) return;

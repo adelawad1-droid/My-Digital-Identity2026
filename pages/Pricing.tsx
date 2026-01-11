@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Language, PricingPlan } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { getAllPricingPlans } from '../services/firebase';
+import { getAllPricingPlans, auth } from '../services/firebase';
 import { useNavigate } from 'react-router-dom';
 import { 
   Check, Crown, Star, ShieldCheck, Zap, ArrowRight, 
@@ -23,11 +23,25 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
   useEffect(() => {
     getAllPricingPlans().then(data => {
-      // نأخذ أول باقة مفعلة فقط لأن المستخدم طلب باقة واحدة سنوية
       setPlans(data.filter(p => p.isActive));
       setLoading(false);
     });
   }, []);
+
+  const handleSubscribe = (plan: PricingPlan) => {
+    if (!auth.currentUser) {
+      // توجيه المستخدم لتسجيل الدخول أولاً لكي نعرف هويته عند الدفع
+      navigate(`/${lang}/login`); 
+      return;
+    }
+
+    if (plan.stripeLink) {
+      // client_reference_id هو المعيار الذي يفهمه سترايب لربط الدفعة بمستخدم معين
+      const userId = auth.currentUser.uid;
+      const checkoutUrl = `${plan.stripeLink}?client_reference_id=${userId}`;
+      window.open(checkoutUrl, '_blank');
+    }
+  };
 
   const features = isRtl ? [
     "وصول كامل للمحرر المتقدم (ألوان، تدرجات، أنماط زجاجية)",
@@ -65,7 +79,7 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
     </div>
   );
 
-  const mainPlan = plans[0]; // نفترض أن الباقة الأولى هي السنوية المقصودة
+  const mainPlan = plans[0];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
@@ -85,7 +99,6 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* مميزات الباقة */}
         <div className="lg:col-span-7 space-y-8 order-2 lg:order-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((feature, idx) => (
@@ -111,7 +124,6 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
           </div>
         </div>
 
-        {/* بطاقة الاشتراك */}
         <div className="lg:col-span-5 order-1 lg:order-2 sticky top-32">
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-amber-500 to-indigo-600 rounded-[3.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
@@ -132,7 +144,7 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
               </div>
 
               <button 
-                onClick={() => mainPlan?.stripeLink ? window.open(mainPlan.stripeLink, '_blank') : null}
+                onClick={() => mainPlan ? handleSubscribe(mainPlan) : null}
                 className="w-full py-6 bg-blue-600 text-white rounded-3xl font-black text-lg uppercase shadow-2xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn overflow-hidden relative"
               >
                  <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500"></div>
@@ -154,7 +166,6 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
         </div>
       </div>
 
-      {/* FAQs Section */}
       <div className="mt-32 max-w-4xl mx-auto space-y-10">
          <div className="text-center space-y-3">
             <h2 className="text-3xl font-black dark:text-white">{isRtl ? 'الأسئلة الشائعة' : 'Common Questions'}</h2>
