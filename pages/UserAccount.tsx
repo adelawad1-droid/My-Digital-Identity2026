@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, 
   AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
-  Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield
+  Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield,
+  ExternalLink, CreditCard
 } from 'lucide-react';
 
 interface UserAccountProps {
@@ -139,8 +140,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     );
   }
 
-  const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin';
-  const roleName = userProfile?.role === 'admin' ? t('مسؤول النظام', 'System Admin') : (userProfile?.role === 'premium' ? t('عضو احترافي (برو)', 'Premium Pro Member') : t('مستخدم عادي (مجاني)', 'Standard Free Member'));
+  const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId;
+  const roleName = userProfile?.role === 'admin' ? t('مسؤول النظام', 'System Admin') : (isPremium ? t('عضو احترافي (برو)', 'Premium Pro Member') : t('مستخدم عادي (مجاني)', 'Standard Free Member'));
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-fade-in pb-60 relative z-10">
@@ -173,52 +174,51 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         {/* Sidebar Section */}
         <div className="lg:col-span-4 space-y-8">
            
-           {/* Card 1: Subscription Info */}
-           <div className={`p-8 rounded-[3rem] border shadow-xl relative overflow-hidden transition-all duration-500 ${isPremium ? 'bg-amber-500 text-white border-amber-600' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}`}>
-              <div className="relative z-10 space-y-6">
-                 <div className="flex justify-between items-start">
-                    <div>
-                       <h3 className="text-xl font-black uppercase tracking-tighter">{t('حالة الاشتراك', 'Sub Status')}</h3>
-                       <p className={`text-[10px] font-black uppercase tracking-widest opacity-80 ${!isPremium ? 'text-blue-600' : 'text-white'}`}>
+           {/* Card 1: Subscription Info (Redesigned based on Image) */}
+           <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
+              <div className="flex items-start justify-between">
+                 <div className="flex items-center gap-4">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-[1.5rem] shadow-sm">
+                       <Zap size={28} />
+                    </div>
+                    <div className="text-right rtl:text-right ltr:text-left">
+                       <h3 className="text-2xl font-black dark:text-white leading-none">{t('حالة الاشتراك', 'Sub Status')}</h3>
+                       <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-1">
                         {activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : t('باقة مجانية', 'Free Plan')}
                        </p>
                     </div>
-                    <div className={`p-3 rounded-2xl ${isPremium ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600'}`}>
-                       {isPremium ? <Sparkles size={24} /> : <Zap size={24} />}
+                 </div>
+              </div>
+
+              {isPremium && userProfile?.premiumUntil && (
+                 <div className="p-5 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 space-y-3">
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                       <div className="flex items-center gap-2"><Calendar size={12}/> {t('صالح حتى', 'Valid Until')}</div>
+                       <span className="text-gray-900 dark:text-white">{new Date(userProfile.premiumUntil).toLocaleDateString()}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
+                       <div className="h-full bg-blue-600" style={{ width: '100%' }}></div>
                     </div>
                  </div>
+              )}
 
-                 {userProfile?.premiumUntil && (
-                    <div className="space-y-4">
-                       <div className="flex items-center gap-3">
-                          <Calendar size={18} className="opacity-70" />
-                          <div className="flex flex-col">
-                             <span className="text-[9px] font-black uppercase opacity-60">{t('صالح حتى', 'Valid Until')}</span>
-                             <span className="text-sm font-black">{new Date(userProfile.premiumUntil).toLocaleDateString()}</span>
-                          </div>
-                       </div>
-                       <div className={`w-full h-1.5 rounded-full overflow-hidden ${isPremium ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                          <div className={`h-full ${isPremium ? 'bg-white' : 'bg-blue-600'}`} style={{ width: '100%' }}></div>
-                       </div>
-                    </div>
-                 )}
-
-                 {!isPremium ? (
-                    <button 
-                       onClick={() => navigate(`/${lang}/pricing`)}
-                       className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-                    >
-                       {t('ترقية الحساب الآن', 'Upgrade Account')}
-                       <ArrowUpRight size={16} />
-                    </button>
-                 ) : (
-                    <div className="p-4 bg-white/10 rounded-2xl border border-white/20 flex gap-3 items-center">
-                       <Shield size={20} className="shrink-0" />
-                       <p className="text-[10px] font-bold leading-tight">{t('حسابك مفعل بكامل الصلاحيات الاحترافية.', 'Pro membership is active.')}</p>
-                    </div>
-                 )}
-              </div>
-              {isPremium && <div className="absolute -bottom-6 -right-6 opacity-10 rotate-12"><Crown size={120} /></div>}
+              {isPremium ? (
+                 <button 
+                   onClick={() => window.open('https://billing.stripe.com/', '_blank')}
+                   className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                 >
+                    <span className="relative z-10">{t('إدارة الفواتير والاشتراك', 'Manage Billing & Subscription')}</span>
+                    <ExternalLink size={18} className="group-hover:translate-x-1 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                 </button>
+              ) : (
+                 <button 
+                   onClick={() => navigate(`/${lang}/pricing`)}
+                   className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                 >
+                    <span className="relative z-10">{t('ترقية الحساب الآن', 'Upgrade Account Now')}</span>
+                    <ArrowUpRight size={18} className="group-hover:translate-x-1 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                 </button>
+              )}
            </div>
 
            {/* Card 2: Membership Features */}
@@ -317,7 +317,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
               <button 
                 type="submit" disabled={loading}
-                className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50"
+                className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50"
               >
                 {loading ? <Loader2 className="animate-spin" size={24} /> : <CheckCircle2 size={24} />}
                 {t('تحديث بيانات الحساب', 'Update My Account')}
@@ -326,9 +326,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         </div>
       </div>
 
-      {/* Separate Container for Danger Zone to avoid any overlapping issues */}
       <div className="max-w-4xl mx-auto mt-20">
-         <div className="bg-red-50/50 dark:bg-red-900/5 p-8 md:p-12 rounded-[3.5rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-10 shadow-sm relative">
+         <div className="bg-red-50/50 dark:bg-red-900/5 p-8 md:p-12 rounded-[3rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-10 shadow-sm relative">
             <div className="flex items-center gap-6 text-center md:text-start flex-col md:flex-row">
                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-[1.5rem] flex items-center justify-center shrink-0">
                   <AlertTriangle size={32} />
@@ -349,7 +348,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
          </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">

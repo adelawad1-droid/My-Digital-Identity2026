@@ -27,21 +27,20 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
   const [sharingCard, setSharingCard] = useState<CardData | null>(null);
   const [cardToDelete, setCardToDelete] = useState<CardData | null>(null);
-  const [userRole, setUserRole] = useState<'user' | 'premium' | 'admin'>('user');
-  const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (auth.currentUser) {
       getUserProfile(auth.currentUser.uid).then(profile => {
         if (profile) {
-          setUserRole(profile.role);
-          setPremiumUntil(profile.premiumUntil || null);
+          setUserProfile(profile);
         }
       });
     }
   }, []);
 
-  const isPremium = userRole === 'premium' || userRole === 'admin';
+  // تعديل منطق التحقق ليشمل الباقة المفعلة
+  const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId;
 
   const handleDeleteConfirm = () => {
     if (cardToDelete) {
@@ -229,7 +228,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
       {cardToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                  <AlertTriangle size={40} />
               </div>
               <div className="space-y-2">

@@ -50,7 +50,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const [activeTab, setActiveTab] = useState<EditorTab>('identity');
   const [showMobilePreview, setShowMobilePreview] = useState(false);
-  const [userRole, setUserRole] = useState<'user' | 'premium' | 'admin'>('user');
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugStatus, setSlugStatus] = useState<'idle' | 'available' | 'taken' | 'invalid'>('idle');
@@ -72,11 +72,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       if (settings) setUploadConfig({ storageType: (settings.imageStorageType as any) || 'database', uploadUrl: settings.serverUploadUrl || '' });
     });
     if (auth.currentUser) {
-      getUserProfile(auth.currentUser.uid).then(profile => { if (profile) setUserRole(profile.role); });
+      getUserProfile(auth.currentUser.uid).then(profile => { 
+        if (profile) setUserProfile(profile); 
+      });
     }
   }, []);
 
-  const isPremium = userRole === 'premium' || userRole === 'admin' || isAdminEdit;
+  const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId || isAdminEdit;
 
   const tabs: {id: EditorTab, label: string, icon: any, color: string, isPro?: boolean}[] = [
     { id: 'identity', label: t('الهوية', 'Identity'), icon: UserIcon, color: 'text-blue-600' },
@@ -245,29 +247,27 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
       
-      {/* عرض رسالة نوع المحرر */}
-      {showModeInfo && (
+      {/* عرض رسالة نوع المحرر - تظهر فقط للمستخدمين المجانيين (غير المشتركين) */}
+      {showModeInfo && !isPremium && (
          <div className="max-w-[1440px] mx-auto px-4 md:px-6 pt-6">
-            <div className={`p-6 rounded-[2.5rem] border flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in ${isPremium ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30' : 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30'}`}>
+            <div className={`p-6 rounded-[2.5rem] border bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in`}>
                 <div className="flex items-center gap-5">
-                   <div className={`p-4 rounded-2xl ${isPremium ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'} shadow-lg`}>
-                      {isPremium ? <Crown size={32}/> : <UserIcon size={32}/>}
+                   <div className={`p-4 rounded-2xl bg-blue-600 text-white shadow-lg`}>
+                      <UserIcon size={32}/>
                    </div>
                    <div>
                       <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">
-                        {isPremium ? t('advancedEditorTitle') : t('basicEditorTitle')}
+                        {t('basicEditorTitle')}
                       </h3>
                       <p className="text-xs font-bold text-gray-400 mt-1">
-                        {isPremium ? t('advancedEditorDesc') : t('basicEditorDesc')}
+                        {t('basicEditorDesc')}
                       </p>
                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                   {!isPremium && (
-                      <button onClick={() => navigate(`/${lang}/pricing`)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">
-                        {t('upgradeToCustomize')}
-                      </button>
-                   )}
+                   <button onClick={() => navigate(`/${lang}/pricing`)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">
+                      {t('upgradeToCustomize')}
+                   </button>
                    <button onClick={() => setShowModeInfo(false)} className="p-2 text-gray-400 hover:text-red-500"><X size={20}/></button>
                 </div>
             </div>
@@ -827,7 +827,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                    {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                                 </div>
                                                 <div className="space-y-3">
-                                                  {/* Fixed: Use bodyBgFileInputRef instead of undefined bodyBgInputRef */}
                                                   <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
                                                   <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                     <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
