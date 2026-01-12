@@ -598,19 +598,29 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
-  // mobileBodyOffsetY هو إزاحة العناصر الداخلية في كل الأجهزة
-  const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet') 
+  // تصحيح: خيار "بطاقة في الوسط" يجب أن يستخدم دائماً إزاحة الجوال mobileBodyOffsetY (التداخل الداخلي)
+  // لأنه يعامل كنسخة جوال مكبرة في صفحة العرض العام
+  const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || template.config.desktopLayout !== 'full-width-header') 
     ? (template.config.mobileBodyOffsetY ?? 0) 
     : 0;
 
-  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط
+  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط (Container Margin)
   const previewDesktopPullUp = (previewDevice === 'desktop')
     ? (template.config.desktopBodyOffsetY ?? 0)
     : 0;
 
-  const previewPageBg = template.config.pageBgStrategy === 'mirror-header' 
-    ? (template.config.defaultThemeType === 'color' ? template.config.defaultThemeColor : '#f8fafc')
-    : (template.config.pageBgColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc'));
+  // استنتاج خلفية الصفحة للمعاينة
+  const getPreviewPageBg = () => {
+    if (template.config.pageBgStrategy === 'mirror-header') {
+      if (template.config.defaultThemeType === 'gradient') {
+        return template.config.defaultThemeGradient;
+      }
+      return template.config.defaultThemeColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc');
+    }
+    return template.config.pageBgColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc');
+  };
+
+  const previewPageBg = getPreviewPageBg();
 
   // --- Drag Handling Logic ---
   const [activeDragElement, setActiveDragElement] = useState<string | null>(null);
@@ -626,7 +636,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     
-    // الحصول على القيم الابتدائية للإزاحة بناءً على العنصر
     const config = template.config;
     let ox = 0, oy = 0;
     
@@ -659,7 +668,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     const newX = Math.round(dragInitialValues.current.ox + dx);
     const newY = Math.round(dragInitialValues.current.oy + dy);
     
-    // تحديث الإعدادات بناءً على العنصر المسحوب
     switch(activeDragElement) {
       case 'avatar': updateConfig('avatarOffsetX', newX); updateConfig('avatarOffsetY', newY); break;
       case 'name': updateConfig('nameOffsetX', newX); updateConfig('nameOffsetY', newY); break;
@@ -707,7 +715,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
   // --- Accordion Logic ---
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'group1': true, // Open first group by default
+    'group1': true, 
     'group2': false,
     'group3': false,
     'group4': false,
@@ -721,13 +729,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     }));
   };
 
-  // Auto-expand group containing active tab
   useEffect(() => {
     const groups = [
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
       { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
       { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
-      { id: 'group4', tabs: ['special-links', 'occasion-lab'] },
+      { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
     
@@ -839,7 +846,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 2: بيانات الهوية - Purple Theme (Changed to Gray-Blue Theme) */}
+          {/* Group 2: بيانات الهوية - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group2')}
@@ -863,7 +870,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 3: التواصل والروابط - Emerald Theme (Changed to Gray-Blue Theme) */}
+          {/* Group 3: التواصل والروابط - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group3')}
@@ -875,7 +882,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-white'}`} />
              </button>
              {openGroups['group3'] && (
                 <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
@@ -887,7 +894,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 4: المحتوى الإضافي - Rose Theme (Changed to Gray-Blue Theme) */}
+          {/* Group 4: المحتوى الإضافي - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
@@ -904,13 +911,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              {openGroups['group4'] && (
                 <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'ملحق خاص عائم (Floating)' : 'Floating Asset'} icon={Sticker} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
 
-          {/* Group 5: المميزات والإعدادات - Amber Theme (Changed to Gray-Blue Theme) */}
+          {/* Group 5: المميزات والإعدادات - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group5')}
@@ -936,7 +942,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
         </div>
 
         <div className="flex-1 p-8 overflow-y-auto no-scrollbar bg-gray-50/20 dark:bg-transparent">
-          {/* ... existing tab content ... */}
           <div className="max-w-3xl mx-auto space-y-10 animate-fade-in pb-32">
             
             {activeTab === 'header' && (
@@ -1255,7 +1260,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              <ColorPicker label={t('لون حركة 1', 'Motion Color 1')} value={template.config.avatarAnimatedBorderColor1} onChange={(v: string) => updateConfig('avatarAnimatedBorderColor1', v)} />
                              <ColorPicker label={t('لون حركة 2', 'Motion Color 2')} value={template.config.avatarAnimatedBorderColor2} onChange={(v: string) => updateConfig('avatarAnimatedBorderColor2', v)} />
                              <RangeControl label={t('سرعة الدوران', 'Rotation Speed')} min={1} max={10} value={template.config.avatarAnimatedBorderSpeed || 3} onChange={(v: number) => updateConfig('avatarAnimatedBorderSpeed', v)} icon={RefreshCcw} unit="s" hint={t('كلما قل الرقم زادت السرعة', 'Lower is faster')} />
-                             <ToggleSwitch label={t('تأثير التوهج (Glow)', 'Glow Effect')} value={template.config.avatarAnimatedGlow} onChange={(v: boolean) => updateConfig('avatarAnimatedGlow', v)} icon={Sun} color="bg-blue-600" isRtl={isRtl} />
+                             <ToggleSwitch label={t('تأثير توهج (Glow)', 'Glow Effect')} value={template.config.avatarAnimatedGlow} onChange={(v: boolean) => updateConfig('avatarAnimatedGlow', v)} icon={Sun} color="bg-blue-600" isRtl={isRtl} />
                           </div>
                        )}
                     </div>
@@ -1538,8 +1543,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800 items-center">
                           <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.membershipGlassy} onChange={(v: boolean) => updateConfig('membershipGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
-                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
-                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.membershipOffsetX || 0} onChange={(v: number) => updateConfig('membershipOffsetX', v)} icon={ArrowLeftRight} />
+                          <RangeControl label={t('إزاحة القسم رأسياً')} min={-2000} max={2000} value={template.config.membershipOffsetY || 0} onChange={(v: number) => updateConfig('membershipOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً')} min={-1000} max={1000} value={template.config.membershipOffsetX || 0} onChange={(v: number) => updateConfig('membershipOffsetX', v)} icon={ArrowLeftRight} />
                        </div>
 
                        <div className="pt-4 flex justify-end">
@@ -1584,7 +1589,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.contactButtonsOffsetY} onChange={(v: number) => updateConfig('contactButtonsOffsetY', v)} icon={Move} />
                              <RangeControl label={t('إزاحة القسم أفقياً', 'X Offset')} min={-1000} max={1000} value={template.config.contactButtonsOffsetX || 0} onChange={(v: number) => updateConfig('contactButtonsOffsetX', v)} icon={ArrowLeftRight} />
-                             <RangeControl label={t('المسافة بين الأيقونات', 'Buttons Gap')} min={0} max={40} value={template.config.contactButtonsGap ?? 12} onChange={(v: number) => updateConfig('contactButtonsGap', v)} icon={SlidersHorizontal} />
+                             <RangeControl label={t('المسافة بين الزرين', 'Buttons Gap')} min={0} max={40} value={template.config.contactButtonsGap ?? 12} onChange={(v: number) => updateConfig('contactButtonsGap', v)} icon={SlidersHorizontal} />
                              <RangeControl label={t('انحناء الحواف', 'Border Radius')} min={0} max={60} value={template.config.contactButtonsRadius ?? 16} onChange={(v: number) => updateConfig('contactButtonsRadius', v)} icon={Ruler} />
                              <RangeControl label={t('ارتفاع الأزرار (تعبئة)', 'Buttons Height')} min={4} max={40} value={template.config.contactButtonsPaddingV ?? 16} onChange={(v: number) => updateConfig('contactButtonsPaddingV', v)} icon={Maximize2} />
                           </div>
@@ -2240,6 +2245,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        lang={lang} 
                        customConfig={template.config} 
                        hideSaveButton={true} 
+                       // خيار "بطاقة في الوسط" يجب أن يعرض الترويسة داخل البطاقة تماماً كالجوال
                        isFullFrame={isFullHeaderPreview}
                        hideHeader={isFullHeaderPreview}
                        bodyOffsetYOverride={previewBodyOffsetY}
@@ -2348,7 +2354,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{isRtl ? 'سيظهر القالب في بداية المعرض دائماً' : 'Template will always show at the gallery start'}</p>
                           </div>
                        </div>
-                       <button type="button" onClick={() => updateTemplate('isFeatured', !template.isFeatured)} className={`w-14 h-7 rounded-full relative transition-all ${template.isFeatured ? 'bg-amber-500 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                       <button type="button" onClick={() => updateTemplate('isFeatured', !template.isFeatured)} className={`w-14 h-7 rounded-full relative transition-all ${template.isFeatured ? 'bg-amber-50 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
                           <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (template.isFeatured ? 'right-8' : 'right-1') : (template.isFeatured ? 'left-8' : 'left-1')}`} />
                        </button>
                     </div>
