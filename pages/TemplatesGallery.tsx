@@ -121,6 +121,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-10 md:gap-14 pt-4 max-w-6xl mx-auto">
         {filteredTemplates.map(tmpl => (
+          /* Fix: Using sampleCardData instead of undefined sampleData */
           <TemplateCard key={tmpl.id} tmpl={tmpl} lang={lang} onSelect={onSelect} sampleData={sampleCardData} isPrivate={isPrivateMode} />
         ))}
       </div>
@@ -202,22 +203,21 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
                 data={{ 
                   ...sampleData, 
                   templateId: tmpl.id,
+                  // إعطاء الأولوية للبيانات التعريفية المحفوظة في القالب
+                  name: tmpl.config.defaultName || sampleData.name,
+                  title: tmpl.config.defaultTitle || sampleData.title,
+                  company: tmpl.config.defaultCompany || sampleData.company,
+                  bio: (isRtl ? tmpl.config.defaultBioAr : tmpl.config.defaultBioEn) || sampleData.bio,
+                  
                   themeType: tmpl.config.defaultThemeType || sampleData.themeType,
-                  // Corrected: use sampleData instead of sampleCardData
                   themeColor: tmpl.config.defaultThemeColor || sampleData.themeColor,
-                  // Corrected: use sampleData instead of sampleCardData
                   themeGradient: tmpl.config.defaultThemeGradient || sampleData.themeGradient,
-                  // Corrected: use sampleData instead of sampleCardData
                   backgroundImage: tmpl.config.defaultBackgroundImage || sampleData.backgroundImage,
-                  // Corrected: use sampleData instead of sampleCardData
                   profileImage: tmpl.config.defaultProfileImage || sampleData.profileImage || '',
-                  // Corrected: use sampleData instead of sampleCardData
                   isDark: tmpl.config.defaultIsDark ?? sampleData.isDark,
                   showOccasion: tmpl.config.showOccasionByDefault ?? false,
-                  // دمج إعدادات الأعمدة الافتراضية للقالب لكي تظهر في المعاينة المصغرة
                   specialLinksCols: tmpl.config.specialLinksCols || 2,
                   socialIconColumns: tmpl.config.socialIconColumns || 0,
-                  // استخدام روابط الصور الافتراضية المحددة في هذا القالب بدلاً من البيانات العامة
                   specialLinks: (tmpl.config.defaultSpecialLinks && tmpl.config.defaultSpecialLinks.length > 0) 
                                  ? tmpl.config.defaultSpecialLinks 
                                  : sampleData.specialLinks,
