@@ -50,6 +50,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const [activeTab, setActiveTab] = useState<EditorTab>('identity');
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
@@ -207,8 +208,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const inputClasses = "w-full px-5 py-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 transition-all font-bold text-sm shadow-none";
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
 
-  const isFullHeaderActive = currentTemplate?.config.desktopLayout === 'full-width-header';
-  
+  // استراتيجية معاينة الخلفية
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
     ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
     : (currentTemplate?.config.pageBgColor || (formData.isDark ? '#050507' : '#f8fafc'));
@@ -250,6 +250,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     }
     onSave(formData, originalIdRef.current || undefined);
   };
+
+  const isFullHeaderPreview = currentTemplate?.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
+  const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || currentTemplate?.config.desktopLayout !== 'full-width-header') 
+    ? (formData.bodyOffsetY ?? currentTemplate?.config.mobileBodyOffsetY ?? 0) 
+    : 0;
+
+  const previewDesktopPullUp = (previewDevice === 'desktop')
+    ? (currentTemplate?.config.desktopBodyOffsetY ?? 0)
+    : 0;
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
@@ -913,20 +922,32 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             </div>
         </main>
 
-        {/* نظام المعاينة الحية */}
+        {/* نظام المعاينة الحية - المحدث ليتطابق مع قسم الأدمن */}
         <aside className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية (جوال)', 'Live Preview (Mobile)')}</span></div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span>
+                </div>
+                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                   <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Smartphone size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Tablet size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Monitor size={18}/></button>
+                </div>
               </div>
               
               <div 
                    onMouseMove={handleSidebarPreviewMouseMove}
                    onMouseLeave={() => setSidebarMouseYPercentage(0)}
-                   className="transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black w-[340px] aspect-[9/18.5] cursor-ns-resize isolate" 
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black cursor-ns-resize isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
                    style={{ 
                      isolation: 'isolate', 
-                     backgroundColor: previewPageBg
+                     backgroundColor: previewPageBg,
+                     transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
+                     width: previewDevice === 'desktop' ? '850px' : undefined,
+                     height: previewDevice === 'desktop' ? '1200px' : undefined,
+                     minHeight: previewDevice === 'desktop' ? '1200px' : undefined,
                    }}>
                 
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
@@ -937,15 +958,32 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        overflow: 'hidden',
                        clipPath: 'inset(0 round 2.6rem)' 
                      }}>
+                   {isFullHeaderPreview && (
+                      <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${currentTemplate?.config.headerHeight}px` }}>
+                        <div className="absolute inset-0 z-0">
+                          {formData.themeType === 'image' && formData.backgroundImage && (
+                            <img src={formData.backgroundImage} className="w-full h-full object-cover" alt="Full Header" />
+                          )}
+                          {formData.themeType === 'gradient' && (
+                            <div className="w-full h-full" style={{ background: formData.themeGradient }} />
+                          )}
+                          {formData.themeType === 'color' && (
+                            <div className="w-full h-full" style={{ backgroundColor: formData.themeColor }} />
+                          )}
+                        </div>
+                      </div>
+                   )}
+
                    <div 
                      style={{ 
-                        maxWidth: '100%',
+                        maxWidth: previewDevice === 'desktop' ? `${currentTemplate?.config.cardMaxWidth || 500}px` : '100%',
                         marginRight: 'auto',
                         marginLeft: 'auto',
+                        paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
                         position: 'relative',
                         zIndex: 10,
                         transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                        transform: `translateY(-${sidebarMouseYPercentage * 0.7}%)`
+                        transform: `translateY(${(previewDevice === 'desktop' ? previewDesktopPullUp : 0) - (sidebarMouseYPercentage * (previewDevice === 'desktop' ? 0.3 : 0.7))}px)`
                      }}
                    >
                      <CardPreview 
@@ -953,7 +991,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        lang={lang} 
                        customConfig={currentTemplate?.config} 
                        hideSaveButton={true} 
-                       isFullFrame={false} 
+                       isFullFrame={isFullHeaderPreview}
+                       hideHeader={isFullHeaderPreview}
+                       bodyOffsetYOverride={previewBodyOffsetY}
                      />
                    </div>
                 </div>
