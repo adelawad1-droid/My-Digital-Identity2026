@@ -46,6 +46,8 @@ export interface TemplateConfig {
   headerHeight: number;
   headerCustomAsset?: string; 
   headerSvgRaw?: string;
+  headerSvgColor?: string; // الخاصية الجديدة للتحكم في لون الـ SVG
+  headerSvgRotation?: number; // الخاصية الجديدة للتحكم في تدوير الـ SVG
   headerPatternId?: string; 
   headerPatternOpacity?: number; 
   headerPatternScale?: number; 

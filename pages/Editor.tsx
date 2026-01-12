@@ -110,6 +110,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          isDark: selectedTmpl.config.defaultIsDark ?? baseData.isDark,
          cardBodyColor: selectedTmpl.config.cardBodyColor || '#ffffff',
          cardBodyThemeType: selectedTmpl.config.cardBodyThemeType || 'color',
+         bodyBorderRadius: selectedTmpl.config.bodyBorderRadius,
+         bodyOffsetY: selectedTmpl.config.bodyOffsetY,
          specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
          specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
@@ -206,10 +208,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
 
   const isFullHeaderActive = currentTemplate?.config.desktopLayout === 'full-width-header';
-  const cardBodyOffset = currentTemplate?.config.mobileBodyOffsetY ?? 0;
   
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
-    ? (formData.themeType === 'color' ? formData.themeColor : '#f8fafc')
+    ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
     : (currentTemplate?.config.pageBgColor || (formData.isDark ? '#050507' : '#f8fafc'));
 
   const handleSpecialLinkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -310,7 +311,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 >
                     <div 
                       className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-hidden"
-                      style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
+                      style={{ 
+                        transform: `translateY(-${mouseYPercentage * 0.7}%)`
+                      }}
                     >
                         <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} />
                     </div>
@@ -873,6 +876,15 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                              onChange={(v: number) => handleChange('bodyBorderRadius', v)} 
                                              icon={Ruler} 
                                           />
+                                          <div className="md:col-span-2">
+                                            <RangeControl 
+                                              label={isRtl ? 'إزاحة جسم البطاقة (رأسي)' : 'Body Vertical Offset'} 
+                                              min={-1000} max={1000} 
+                                              value={formData.bodyOffsetY ?? currentTemplate?.config.bodyOffsetY ?? 0} 
+                                              onChange={(v: number) => handleChange('bodyOffsetY', v)} 
+                                              icon={Move} 
+                                            />
+                                          </div>
                                        </div>
                                     </div>
                                  </div>
@@ -941,8 +953,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                        lang={lang} 
                        customConfig={currentTemplate?.config} 
                        hideSaveButton={true} 
-                       isFullFrame={isFullHeaderActive} 
-                       bodyOffsetYOverride={cardBodyOffset}
+                       isFullFrame={false} 
                      />
                    </div>
                 </div>

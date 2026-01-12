@@ -143,13 +143,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  const themeType = data.themeType || 'gradient';
-  const themeColor = data.themeColor || '#3b82f6';
-  const themeGradient = data.themeGradient || 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
-  const backgroundImage = data.backgroundImage;
-  const isDark = data.isDark;
-
   const config = customConfig || {} as TemplateConfig;
+  const isDark = data.isDark ?? config.defaultIsDark ?? false;
+  const themeType = data.themeType || config.defaultThemeType || 'gradient';
+  const themeColor = data.themeColor || config.defaultThemeColor || '#3b82f6';
+  const themeGradient = data.themeGradient || config.defaultThemeGradient || 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+  const backgroundImage = data.backgroundImage || config.defaultBackgroundImage;
+
   const headerType = config.headerType || 'classic';
   const headerHeight = config.headerHeight || 180;
 
@@ -319,6 +319,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       case 'top-bar': baseStyle.height = '12px'; break;
       case 'minimal': baseStyle.height = '4px'; break;
       case 'hero': baseStyle.height = '350px'; break;
+      case 'custom-asset': 
+        // We handle this inside the return block as a child element
+        break;
     }
 
     return baseStyle;
@@ -334,30 +337,27 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const needsSideMargins = headerType.startsWith('side') || isBodyGlassy || bodyOpacity < 1 || config.headerType === 'floating' || hideHeader;
 
-  /** Respect per-card overrides for bodyOffsetY from CardData */
   const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
   const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
   const bodyContentStyles: React.CSSProperties = {
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? `${headerHeight * 0.4}px` : (headerType.startsWith('side') ? '40px' : '-60px')),
     transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
-    /** Respect per-card overrides for bodyBorderRadius from CardData */
     borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
     position: 'relative',
     zIndex: 20,
-    width: needsSideMargins ? 'calc(100% - 32px)' : '100%',
-    margin: needsSideMargins ? '0 auto' : '0',
+    width: (needsSideMargins || hideHeader) ? 'calc(100% - 32px)' : '100%',
+    margin: (needsSideMargins || hideHeader) ? '0 auto' : '0',
     backdropFilter: isBodyGlassy ? 'blur(20px)' : 'none',
     WebkitBackdropFilter: isBodyGlassy ? 'blur(15px)' : 'none',
-    border: needsSideMargins ? (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)') : 'none',
+    border: (needsSideMargins || hideHeader) ? (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)') : 'none',
     textAlign: config.contentAlign || 'center',
-    marginLeft: headerType === 'side-left' ? '28%' : (headerType === 'side-right' ? '2%' : (needsSideMargins ? 'auto' : '0')),
-    marginRight: headerType === 'side-right' ? '28%' : (headerType === 'side-left' ? '2%' : (needsSideMargins ? 'auto' : '0')),
+    marginLeft: headerType === 'side-left' ? '28%' : (headerType === 'side-right' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
+    marginRight: headerType === 'side-right' ? '28%' : (headerType === 'side-left' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
     minHeight: '400px',
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: needsSideMargins ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none',
-    // ضمان توريث الخط لكافة العناصر الداخلية في جسم البطاقة
+    boxShadow: (needsSideMargins || hideHeader) ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none',
     fontFamily: 'inherit'
   };
 
@@ -391,16 +391,12 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const sSize = config.socialIconSize || 22;
   const sPadding = config.socialIconPadding || 14;
   const sGap = config.socialIconGap || 12;
-  
-  // Update sCols to prioritize data.socialIconColumns from Editor
   const sCols = data.socialIconColumns !== undefined ? data.socialIconColumns : (config.socialIconColumns || 0);
-  
   const sVariant = config.socialIconVariant || 'filled';
   const sBg = config.socialIconBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
   const sColor = config.socialIconColor || socialIconsColor;
   const sBorderWidth = config.socialIconBorderWidth || 1;
   const sBorderColor = config.socialIconBorderColor || (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)');
-  
   const useBrandColors = data.useSocialBrandColors !== undefined ? data.useSocialBrandColors : config.useSocialBrandColors;
 
   const getSocialBtnStyles = (platformId: string): React.CSSProperties => {
@@ -440,7 +436,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     return inner ? 'rounded-[22%]' : 'rounded-[28%]';
   };
 
-  // إعدادات روابط الصور - منح الأولوية لبيانات المستخدم Overrides
   const slCols = data.specialLinksCols || config.specialLinksCols || 2;
   const slGap = config.specialLinksGap || 12;
   const slRadius = config.specialLinksRadius ?? 24;
@@ -452,11 +447,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const finalWebsites = data.websites && data.websites.length > 0 ? data.websites : (data.website ? [data.website] : []);
   const hasDirectLinks = (showEmail && finalEmails.length > 0) || (showWebsite && finalWebsites.length > 0);
 
-  const finalName = data.name || config.defaultName || '---';
-  const finalTitle = data.title || config.defaultTitle || '';
-  const finalCompany = data.company || config.defaultCompany || '';
-  
-  const finalSpecialLinks = (data.specialLinks !== undefined) ? data.specialLinks : (config.defaultSpecialLinks || []);
+  // Fallback Logic: User Data -> Template Default -> Generic
+  const finalName = data.name?.trim() || config.defaultName || '---';
+  const finalTitle = data.title?.trim() || config.defaultTitle || '';
+  const finalCompany = data.company?.trim() || config.defaultCompany || '';
+  const finalSpecialLinks = (data.specialLinks && data.specialLinks.length > 0) ? data.specialLinks : (config.defaultSpecialLinks || []);
+  const finalBio = data.bio?.trim() || (isRtl ? config.defaultBioAr : config.defaultBioEn) || '';
+  const finalProfileImage = data.profileImage || config.defaultProfileImage;
 
   const cbRadius = config.contactButtonsRadius ?? 16;
   const cbGap = config.contactButtonsGap ?? 12;
@@ -478,28 +475,59 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     return style;
   };
 
-  const finalBio = data.bio || (isRtl ? config.defaultBioAr : config.defaultBioEn);
-
-  // الخط النهائي المختار
   const currentFont = data.fontFamily || config.fontFamily || 'var(--site-font), sans-serif';
+
+  // --- SVG Processing Engine with Visual Color Injection ---
+  const cleanSvgRaw = (raw: string, userConfig: TemplateConfig) => {
+    if (!raw) return '';
+    
+    const targetColor = userConfig.headerSvgColor || themeColor;
+    let processed = raw;
+    
+    if (targetColor) {
+      // استبدال currentColor بشكل افتراضي
+      processed = processed.replace(/currentColor/g, targetColor);
+      
+      // استبدال أي تعبئة (fill) أو إطار (stroke) ثابث باللون الجديد 
+      // (نقوم باستثناء 'none' و 'transparent')
+      processed = processed.replace(/fill="((?!none|transparent|url)[^"]+)"/gi, `fill="${targetColor}"`);
+      processed = processed.replace(/stroke="((?!none|transparent|url)[^"]+)"/gi, `stroke="${targetColor}"`);
+      
+      // التعامل مع الأنماط المدمجة (style="fill:#...")
+      processed = processed.replace(/style="([^"]*?)fill:\s*?#[a-fA-F0-9]{3,6}([^"]*?)"/gi, (match, p1, p2) => {
+         return `style="${p1}fill:${targetColor}${p2}"`;
+      });
+    }
+
+    const rotation = userConfig.headerSvgRotation || 0;
+    const scale = (userConfig.headerPatternScale || 100) / 100;
+    const opacity = (userConfig.headerPatternOpacity ?? 100) / 100;
+
+    const transformStyle = `transform: rotate(${rotation}deg) scale(${scale}); width: 100%; height: 100%; display: block; opacity: ${opacity}; transition: all 0.3s ease;`;
+
+    return processed
+      .replace(/width="[^"]*"/g, 'width="100%"')
+      .replace(/height="[^"]*"/g, 'height="100%"')
+      .replace(/<svg/g, `<svg preserveAspectRatio="none" style="${transformStyle}"`);
+  };
 
   return (
     <div 
       className={`w-full min-h-full flex flex-col transition-all duration-500 relative overflow-hidden isolate ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
       style={{ 
         backgroundColor: finalCardBaseGroundColor,
-        // منع أي عنصر من الخروج عن حدود الفريم
         clipPath: isFullFrame ? 'none' : 'inset(0 round 2.25rem)',
-        // فرض الخط المختار على الحاوية الرئيسية
         fontFamily: currentFont
       }}
     >
       
       {!hideHeader && (
         <div className="shrink-0 overflow-hidden relative" style={getHeaderStyles()}>
-            {headerType === 'custom-asset' && config.headerSvgRaw && (
-               <div className="absolute inset-0 flex items-start justify-center overflow-hidden" style={{ color: themeType === 'gradient' ? '#ffffff' : themeColor, opacity: 0.9 }} dangerouslySetInnerHTML={{ __html: config.headerSvgRaw.replace('<svg', `<svg style="width: 100%; height: 100%; display: block;" preserveAspectRatio="none"`) }} />
-            )}
+            {headerType === 'custom-asset' && config.headerSvgRaw ? (
+               <div className="absolute inset-0 flex items-start justify-center overflow-hidden" 
+                    dangerouslySetInnerHTML={{ __html: cleanSvgRaw(config.headerSvgRaw, config) }} />
+            ) : null}
+
             {config.headerPatternId && config.headerPatternId !== 'none' && (
               <div className="absolute inset-0 pointer-events-none opacity-[0.2]" 
                    style={{ 
@@ -511,7 +539,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         </div>
       )}
 
-      {/* الملحق العائم (Floating Asset) - يجب أن يكون خارج حاوية الـ padding ليكون حراً بالكامل */}
       {showFloatingAsset && (data.floatingAssetUrl || config.floatingAssetUrl) && (
         <div 
           data-element-id="floatingAsset"
@@ -531,7 +558,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         </div>
       )}
 
-      {/* حاوية فرعية تفرض الخط بالوراثة على كل العناصر الداخلية */}
       <div className="flex flex-col flex-1 px-4 sm:px-6" style={{ ...bodyContentStyles, fontFamily: 'inherit' }}>
         {showProfileImage && (
           <div className={`relative ${getAvatarRadiusClasses()} z-30 shrink-0 mx-auto transition-all`} 
@@ -558,7 +584,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
             )}
 
             <div className={`w-full h-full ${getAvatarRadiusClasses(true)} overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center`}>
-              {data.profileImage ? <img src={data.profileImage} className="w-full h-full object-cover" /> : <Camera size={40} className="text-gray-200" />}
+              {finalProfileImage ? <img src={finalProfileImage} className="w-full h-full object-cover" /> : <Camera size={40} className="text-gray-200" />}
             </div>
           </div>
         )}
