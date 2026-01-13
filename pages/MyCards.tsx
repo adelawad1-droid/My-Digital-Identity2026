@@ -8,7 +8,7 @@ import {
   Share2, AlertTriangle, X, Eye, Calendar, ShieldCheck, 
   Clock, TrendingUp, Sparkles, Crown, Zap, ArrowUpRight,
   Loader2, Save, CheckCircle2,
-  CreditCard, Star, CalendarPlus
+  CreditCard, Star, CalendarPlus, Search, FolderSearch
 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
 import { auth, getUserProfile, saveCardToDB } from '../services/firebase';
@@ -29,6 +29,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   const [sharingCard, setSharingCard] = useState<CardData | null>(null);
   const [cardToDelete, setCardToDelete] = useState<CardData | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // خاص بإدارة العضوية السريعة
   const [membershipEditingCard, setMembershipEditingCard] = useState<CardData | null>(null);
@@ -52,6 +53,12 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   }, []);
 
   const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId;
+
+  // منطق الفلترة بناءً على البحث
+  const filteredCards = cards.filter(card => 
+    (card.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (card.id || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleDeleteConfirm = () => {
     if (cardToDelete) {
@@ -188,8 +195,32 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
         </div>
       </div>
 
+      {/* محرك البحث الداخلي */}
+      <div className="w-full max-w-2xl mx-auto">
+         <div className="relative group">
+            <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+               <Search size={20} />
+            </div>
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isRtl ? "ابحث عن بطاقة بالاسم أو المعرف..." : "Search for a card by name or ID..."}
+              className={`w-full py-5 ${isRtl ? 'pr-14 pl-6' : 'pl-14 pr-6'} bg-white dark:bg-[#0f0f12] rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 font-bold text-sm dark:text-white transition-all`}
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className={`absolute inset-y-0 ${isRtl ? 'left-4' : 'right-4'} flex items-center text-gray-400 hover:text-red-500 transition-colors`}
+              >
+                 <X size={18} />
+              </button>
+            )}
+         </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {cards.map((card) => {
+        {filteredCards.map((card) => {
           const mStats = getMembershipStats(card);
           return (
             <div key={card.id} className="bg-white dark:bg-[#0f0f12] rounded-[3rem] shadow-sm border border-gray-100 dark:border-gray-800/50 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500">
@@ -284,14 +315,32 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
           );
         })}
         
-        <button onClick={onAdd} className="flex flex-col items-center justify-center p-12 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:bg-blue-50/10 transition-all duration-500 group">
-          <div className="w-20 h-20 rounded-[2rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner mb-6">
-            <Plus size={32} />
-          </div>
-          <span className="text-xs font-black text-gray-400 group-hover:text-blue-600 uppercase tracking-widest">
-            {isRtl ? 'إضافة بطاقة جديدة' : 'Add New Card'}
-          </span>
-        </button>
+        {/* عرض رسالة عند عدم وجود نتائج للبحث */}
+        {filteredCards.length === 0 && cards.length > 0 && (
+           <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-6 bg-white dark:bg-[#0f0f12] rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800">
+              <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-300">
+                 <FolderSearch size={40} />
+              </div>
+              <div>
+                 <h3 className="text-xl font-black dark:text-white">{isRtl ? 'لا توجد نتائج مطابقة' : 'No matching results'}</h3>
+                 <p className="text-gray-400 font-bold text-sm mt-2">{isRtl ? `لم نجد أي بطاقة تحتوي على اسم "${searchQuery}"` : `No cards found matching "${searchQuery}"`}</p>
+              </div>
+              <button onClick={() => setSearchQuery('')} className="px-8 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl font-black text-xs uppercase hover:bg-blue-600 hover:text-white transition-all">
+                 {isRtl ? 'عرض كافة البطاقات' : 'Show All Cards'}
+              </button>
+           </div>
+        )}
+
+        {cards.length === 0 && (
+          <button onClick={onAdd} className="flex flex-col items-center justify-center p-12 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:bg-blue-50/10 transition-all duration-500 group">
+            <div className="w-20 h-20 rounded-[2rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner mb-6">
+              <Plus size={32} />
+            </div>
+            <span className="text-xs font-black text-gray-400 group-hover:text-blue-600 uppercase tracking-widest">
+              {isRtl ? 'إضافة بطاقة جديدة' : 'Add New Card'}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Modal: إدارة العضوية السريعة */}
