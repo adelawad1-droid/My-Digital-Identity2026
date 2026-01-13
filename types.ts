@@ -24,8 +24,8 @@ export interface PricingPlan {
   nameEn: string;
   price: string;
   originalPrice?: string; // السعر قبل الخصم (يظهر مشطوباً)
-  billingCycleAr: string;
-  billingCycleEn: string;
+  billingCycleAr: string; // مثال: شهر، 3 أشهر، سنة
+  billingCycleEn: string; // example: Monthly, 3 Months, Yearly
   featuresAr: string[];
   featuresEn: string[];
   isPopular: boolean;
@@ -35,6 +35,7 @@ export interface PricingPlan {
   buttonTextAr?: string;
   buttonTextEn?: string;
   stripeLink?: string; 
+  updatedAt?: string;
 }
 
 export interface TemplateConfig {

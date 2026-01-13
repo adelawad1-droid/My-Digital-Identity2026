@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Check, Crown, Star, ShieldCheck, Zap, ArrowRight, 
   Sparkles, Shield, Rocket, CreditCard, Lock, HelpCircle,
-  ChevronDown, ArrowLeft
+  ChevronDown, ArrowLeft, Loader2
 } from 'lucide-react';
 
 interface PricingProps {
@@ -23,7 +23,7 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
   useEffect(() => {
     getAllPricingPlans().then(data => {
-      setPlans(data.filter(p => p.isActive));
+      setPlans(data.filter(p => p.isActive).sort((a, b) => (a.order || 0) - (b.order || 0)));
       setLoading(false);
     });
   }, []);
@@ -37,8 +37,9 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
     if (plan.stripeLink) {
       const userId = auth.currentUser.uid;
       // إضافة رابط العودة مع معامل النجاح للتحقق التلقائي
-      // ملاحظة: تأكد من ضبط الـ Success URL في Stripe Dashboard ليسمح بالعودة إلى حساب المستخدم
-      const checkoutUrl = `${plan.stripeLink}?client_reference_id=${userId}`;
+      const checkoutUrl = plan.stripeLink.includes('?') 
+        ? `${plan.stripeLink}&client_reference_id=${userId}`
+        : `${plan.stripeLink}?client_reference_id=${userId}`;
       window.open(checkoutUrl, '_blank');
     }
   };
@@ -55,13 +56,10 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
-      <div className="animate-spin text-blue-600 mb-4 h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
       <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">{isRtl ? 'جاري تحميل الأسعار...' : 'Loading Prices...'}</p>
     </div>
   );
-
-  const mainPlan = plans[0];
-  const activeFeatures = isRtl ? mainPlan?.featuresAr : mainPlan?.featuresEn;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 md:py-20 animate-fade-in-up">
@@ -71,99 +69,87 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
           <span className="text-xs font-black uppercase tracking-widest">{isRtl ? 'استمر في هويتك الرقمية' : 'CONTINUE YOUR DIGITAL JOURNEY'}</span>
         </div>
         <h1 className="text-4xl md:text-6xl font-black dark:text-white tracking-tighter">
-          {isRtl ? 'باقة واحدة، مميزات لا محدودة' : 'One Plan, Unlimited Possibilities'}
+          {isRtl ? 'باقات مرنة، مميزات لا محدودة' : 'Flexible Plans, Unlimited Features'}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 font-bold max-w-2xl mx-auto leading-relaxed">
           {isRtl 
-            ? 'باقة واحدة، اشتراك سنوي واحد، ومميزات لا محدودة لتجعل حضورك الرقمي استثنائياً.' 
-            : 'One plan, one annual subscription, and unlimited features to make your digital presence exceptional.'}
+            ? 'اختر الخطة التي تناسب احتياجاتك، من الاشتراكات الشهرية البسيطة وحتى الباقات السنوية الاحترافية.' 
+            : 'Choose the plan that fits your needs, from simple monthly subscriptions to professional annual packages.'}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-6xl mx-auto">
-        
-        {/* Left Section: Features List */}
-        <div className="lg:col-span-7 space-y-8 order-2 lg:order-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(activeFeatures || []).map((feature, idx) => (
-              <div key={idx} className="flex items-start gap-4 p-5 bg-white dark:bg-[#0d111b] rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm group hover:border-blue-500 transition-all duration-300">
-                <div className="mt-1 p-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                  <Check size={14} strokeWidth={4} />
-                </div>
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 leading-tight">{feature}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        {plans.map((plan) => (
+          <div key={plan.id} className={`relative group flex flex-col h-full`}>
+            {plan.isPopular && (
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 bg-amber-500 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg animate-pulse">
+                {isRtl ? 'الأكثر طلباً' : 'Most Popular'}
               </div>
-            ))}
-          </div>
-
-          <div className="bg-blue-50/50 dark:bg-blue-900/10 p-8 rounded-[3rem] border border-blue-100 dark:border-blue-900/20 flex flex-col md:flex-row items-center gap-6">
-             <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm text-blue-600 shrink-0">
-                <ShieldCheck size={32} />
-             </div>
-             <div className="text-center md:text-start">
-                <h4 className="font-black dark:text-white uppercase tracking-tighter text-lg">{isRtl ? 'دفع آمن ومضمون' : 'Safe & Secure Payment'}</h4>
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">
-                  {isRtl ? 'نستخدم تقنيات Stripe العالمية لضمان حماية بياناتك البنكية بالكامل.' : 'We use global Stripe technology to ensure your banking data is fully protected.'}
-                </p>
-             </div>
-          </div>
-        </div>
-
-        {/* Right Section: Price Card */}
-        <div className="lg:col-span-5 order-1 lg:order-2 sticky top-32">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-700 rounded-[4rem] blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-            <div className="relative bg-white dark:bg-[#0a0a0c] p-10 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-white/5 shadow-2xl flex flex-col">
-              <div className="flex justify-between items-start mb-10">
+            )}
+            <div className={`relative flex-1 bg-white dark:bg-[#0a0a0c] p-8 md:p-10 rounded-[3.5rem] border ${plan.isPopular ? 'border-amber-500/50 shadow-amber-500/5 ring-4 ring-amber-500/5' : 'border-gray-100 dark:border-white/5'} shadow-2xl flex flex-col transition-all duration-500 hover:-translate-y-2`}>
+              <div className="flex justify-between items-start mb-8">
                  <div>
-                    <h3 className="text-3xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? mainPlan?.nameAr : mainPlan?.nameEn}</h3>
-                    <p className="text-xs font-black text-blue-600 uppercase tracking-widest mt-1">{isRtl ? mainPlan?.billingCycleAr : mainPlan?.billingCycleEn}</p>
+                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? plan.nameAr : plan.nameEn}</h3>
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">{isRtl ? plan.billingCycleAr : plan.billingCycleEn}</p>
                  </div>
-                 <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-3xl shadow-sm">
-                    <Sparkles size={28} />
+                 <div className={`p-3 rounded-2xl shadow-sm ${plan.isPopular ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>
+                    <Sparkles size={24} />
                  </div>
               </div>
 
-              <div className="flex flex-col gap-2 mb-12">
-                 <div className="flex items-baseline gap-2">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isRtl ? 'سنوياً' : 'YEARLY'} /</span>
-                    <span className="text-7xl font-black dark:text-white tracking-tighter">${mainPlan?.price}</span>
+              <div className="flex flex-col gap-1 mb-8">
+                 <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-black dark:text-white tracking-tighter">${plan.price}</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">/ {isRtl ? plan.billingCycleAr : plan.billingCycleEn}</span>
                  </div>
-                 {mainPlan?.originalPrice && (
+                 {plan.originalPrice && (
                     <div className="flex items-center gap-2">
-                       <span className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-lg text-[9px] font-black uppercase">{isRtl ? 'خصم خاص' : 'SPECIAL DISCOUNT'}</span>
-                       <span className="text-2xl text-gray-300 dark:text-gray-600 line-through font-bold">${mainPlan.originalPrice}</span>
+                       <span className="text-xl text-gray-300 dark:text-gray-600 line-through font-bold">${plan.originalPrice}</span>
                     </div>
                  )}
               </div>
 
-              <button 
-                onClick={() => mainPlan ? handleSubscribe(mainPlan) : null}
-                className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-[0_20px_40px_rgba(37,99,235,0.3)] hover:shadow-[0_25px_50px_rgba(37,99,235,0.5)] hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-4 group/btn overflow-hidden relative"
-              >
-                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500"></div>
-                 <span className="relative z-10">{isRtl ? (mainPlan?.buttonTextAr || 'اشترك الآن وفعل حسابك') : (mainPlan?.buttonTextEn || 'Subscribe & Activate')}</span>
-                 <ArrowRight size={22} className={`relative z-10 transition-transform ${isRtl ? 'rotate-180 group-hover/btn:-translate-x-2' : 'group-hover/btn:translate-x-2'}`} />
-              </button>
-
-              <div className="mt-10 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                 <CreditCard size={24} />
-                 <Lock size={24} />
-                 <Shield size={24} />
+              <div className="flex-1 space-y-4 mb-10">
+                 {(isRtl ? plan.featuresAr : plan.featuresEn).map((feature, fIdx) => (
+                    <div key={fIdx} className="flex items-start gap-3">
+                       <div className="mt-1 shrink-0 p-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-md">
+                          <Check size={12} strokeWidth={4} />
+                       </div>
+                       <span className="text-xs font-bold text-gray-600 dark:text-gray-400 leading-tight">{feature}</span>
+                    </div>
+                 ))}
               </div>
-              
-              <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest mt-8">
-                {isRtl ? 'ضمان استعادة الأموال خلال 14 يوم' : '14-Day Money Back Guarantee'}
-              </p>
+
+              <button 
+                onClick={() => handleSubscribe(plan)}
+                className={`w-full py-5 rounded-[2rem] font-black text-sm uppercase shadow-xl hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3 group/btn overflow-hidden relative ${plan.isPopular ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-blue-600 text-white shadow-blue-500/20'}`}
+              >
+                 <span className="relative z-10">{isRtl ? (plan.buttonTextAr || 'اشترك الآن') : (plan.buttonTextEn || 'Subscribe Now')}</span>
+                 <ArrowRight size={18} className={`relative z-10 transition-transform ${isRtl ? 'rotate-180 group-hover/btn:-translate-x-1' : 'group-hover/btn:translate-x-1'}`} />
+              </button>
             </div>
           </div>
-        </div>
+        ))}
+      </div>
+
+      <div className="mt-24 bg-gray-50/50 dark:bg-blue-900/5 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center gap-8 max-w-5xl mx-auto">
+         <div className="p-5 bg-white dark:bg-gray-800 rounded-3xl shadow-sm text-blue-600 shrink-0">
+            <ShieldCheck size={40} />
+         </div>
+         <div className="text-center md:text-start flex-1">
+            <h4 className="font-black dark:text-white uppercase tracking-tighter text-xl mb-2">{isRtl ? 'أمان وثقة في كل عملية' : 'Secure & Trusted Payment'}</h4>
+            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 leading-relaxed">
+              {isRtl 
+                ? 'نحن نعتمد على منصة Stripe العالمية لمعالجة المدفوعات. جميع بياناتك مشفرة ومحمية، ولا نقوم بتخزين أي معلومات بنكية على خوادمنا.' 
+                : 'We rely on Stripe for payment processing. All your data is encrypted and protected, and we do not store any banking information on our servers.'}
+            </p>
+         </div>
       </div>
 
       <div className="mt-32 max-w-4xl mx-auto space-y-12">
          <div className="text-center space-y-3">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto text-gray-400"><HelpCircle size={24}/></div>
             <h2 className="text-3xl md:text-4xl font-black dark:text-white uppercase tracking-tight">{isRtl ? 'الأسئلة الشائعة' : 'Common Questions'}</h2>
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{isRtl ? 'كل ما تحتاج لمعرفته حول الاشتراك' : 'Everything you need to know about sub'}</p>
          </div>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {faqs.map((faq, i) => (

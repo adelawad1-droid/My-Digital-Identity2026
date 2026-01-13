@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   getAdminStats, ADMIN_EMAIL, deleteUserCard, 
   getDoc, doc, db,
   getSiteSettings, updateSiteSettings, updateUserSecurity,
   saveCustomTemplate, getAllTemplates, deleteTemplate,
-  getAllCategories, saveTemplateCategory, deleteTemplateCategory,
+  getAllTemplates as getAllCategoriesImport, getAllCategories, saveTemplateCategory, deleteTemplateCategory,
   auth, getAuthErrorMessage, toggleCardStatus, getAllVisualStyles,
   getAllUsersWithStats, updateUserSubscription, toggleUserStatus,
   getAllPricingPlans, savePricingPlan, deletePricingPlan,
@@ -344,10 +343,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-600"><Users size={24} /></div>
                     <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إجمالي البطاقات', 'Total Cards')}</p><h4 className="text-2xl font-black dark:text-white">{stats?.totalCards || 0}</h4></div>
                  </div>
-                 <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"><TrendingUp size={24} /></div>
-                    <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('نشط حالياً', 'Active Cards')}</p><h4 className="text-2xl font-black dark:text-white">{stats?.activeCards || 0}</h4></div>
-                 </div>
+                 <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"><TrendingUp size={24} /></div>
                  <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600"><Eye size={24} /></div>
                     <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إجمالي المشاهدات', 'Total Views')}</p><h4 className="text-2xl font-black dark:text-white">{stats?.totalViews || 0}</h4></div>
@@ -859,12 +855,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                     <div className="space-y-6">
                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 text-center">
+                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 text-center">
                              <label className={labelTextClasses}>{t('شعار الموقع', 'Site Logo')}</label>
                              <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-[1.5rem] border-2 border-dashed border-gray-200 dark:border-gray-700 mx-auto mb-4 flex items-center justify-center overflow-hidden">{settings.siteLogo ? <img src={settings.siteLogo} className="w-full h-full object-contain p-2" /> : <ImageIcon className="text-gray-300" size={24}/>}</div>
                              <input type="file" ref={logoInputRef} onChange={e => handleLogoUpload(e, 'siteLogo')} className="hidden" accept="image/*" /><button onClick={() => logoInputRef.current?.click()} className="w-full py-2 bg-white dark:bg-gray-900 border rounded-xl text-[9px] font-black uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الشعار', 'Upload')}</button>
                           </div>
-                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 text-center">
+                          <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 text-center">
                              <label className={labelTextClasses}>{isRtl ? 'أيقونة المتصفح' : 'Favicon'}</label>
                              <div className="w-20 h-20 bg-white dark:bg-gray-900 rounded-[1.5rem] border-2 border-dashed border-gray-200 dark:border-gray-700 mx-auto mb-4 flex items-center justify-center overflow-hidden">{settings.siteIcon ? <img src={settings.siteIcon} className="w-full h-full object-contain p-4" /> : <MonitorDot className="text-gray-300" size={24}/>}</div>
                              <input type="file" ref={iconInputRef} onChange={e => handleLogoUpload(e, 'siteIcon')} className="hidden" accept="image/*" /><button onClick={() => iconInputRef.current?.click()} className="w-full py-2 bg-white dark:bg-gray-900 border rounded-xl text-[9px] font-black uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={14}/> {t('رفع الأيقونة', 'Upload')}</button>
@@ -1070,6 +1066,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                    disabled={isSavingSub}
                    className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl flex items-center justify-center gap-3"
                  >
+                    {/* Fix: Removed duplicate JSX attributes on Loader2 */}
                     {isSavingSub ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
                     {t('حفظ التعديلات', 'Save Changes')}
                  </button>
