@@ -26,6 +26,7 @@ export interface PricingPlan {
   originalPrice?: string; // السعر قبل الخصم (يظهر مشطوباً)
   billingCycleAr: string; // مثال: شهر، 3 أشهر، سنة
   billingCycleEn: string; // example: Monthly, 3 Months, Yearly
+  durationMonths: number; // الحقل الجديد: مدة الباقة بالأشهر
   featuresAr: string[];
   featuresEn: string[];
   isPopular: boolean;

@@ -57,17 +57,14 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!user) return;
     setLoading(true);
     try {
-      // جلب بيانات الباقات للتأكد من المعرف وتحديد مدة الاشتراك
+      // جلب كافة الباقات للعثور على الباقة المشتراة
       const allPlans = await getAllPricingPlans();
       const targetPlan = allPlans.find(p => p.id === planId);
       
       const expiryDate = new Date();
-      // إذا كانت الباقة تحتوي على كلمة "سنة" أو "Year" نجعلها سنة، وإلا شهر
-      if (targetPlan?.billingCycleEn.toLowerCase().includes('year')) {
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      } else {
-        expiryDate.setMonth(expiryDate.getMonth() + 1);
-      }
+      // استخدام عدد الأشهر من الباقة، إذا لم يوجد نفترض سنة (12)
+      const monthsToAdd = targetPlan?.durationMonths || 12;
+      expiryDate.setMonth(expiryDate.getMonth() + monthsToAdd);
       
       const finalPlanId = planId || 'pro_yearly';
 

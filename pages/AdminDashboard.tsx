@@ -72,6 +72,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   
   const [planData, setPlanData] = useState<Partial<PricingPlan>>({ 
     id: '', nameAr: '', nameEn: '', price: '0', originalPrice: '', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
+    durationMonths: 12, // القيمة الافتراضية
     featuresAr: [], featuresEn: [], isPopular: false, isActive: true, order: 0, iconName: 'Shield',
     buttonTextAr: 'اشترك الآن', buttonTextEn: 'Subscribe Now', stripeLink: ''
   });
@@ -192,6 +193,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       setEditingPlanId(null);
       setPlanData({ 
         id: '', nameAr: '', nameEn: '', price: '0', originalPrice: '', billingCycleAr: 'سنوياً', billingCycleEn: 'Yearly', 
+        durationMonths: 12,
         featuresAr: [], featuresEn: [], isPopular: false, isActive: true, order: 0, iconName: 'Shield',
         buttonTextAr: 'اشترك الآن', buttonTextEn: 'Subscribe Now', stripeLink: ''
       });
@@ -519,14 +521,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                 </div>
 
                 <form onSubmit={handleSavePlan} className="space-y-8">
+                   <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                      <div className="md:col-span-2"><label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label><input type="text" required value={planData.nameAr} onChange={e => setPlanData({...planData, nameAr: e.target.value})} className={inputClasses} placeholder="باقة المحترفين" /></div>
+                      <div className="md:col-span-2"><label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label><input type="text" required value={planData.nameEn} onChange={e => setPlanData({...planData, nameEn: e.target.value})} className={inputClasses} placeholder="Pro Plan" /></div>
+                      <div><label className={labelTextClasses}>{t('الترتيب', 'Order')}</label><input type="number" value={planData.order} onChange={e => setPlanData({...planData, order: parseInt(e.target.value) || 0})} className={inputClasses} /></div>
+                   </div>
+
                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                      <div><label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label><input type="text" required value={planData.nameAr} onChange={e => setPlanData({...planData, nameAr: e.target.value})} className={inputClasses} placeholder="باقة المحترفين" /></div>
-                      <div><label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label><input type="text" required value={planData.nameEn} onChange={e => setPlanData({...planData, nameEn: e.target.value})} className={inputClasses} placeholder="Pro Plan" /></div>
                       <div><label className={labelTextClasses}>{t('السعر الحالي (USD)', 'Current Price')}</label><input type="text" required value={planData.price} onChange={e => setPlanData({...planData, price: e.target.value})} className={inputClasses} placeholder="29" /></div>
                       <div>
                         <label className={labelTextClasses}>{t('السعر الأصلي (للخصم)', 'Original Price (for discount)')}</label>
                         <input type="text" value={planData.originalPrice || ''} onChange={e => setPlanData({...planData, originalPrice: e.target.value})} className={inputClasses} placeholder="49" />
-                        <p className="text-[8px] text-gray-400 mt-1">{isRtl ? "* اتركه فارغاً إذا لا يوجد خصم" : "* Leave empty if no discount"}</p>
+                      </div>
+                      <div>
+                        <label className={labelTextClasses}>{isRtl ? 'المدة بالأشهر' : 'Duration in Months'}</label>
+                        <input type="number" required value={planData.durationMonths} onChange={e => setPlanData({...planData, durationMonths: parseInt(e.target.value) || 1})} className={inputClasses} placeholder="12" />
+                        <p className="text-[8px] text-gray-400 mt-1">{isRtl ? "* تستخدم لحساب تاريخ انتهاء الاشتراك آلياً." : "* Used to calculate expiry date automatically."}</p>
+                      </div>
+                      <div>
+                         <label className={labelTextClasses}>{t('الأيقونة (Lucide Name)', 'Icon')}</label>
+                         <input type="text" value={planData.iconName} onChange={e => setPlanData({...planData, iconName: e.target.value})} className={inputClasses} placeholder="Crown, Star, Shield" />
                       </div>
                    </div>
 
@@ -566,9 +580,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                       </div>
                    </div>
 
-                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                      <div><label className={labelTextClasses}>{t('الترتيب', 'Order')}</label><input type="number" value={planData.order} onChange={e => setPlanData({...planData, order: parseInt(e.target.value) || 0})} className={inputClasses} /></div>
-                      <div><label className={labelTextClasses}>{t('الأيقونة (Lucide Name)', 'Icon')}</label><input type="text" value={planData.iconName} onChange={e => setPlanData({...planData, iconName: e.target.value})} className={inputClasses} placeholder="Crown, Star, Shield" /></div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                       <div className="flex items-center gap-4 h-14 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                          <span className="text-[10px] font-black text-gray-400 uppercase">{t('الأكثر طلباً؟', 'Is Popular?')}</span>
                          <button type="button" onClick={() => setPlanData({...planData, isPopular: !planData.isPopular})} className={`w-10 h-6 rounded-full relative transition-all ${planData.isPopular ? 'bg-amber-500' : 'bg-gray-300'}`}>
@@ -589,6 +601,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                       <thead>
                          <tr className="bg-gray-50/50 dark:bg-gray-800/20 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
                             <td className="px-10 py-5">{t('الباقة', 'Plan')}</td>
+                            <td className="px-10 py-5 text-center">{isRtl ? 'المدة' : 'Duration'}</td>
                             <td className="px-10 py-5 text-center">{t('السعر', 'Price')}</td>
                             <td className="px-10 py-5 text-center">{t('الحالة', 'Status')}</td>
                             <td className="px-10 py-5 text-center">{t('الإجراءات', 'Actions')}</td>
@@ -610,6 +623,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                         </div>
                                      </div>
                                   </div>
+                               </td>
+                               <td className="px-10 py-6 text-center">
+                                  <span className="text-[10px] font-black uppercase bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg">
+                                     {plan.durationMonths} {isRtl ? 'شهر' : 'Months'}
+                                  </span>
                                </td>
                                <td className="px-10 py-6 text-center font-black">
                                   <div className="flex flex-col">
