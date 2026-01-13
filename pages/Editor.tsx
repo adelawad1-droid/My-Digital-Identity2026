@@ -109,7 +109,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         websites: initialData.websites || [], 
         specialLinks: initialData.specialLinks || [], 
         socialIconColumns: initialData.socialIconColumns || 0,
-        // ذكاء اصطناعي: إذا كانت القيمة في البيانات هي "0" والقالب يحتوي على قيمة مختلفة، فمن المرجح أن المستخدم لم يخصصها بعد ويريد القيمة الجديدة للقالب
         bodyOffsetY: (initialData.bodyOffsetY !== undefined && initialData.bodyOffsetY !== 0) 
            ? initialData.bodyOffsetY 
            : (templateOffset ?? 0),
@@ -150,7 +149,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0 }; 
   });
 
-  // إضافة Effect للتحديث التلقائي للقيم عند تغيير القالب يدوياً في المحرر
   useEffect(() => {
     if (currentIndex === 0 && !initialData) {
        const selectedTmpl = templates.find(t => t.id === formData.templateId);
@@ -291,7 +289,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const isFullHeaderPreview = currentTemplate?.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
   
-  // توحيد قيمة الإزاحة لتكون دائماً مطابقة لإصدار الجوال (الداخلي) في المعاينة
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || !isFullHeaderPreview) 
     ? (formData.mobileBodyOffsetY ?? 0) 
     : 0;
@@ -358,7 +355,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     <div 
                       className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-hidden"
                       style={{ 
-                        transform: `translateY(-${mouseYPercentage * 0.7}%)`
+                        transform: `translateY(-${mouseYPercentage * 0.85}%)`
                       }}
                     >
                         <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
@@ -1011,7 +1008,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         position: 'relative',
                         zIndex: 10,
                         transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                        transform: `translateY(${(previewDevice === 'desktop' ? previewDesktopPullUp : 0) - (sidebarMouseYPercentage * (previewDevice === 'desktop' ? 0.3 : 0.7))}px)`
+                        transform: `translateY(-${sidebarMouseYPercentage * 0.85}%)`
                      }}
                    >
                      <CardPreview 
