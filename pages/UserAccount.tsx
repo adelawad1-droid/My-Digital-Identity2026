@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
@@ -38,37 +39,50 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const t = (ar: string, en: string) => isRtl ? ar : en;
 
   // منطق التحقق من الدفع القادم من URL
+  // يتم استدعاء هذا الجزء عند العودة من سترايب بنجاح
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    if (queryParams.get('payment') === 'success' && user && userProfile) {
+    const paymentStatus = queryParams.get('payment');
+    const planIdFromUrl = queryParams.get('planId');
+
+    if (paymentStatus === 'success' && user && userProfile) {
+      // إذا لم يكن المستخدم برو بالفعل، نقوم بترقيته
       if (userProfile.role !== 'premium' && userProfile.role !== 'admin') {
-        handleAutoUpgrade();
+        handleAutoUpgrade(planIdFromUrl);
       }
     }
   }, [location.search, user, userProfile]);
 
-  const handleAutoUpgrade = async () => {
+  const handleAutoUpgrade = async (planId: string | null) => {
     if (!user) return;
     setLoading(true);
     try {
-      // تحديد تاريخ الانتهاء (سنة من الآن)
+      // تحديد تاريخ الانتهاء (سنة من الآن كافتراضي، يمكن تعديله حسب نوع الباقة)
       const expiryDate = new Date();
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
       
-      // تحديث قاعدة البيانات
+      const targetPlanId = planId || 'pro_plan_yearly'; // قيمة افتراضية في حال لم يرسل سترايب المعرف
+
+      // تحديث قاعدة البيانات فوراً
       await updateUserSubscription(
         user.uid, 
         'premium', 
-        'pro_plan_yearly', // معرف الباقة الافتراضي
+        targetPlanId, 
         expiryDate.toISOString()
       );
       
-      // تحديث الحالة المحلية
+      // تحديث الحالة المحلية للمعاينة الفورية
       const updatedProfile = await getUserProfile(user.uid);
       setUserProfile(updatedProfile);
+      
+      // جلب بيانات الباقة لعرضها في الاحتفال
+      const allPlans = await getAllPricingPlans();
+      const planInfo = allPlans.find(p => p.id === targetPlanId);
+      if (planInfo) setActivePlan(planInfo);
+
       setShowCelebration(true);
       
-      // تنظيف الرابط
+      // تنظيف الرابط من معاملات الدفع لعدم تكرار التفعيل عند التحديث
       navigate(`/${lang}/account`, { replace: true });
     } catch (e) {
       console.error("Auto upgrade error:", e);
@@ -194,13 +208,17 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
               </div>
               <h2 className="text-3xl font-black dark:text-white">{t('مبروك! تم تفعيل اشتراكك', 'Congrats! Pro Activated')}</h2>
               <p className="text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
-                 {t('أهلاً بك في عالم المحترفين. يمكنك الآن تخصيص بطاقاتك بشكل كامل واستخدام كافة الأدوات المتقدمة.', 'Welcome to the Pro world. You can now fully customize your cards and use all advanced tools.')}
+                 {t('أهلاً بك في عالم المحترفين. يمكنك الآن تخصيص بطاقاتك بشكل كامل واستخدام كافة الأدوات المتقدمة والحصرية.', 'Welcome to the Pro world. You can now fully customize your cards and use all advanced and exclusive tools.')}
               </p>
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{t('الباقة الحالية', 'Current Plan')}</p>
+                 <p className="text-lg font-black dark:text-white mt-1">{activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : 'Premium'}</p>
+              </div>
               <button 
                 onClick={() => setShowCelebration(false)}
-                className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl"
+                className="w-full py-5 bg-blue-600 text-white rounded-[1.8rem] font-black text-sm uppercase shadow-xl hover:scale-105 transition-all"
               >
-                {t('ابدأ الآن', 'Start Now')}
+                {t('ابدأ رحلة التميز', 'Start Your Journey')}
               </button>
            </div>
         </div>

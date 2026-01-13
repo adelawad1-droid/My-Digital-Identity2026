@@ -30,28 +30,42 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
   const handleSubscribe = (plan: PricingPlan) => {
     if (!auth.currentUser) {
+      // توجيه لصفحة تسجيل الدخول إذا لم يكن مسجلاً
       navigate(`/${lang}/login`); 
       return;
     }
 
     if (plan.stripeLink) {
       const userId = auth.currentUser.uid;
-      // إضافة رابط العودة مع معامل النجاح للتحقق التلقائي
-      const checkoutUrl = plan.stripeLink.includes('?') 
-        ? `${plan.stripeLink}&client_reference_id=${userId}`
-        : `${plan.stripeLink}?client_reference_id=${userId}`;
-      window.open(checkoutUrl, '_blank');
+      const planId = plan.id;
+      
+      // بناء الرابط مع تمرير المعرفات لسترايب
+      // client_reference_id: يستخدمه سترايب لربط العملية بالمستخدم
+      // نستخدم URLSearchParams لضمان دقة بناء الرابط
+      try {
+        const stripeUrl = new URL(plan.stripeLink);
+        stripeUrl.searchParams.set('client_reference_id', userId);
+        
+        // ملاحظة: تأكد من ضبط رابط العودة (Return URL) في إعدادات Stripe Payment Link 
+        // ليكون: https://nextid.my/account?payment=success&planId=HERE_USE_PLAN_ID
+        
+        window.location.href = stripeUrl.toString();
+      } catch (e) {
+        // Fallback في حال كان الرابط نصياً بسيطاً
+        const separator = plan.stripeLink.includes('?') ? '&' : '?';
+        window.location.href = `${plan.stripeLink}${separator}client_reference_id=${userId}`;
+      }
     }
   };
 
   const faqs = isRtl ? [
     { q: "كيف يتم تفعيل الباقة؟", a: "يتم التفعيل تلقائياً فور إتمام عملية الدفع والعودة لصفحة حسابك." },
-    { q: "هل يمكنني إلغاء الاشتراك؟", a: "نعم، يمكنك إلغاء تجديد الاشتراك في أي وقت من إعدادات حسابك." },
-    { q: "ماذا لو لم يتفعل حسابي؟", a: "إذا لم يتفعل حسابك تلقائياً، يرجى التواصل مع الدعم الفني وتزويدنا بإيصال الدفع." }
+    { q: "هل يمكنني إلغاء الاشتراك؟", a: "نعم، يمكنك إلغاء تجديد الاشتراك في أي وقت من إعدادات حسابك عبر بوابة سترايب." },
+    { q: "هل الدفع آمن؟", a: "نعم، يتم الدفع عبر منصة Stripe العالمية، نحن لا نطلع على بيانات بطاقتك أبداً." }
   ] : [
-    { q: "How is the plan activated?", a: "Activation is automatic immediately after payment and returning to your account page." },
-    { q: "Can I cancel my subscription?", a: "Yes, you can cancel the subscription renewal at any time from your account settings." },
-    { q: "What if it didn't activate?", a: "If your account didn't activate automatically, please contact support with your payment receipt." }
+    { q: "How is the plan activated?", a: "Activation is automatic once payment is complete and you return to your account." },
+    { q: "Can I cancel my subscription?", a: "Yes, you can manage and cancel your subscription anytime via Stripe portal." },
+    { q: "Is payment secure?", a: "Yes, payments are processed by Stripe. We never see or store your card details." }
   ];
 
   if (loading) return (
@@ -66,15 +80,15 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
       <div className="text-center space-y-6 mb-16">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full border border-blue-100 dark:border-blue-900/30">
           <Zap size={16} />
-          <span className="text-xs font-black uppercase tracking-widest">{isRtl ? 'استمر في هويتك الرقمية' : 'CONTINUE YOUR DIGITAL JOURNEY'}</span>
+          <span className="text-xs font-black uppercase tracking-widest">{isRtl ? 'بوابتك للاحتراف الرقمي' : 'YOUR GATEWAY TO DIGITAL PRO'}</span>
         </div>
         <h1 className="text-4xl md:text-6xl font-black dark:text-white tracking-tighter">
-          {isRtl ? 'باقات مرنة، مميزات لا محدودة' : 'Flexible Plans, Unlimited Features'}
+          {isRtl ? 'باقات مرنة لكل احتياجاتك' : 'Flexible Plans For Your Needs'}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 font-bold max-w-2xl mx-auto leading-relaxed">
           {isRtl 
-            ? 'اختر الخطة التي تناسب احتياجاتك، من الاشتراكات الشهرية البسيطة وحتى الباقات السنوية الاحترافية.' 
-            : 'Choose the plan that fits your needs, from simple monthly subscriptions to professional annual packages.'}
+            ? 'اختر الباقة المناسبة لك وابدأ بتخصيص هويتك الرقمية بأدوات متقدمة وحصرية.' 
+            : 'Choose the right plan for you and start customizing your digital identity with advanced, exclusive tools.'}
         </p>
       </div>
 
@@ -137,11 +151,11 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
             <ShieldCheck size={40} />
          </div>
          <div className="text-center md:text-start flex-1">
-            <h4 className="font-black dark:text-white uppercase tracking-tighter text-xl mb-2">{isRtl ? 'أمان وثقة في كل عملية' : 'Secure & Trusted Payment'}</h4>
+            <h4 className="font-black dark:text-white uppercase tracking-tighter text-xl mb-2">{isRtl ? 'مدفوعات آمنة تماماً' : '100% Secure Payments'}</h4>
             <p className="text-sm font-bold text-gray-500 dark:text-gray-400 leading-relaxed">
               {isRtl 
-                ? 'نحن نعتمد على منصة Stripe العالمية لمعالجة المدفوعات. جميع بياناتك مشفرة ومحمية، ولا نقوم بتخزين أي معلومات بنكية على خوادمنا.' 
-                : 'We rely on Stripe for payment processing. All your data is encrypted and protected, and we do not store any banking information on our servers.'}
+                ? 'نحن نستخدم Stripe لمعالجة كافة المدفوعات. جميع بياناتك مشفرة ولا يتم تخزين أي معلومات بنكية على خوادمنا نهائياً.' 
+                : 'We use Stripe for all payment processing. All your data is encrypted and no banking information is ever stored on our servers.'}
             </p>
          </div>
       </div>
