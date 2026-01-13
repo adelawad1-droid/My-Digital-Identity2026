@@ -63,7 +63,7 @@ const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Ico
            </div>
            <div className="flex flex-col">
               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
-              {hint && <span className="text-[8px] text-gray-400 font-bold">{hint}</span>}
+              {hint && <span className="text-[7px] text-gray-400 font-bold">{hint}</span>}
            </div>
         </div>
         <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-1 py-0.5 border border-blue-100 dark:border-blue-800/30">
@@ -599,12 +599,11 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
   // تصحيح: خيار "بطاقة في الوسط" يجب أن يستخدم دائماً إزاحة الجوال mobileBodyOffsetY (التداخل الداخلي)
-  // لأنه يعامل كنسخة جوال مكبرة في صفحة العرض العام
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || template.config.desktopLayout !== 'full-width-header') 
     ? (template.config.mobileBodyOffsetY ?? 0) 
     : 0;
 
-  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط (Container Margin)
+  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط
   const previewDesktopPullUp = (previewDevice === 'desktop')
     ? (template.config.desktopBodyOffsetY ?? 0)
     : 0;
@@ -898,7 +897,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-500 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
@@ -911,6 +910,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              {openGroups['group4'] && (
                 <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'} icon={Sticker} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
@@ -1390,7 +1390,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-6 border-t dark:border-gray-800">
-                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <ToggleSwitch label={t('تفعيل تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                           <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
                              <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إظهار الإطار', 'Show Border')}</span>
@@ -1594,7 +1594,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                              <RangeControl label={t('ارتفاع الأزرار (تعبئة)', 'Buttons Height')} min={4} max={40} value={template.config.contactButtonsPaddingV ?? 16} onChange={(v: number) => updateConfig('contactButtonsPaddingV', v)} icon={Maximize2} />
                           </div>
 
-                          <ToggleSwitch label={t('تأثير زجاجي (Glassy)', 'Glassy Style')} value={template.config.contactButtonsGlassy} onChange={(v: boolean) => updateConfig('contactButtonsGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <ToggleSwitch label={t('تفعيل تأثير زجاجي (Glassy)', 'Glassy Style')} value={template.config.contactButtonsGlassy} onChange={(v: boolean) => updateConfig('contactButtonsGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                        </div>
                     </div>
                  </div>
@@ -1738,7 +1738,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.occasionOffsetY || 0} onChange={(v: number) => updateConfig('occasionOffsetY', v)} icon={Move} />
                           <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.occasionOffsetX || 0} onChange={(v: number) => updateConfig('occasionOffsetX', v)} icon={ArrowLeftRight} />
-                          <ToggleSwitch label={t('تأثير زجاجي شفاف', 'Glassy Effect')} value={template.config.occasionGlassy} onChange={(v: boolean) => updateConfig('occasionGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف', 'Glassy Effect')} value={template.config.occasionGlassy} onChange={(v: boolean) => updateConfig('occasionGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
                        </div>
 
                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
@@ -2070,7 +2070,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
         <div className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span></div>
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span></div>
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
                    <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Smartphone size={16}/></button>
                    <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Tablet size={16}/></button>
@@ -2095,7 +2095,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 {isDragMode && (
                    <div className="absolute inset-0 z-[100] pointer-events-none">
                       {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
-                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode'].map(elId => {
+                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode', 'floatingAsset'].map(elId => {
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;
                          const rect = element.getBoundingClientRect();
@@ -2218,7 +2218,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          cardBodyThemeType: template.config.cardBodyThemeType,
                          cardBgColor: template.config.cardBgColor,
                          linksSectionPaddingV: template.config.linksSectionPaddingV,
-                         // Pass down all offsets for interactive dragging
                          avatarOffsetX: template.config.avatarOffsetX,
                          avatarOffsetY: template.config.avatarOffsetY,
                          nameOffsetX: template.config.nameOffsetX,
@@ -2240,12 +2239,16 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          specialLinksOffsetX: template.config.specialLinksOffsetX,
                          specialLinksOffsetY: template.config.specialLinksOffsetY,
                          bodyOffsetX: template.config.bodyOffsetX,
-                         bodyOffsetY: template.config.bodyOffsetY
+                         bodyOffsetY: template.config.bodyOffsetY,
+                         floatingAssetOffsetX: template.config.floatingAssetOffsetX,
+                         floatingAssetOffsetY: template.config.floatingAssetOffsetY,
+                         floatingAssetSize: template.config.floatingAssetSize,
+                         floatingAssetUrl: template.config.floatingAssetUrl,
+                         showFloatingAsset: template.config.showFloatingAssetByDefault
                        } as any} 
                        lang={lang} 
                        customConfig={template.config} 
                        hideSaveButton={true} 
-                       // خيار "بطاقة في الوسط" يجب أن يعرض الترويسة داخل البطاقة تماماً كالجوال
                        isFullFrame={isFullHeaderPreview}
                        hideHeader={isFullHeaderPreview}
                        bodyOffsetYOverride={previewBodyOffsetY}
@@ -2351,7 +2354,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           </div>
                           <div>
                              <span className="text-xs font-black uppercase tracking-widest dark:text-white block">{t('تمييز القالب (تثبيت في المقدمة)', 'Feature Template (Stay on top)')}</span>
-                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{isRtl ? 'سيظهر القالب في بداية المعرض دائماً' : 'Template will always show at the gallery start'}</p>
+                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'سيظهر القالب في بداية المعرض دائماً' : 'Template will always show at the gallery start'}</p>
                           </div>
                        </div>
                        <button type="button" onClick={() => updateTemplate('isFeatured', !template.isFeatured)} className={`w-14 h-7 rounded-full relative transition-all ${template.isFeatured ? 'bg-amber-50 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
