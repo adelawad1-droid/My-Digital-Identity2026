@@ -64,7 +64,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
   const [showModeInfo, setShowModeInfo] = useState(true);
 
-  // تحريك المعاينة
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
   const [sidebarMouseYPercentage, setSidebarMouseYPercentage] = useState(0);
 
@@ -98,12 +97,36 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [formData, setFormData] = useState<CardData>(() => {
     const targetTemplateId = initialData?.templateId || forcedTemplateId || templates[0]?.id || 'classic';
     const selectedTmpl = templates.find(t => t.id === targetTemplateId);
-    if (initialData) return { ...initialData, emails: initialData.emails || [], websites: initialData.websites || [], specialLinks: initialData.specialLinks || [], socialIconColumns: initialData.socialIconColumns || 0 };
-    const baseData = { ...(SAMPLE_DATA[lang] || SAMPLE_DATA['en']), id: generateSerialId(), templateId: targetTemplateId } as CardData;
+    
+    // الأولوية دائماً لأصل التصميم (DNA) في حال كانت البيانات فارغة أو 0
+    const templateName = selectedTmpl?.config.defaultName;
+    const templateOffset = selectedTmpl?.config.bodyOffsetY;
+
+    if (initialData) {
+      return { 
+        ...initialData, 
+        emails: initialData.emails || [], 
+        websites: initialData.websites || [], 
+        specialLinks: initialData.specialLinks || [], 
+        socialIconColumns: initialData.socialIconColumns || 0,
+        // *** تصحيح حاسم: إذا كانت الإزاحة 0، نسحب القيمة الأصلية من القالب (مثلاً 70) ***
+        bodyOffsetY: (initialData.bodyOffsetY === 0 || initialData.bodyOffsetY === undefined) 
+           ? (templateOffset ?? 30) 
+           : initialData.bodyOffsetY,
+        // تصحيح الاسم: إذا كان فارغاً أو "---" نسحب اسم القالب
+        name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || ''))
+      };
+    }
+
+    const baseSample = (SAMPLE_DATA[lang] || SAMPLE_DATA['en']) as CardData;
+    const baseData = { ...baseSample, id: generateSerialId(), templateId: targetTemplateId } as CardData;
+    
     if (selectedTmpl) {
        return {
          ...baseData,
          templateId: targetTemplateId,
+         // إعطاء الأولوية لاسم القالب الافتراضي
+         name: templateName || baseData.name,
          themeType: selectedTmpl.config.defaultThemeType || baseData.themeType,
          themeColor: selectedTmpl.config.defaultThemeColor || baseData.themeColor,
          themeGradient: selectedTmpl.config.defaultThemeGradient || baseData.themeGradient,
@@ -112,7 +135,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          cardBodyColor: selectedTmpl.config.cardBodyColor || '#ffffff',
          cardBodyThemeType: selectedTmpl.config.cardBodyThemeType || 'color',
          bodyBorderRadius: selectedTmpl.config.bodyBorderRadius,
-         bodyOffsetY: selectedTmpl.config.bodyOffsetY,
+         // سحب إزاحة التصميم الأصلية للبطاقة الجديدة
+         bodyOffsetY: templateOffset !== undefined ? templateOffset : 30,
          specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
          specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
@@ -122,7 +146,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          qrBgColor: selectedTmpl.config.qrBgColor || baseData.qrBgColor || 'transparent'
        } as CardData;
     }
-    return baseData;
+    return { ...baseData, bodyOffsetY: 30 }; 
   });
 
   const handleChange = (field: keyof CardData, value: any) => {
@@ -193,7 +217,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   );
 
   const ColorPickerUI = ({ label, field, icon: Icon, onAfterChange }: { label: string, field: keyof CardData, icon?: any, onAfterChange?: (val: string) => void }) => (
-    <div className="bg-white dark:bg-gray-950 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
+    <div className="bg-white dark:bg-gray-900 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
       <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-gray-400" />}<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span></div>
       <div className="flex items-center gap-3">
          <div className="relative w-8 h-8 rounded-xl overflow-hidden border shadow-sm">
@@ -208,7 +232,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const inputClasses = "w-full px-5 py-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 transition-all font-bold text-sm shadow-none";
   const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
 
-  // استراتيجية معاينة الخلفية
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
     ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
     : (currentTemplate?.config.pageBgColor || (formData.isDark ? '#050507' : '#f8fafc'));
@@ -252,8 +275,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   };
 
   const isFullHeaderPreview = currentTemplate?.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
+  
+  // دالة ذكية لحساب الإزاحة في المعاينة تضمن عدم التصاق البطاقة
+  // إذا كانت القيمة الحالية 0، سنحاول جلب قيمة التصميم الأصلي
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || currentTemplate?.config.desktopLayout !== 'full-width-header') 
-    ? (formData.bodyOffsetY ?? currentTemplate?.config.mobileBodyOffsetY ?? 0) 
+    ? (formData.bodyOffsetY !== 0 && formData.bodyOffsetY !== undefined ? formData.bodyOffsetY : (currentTemplate?.config.bodyOffsetY ?? currentTemplate?.config.mobileBodyOffsetY ?? 30)) 
     : 0;
 
   const previewDesktopPullUp = (previewDevice === 'desktop')
@@ -263,7 +289,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
       
-      {/* عرض رسالة نوع المحرر - تظهر فقط للمستخدمين المجانيين (غير المشتركين) */}
+      {/* عرض رسالة نوع المحرر */}
       {showModeInfo && !isPremium && (
          <div className="max-w-[1440px] mx-auto px-4 md:px-6 pt-6">
             <div className={`p-6 rounded-[2.5rem] border bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in`}>
@@ -324,7 +350,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         transform: `translateY(-${mouseYPercentage * 0.7}%)`
                       }}
                     >
-                        <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} />
+                        <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
                     </div>
                     <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-20 pointer-events-none"></div>
@@ -347,7 +373,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     key={tab.id} 
                     onClick={() => {
                       if (isLocked) {
-                        setActiveTab(tab.id); // ننتقل لها لنعرض رسالة الترقية داخل التبويب
+                        setActiveTab(tab.id); 
                       } else {
                         setActiveTab(tab.id);
                       }
@@ -390,7 +416,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     </div>
 
                     <div className="min-h-[450px]">
-                        {/* فحص إذا كان التبويب مخصص للمحترفين والمستخدم مجاني */}
                         {tabs[currentIndex].isPro && !isPremium ? (
                            <div className="flex flex-col items-center justify-center text-center py-20 space-y-8 animate-fade-in">
                               <div className="w-24 h-24 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-xl animate-bounce">
@@ -557,8 +582,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                 <div className="pt-6 border-t dark:border-gray-800 space-y-6">
                                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <ColorPickerUI label={t('زر الهاتف', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
-                                      <ColorPickerUI label={t('زر الواتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
+                                      <ColorPickerUI label={t('لون زر الاتصال', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
+                                      <ColorPickerUI label={t('لون زر واتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
                                    </div>
                                 </div>
                               </div>
@@ -588,7 +613,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                        )}
                                     </div>
 
-                                    {/* الخيار الجديد لعدد الأيقونات في الصف الواحد */}
                                     <div className="grid grid-cols-1 gap-4 pt-2">
                                        <RangeControl 
                                           label={isRtl ? 'عدد الأيقونات في الصف' : 'Icons per row'} 
@@ -889,7 +913,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                             <RangeControl 
                                               label={isRtl ? 'إزاحة جسم البطاقة (رأسي)' : 'Body Vertical Offset'} 
                                               min={-1000} max={1000} 
-                                              value={formData.bodyOffsetY ?? currentTemplate?.config.bodyOffsetY ?? 0} 
+                                              value={formData.bodyOffsetY ?? currentTemplate?.config.bodyOffsetY ?? 30} 
                                               onChange={(v: number) => handleChange('bodyOffsetY', v)} 
                                               icon={Move} 
                                             />
@@ -922,7 +946,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             </div>
         </main>
 
-        {/* نظام المعاينة الحية - المحدث ليتطابق مع قسم الأدمن */}
         <aside className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
