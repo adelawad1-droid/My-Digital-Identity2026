@@ -424,7 +424,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     setTemplate(prev => ({ ...prev, [key]: value }));
   };
 
-  const updateConfig = (key: keyof TemplateConfig, value: any) => {
+  const updateConfig = (key: keyof TemplateConfig | string, value: any) => {
     setTemplate(prev => ({
       ...prev,
       config: { ...prev.config, [key]: value }
@@ -743,8 +743,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   useEffect(() => {
     const groups = [
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
-      { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
-      { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
+      { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab'] },
+      { id: 'group3', tabs: ['direct-links', 'contact-lab', 'social-lab', 'location', 'qrcode'] },
       { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
@@ -880,7 +880,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -901,9 +900,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              </button>
              {openGroups['group3'] && (
                 <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
+                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط الإيميل والموقع' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات مواقع التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
@@ -1069,7 +1069,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الجوال/الداخلي)' : 'Mobile/Internal Body Offset'} min={-2000} max={2000} value={template.config.mobileBodyOffsetY ?? 0} onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} icon={Move} hint={isRtl ? "هذا الإعداد يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal content overlap"} />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الرأسي)' : 'Body Vertical Offset'} min={-2000} max={2000} value={template.config.bodyOffsetY ?? 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} />
                         </div>
                      </div>
 
@@ -1383,7 +1383,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        </div>
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <RangeControl label={t('حجم الخط', 'Font Size')} min={10} max={40} value={template.config.bioSize} onChange={(v: number) => updateConfig('bioSize', v)} icon={TypographyIcon} />
+                          <RangeControl label={t('حجم خط الاسم', 'Font Size')} min={10} max={40} value={template.config.bioSize} onChange={(v: number) => updateConfig('bioSize', v)} icon={TypographyIcon} />
                           <RangeControl label={t('إزاحة القسم رأسياً', 'Y Offset')} min={-2000} max={2000} value={template.config.bioOffsetY} onChange={(v: number) => updateConfig('bioOffsetY', v)} icon={Move} />
                           <RangeControl label={t('إزاحة القسم أفقياً', 'X Offset')} min={-1000} max={1000} value={template.config.bioOffsetX || 0} onChange={(v: number) => updateConfig('bioOffsetX', v)} icon={ArrowLeftRight} />
                           <RangeControl label={t('العرض الأقصى (%)', 'Max Width')} min={50} max={100} value={template.config.bioMaxWidth ?? 90} onChange={(v: number) => updateConfig('bioMaxWidth', v)} icon={Maximize2} />
@@ -1466,7 +1466,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl"><LinkIcon size={24} /></div>
-                       <h2 className="text-2xl font-black dark:text-white uppercase tracking-widest">{t('directLinksSection')}</h2>
+                       <h2 className="text-2xl font-black dark:text-white uppercase tracking-widest">{isRtl ? 'روابط الإيميل والموقع' : t('directLinksSection')}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -2387,7 +2387,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
       {showResetConfirm && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-[#121215] w-full max-w-sm rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
                  <AlertTriangle size={40} />
               </div>
