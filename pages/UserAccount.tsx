@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
 import { Language, PricingPlan } from '../types';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Added missing Save icon to the imports
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, Save,
   AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
@@ -38,15 +38,25 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
   const t = (ar: string, en: string) => isRtl ? ar : en;
 
-  // منطق التحقق من الدفع القادم من URL
+  // منطق تتبع الدفع المطور ليدعم HashRouter
   useEffect(() => {
-    // في HashRouter، المعاملات تكون جزءاً من الـ search داخل الـ location
-    const queryParams = new URLSearchParams(location.search);
+    // 1. محاولة قراءة المعاملات من location.search (React Router)
+    let queryParams = new URLSearchParams(location.search);
+    
+    // 2. إذا لم يجد شيئاً (بسبب تعامل سترايب مع الـ Hash)، نبحث يدوياً في window.location
+    if (!queryParams.has('payment')) {
+      const fullUrl = window.location.href;
+      if (fullUrl.includes('?')) {
+        const queryString = fullUrl.split('?')[1];
+        queryParams = new URLSearchParams(queryString);
+      }
+    }
+
     const paymentStatus = queryParams.get('payment');
     const planIdFromUrl = queryParams.get('planId');
 
     if (paymentStatus === 'success' && user && userProfile) {
-      // التحقق من أن المستخدم لم يتم ترقيته بالفعل لتجنب التكرار
+      // التحقق من عدم الترقية مسبقاً (لمنع التكرار عند تحديث الصفحة)
       if (userProfile.role !== 'premium' && userProfile.role !== 'admin') {
         handleAutoUpgrade(planIdFromUrl);
       }
@@ -57,12 +67,12 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!user) return;
     setLoading(true);
     try {
-      // جلب كافة الباقات للعثور على الباقة المشتراة
+      // جلب بيانات الباقات لتحديد مدة الاشتراك
       const allPlans = await getAllPricingPlans();
       const targetPlan = allPlans.find(p => p.id === planId);
       
       const expiryDate = new Date();
-      // استخدام عدد الأشهر من الباقة، إذا لم يوجد نفترض سنة (12)
+      // إذا لم يتم العثور على مدة محددة، نفترض 12 شهراً كخيار افتراضي
       const monthsToAdd = targetPlan?.durationMonths || 12;
       expiryDate.setMonth(expiryDate.getMonth() + monthsToAdd);
       
@@ -76,18 +86,17 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         expiryDate.toISOString()
       );
       
-      // تحديث الواجهة
+      // تحديث الواجهة والملف الشخصي
       if (targetPlan) setActivePlan(targetPlan);
       const updatedProfile = await getUserProfile(user.uid);
       setUserProfile(updatedProfile);
       
       setShowCelebration(true);
       
-      // إزالة معاملات الدفع من الرابط للحفاظ على نظافته
+      // إزالة معاملات الدفع من الرابط لضمان عدم تكرار التفعيل
       navigate(`/${lang}/account`, { replace: true });
     } catch (e) {
-      console.error("Upgrade Error:", e);
-      setStatus({ type: 'error', message: t("فشل تفعيل الباقة آلياً. يرجى مراسلة الدعم.", "Failed to auto-activate plan. Please contact support.") });
+      console.error("Upgrade logic failure:", e);
     } finally {
       setLoading(false);
     }
@@ -107,7 +116,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
             if (plan) setActivePlan(plan);
           }
         } catch (e) {
-          console.error("Load Data Error:", e);
+          console.error("Account load error:", e);
         } finally {
           setFetchingProfile(false);
         }
@@ -119,25 +128,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const handleLogout = async () => {
     await signOut(auth);
     window.location.reload();
-  };
-
-  const handleDeleteAccount = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      await deleteUser(user);
-      window.location.reload();
-    } catch (error: any) {
-      setStatus({ 
-        type: 'error', 
-        message: error.code === 'auth/requires-recent-login' 
-          ? t("يجب تسجيل الدخول مرة أخرى قبل حذف الحساب.", "Please re-login before deleting your account.")
-          : getAuthErrorMessage(error.code, isRtl ? 'ar' : 'en') 
-      });
-      setShowDeleteConfirm(false);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -158,9 +148,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       setLoading(false);
     }
   };
-
-  const inputClasses = "w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all";
-  const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1";
 
   if (fetchingProfile) {
     return (
@@ -183,16 +170,16 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
               <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                  <PartyPopper size={48} />
               </div>
-              <h2 className="text-3xl font-black dark:text-white">{t('تم الترقية بنجاح!', 'Upgrade Successful!')}</h2>
-              <p className="text-gray-500 dark:text-gray-400 font-bold">
-                 {t('شكراً لاشتراكك، تم تفعيل مميزات "برو" في حسابك الآن.', 'Thanks for subscribing! Pro features are now active in your account.')}
+              <h2 className="text-3xl font-black dark:text-white">{t('مبروك! تم تفعيل اشتراكك', 'Upgrade Successful!')}</h2>
+              <p className="text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
+                 {t('شكراً لاشتراكك، تم تفعيل كافة مميزات "برو" في حسابك الآن. يمكنك الآن تخصيص بطاقاتك بشكل كامل واستخدام الأدوات المتقدمة.', 'Thanks for subscribing! Pro features are now active in your account. You can now fully customize your cards and use advanced tools.')}
               </p>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
-                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{t('الباقة الجديدة', 'New Plan')}</p>
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                 <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{t('الباقة الحالية', 'Current Plan')}</p>
                  <p className="text-lg font-black dark:text-white mt-1">{activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : 'Premium Pro'}</p>
               </div>
               <button onClick={() => setShowCelebration(false)} className="w-full py-5 bg-blue-600 text-white rounded-[1.8rem] font-black uppercase shadow-xl hover:scale-105 transition-all">
-                {t('استكشف المميزات', 'Explore Features')}
+                {t('ابدأ التخصيص الآن', 'Start Designing Now')}
               </button>
            </div>
         </div>
@@ -270,64 +257,34 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
               <div className="space-y-8">
                  <div>
-                    <label className={labelClasses}>{t('كلمة المرور الحالية (للتأكيد)', 'Current Password')}</label>
+                    <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1">{t('كلمة المرور الحالية (للتأكيد)', 'Current Password')}</label>
                     <div className="relative">
                        <Key className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                       <input type="password" required value={securityData.currentPassword} onChange={e => setSecurityData({...securityData, currentPassword: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="••••••••" />
+                       <input type="password" required value={securityData.currentPassword} onChange={e => setSecurityData({...securityData, currentPassword: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all pl-12 pr-12" placeholder="••••••••" />
                     </div>
                  </div>
 
                  <div className="pt-8 border-t dark:border-gray-800 space-y-8">
                     <div>
-                       <label className={labelClasses}>{t('البريد الجديد', 'New Email')}</label>
+                       <label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1">{t('البريد الجديد', 'New Email')}</label>
                        <div className="relative">
                           <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                          <input type="email" required value={securityData.newEmail} onChange={e => setSecurityData({...securityData, newEmail: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} />
+                          <input type="email" required value={securityData.newEmail} onChange={e => setSecurityData({...securityData, newEmail: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all pl-12 pr-12" />
                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <div><label className={labelClasses}>{t('كلمة سر جديدة', 'New Password')}</label><input type="password" value={securityData.newPassword} onChange={e => setSecurityData({...securityData, newPassword: e.target.value})} className={inputClasses} placeholder="Min 6 chars" /></div>
-                       <div><label className={labelClasses}>{t('تأكيد الكلمة', 'Confirm')}</label><input type="password" value={securityData.confirmPassword} onChange={e => setSecurityData({...securityData, confirmPassword: e.target.value})} className={inputClasses} /></div>
+                       <div><label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1">{t('كلمة سر جديدة', 'New Password')}</label><input type="password" value={securityData.newPassword} onChange={e => setSecurityData({...securityData, newPassword: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100" placeholder="Min 6 chars" /></div>
+                       <div><label className="block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1">{t('تأكيد الكلمة', 'Confirm')}</label><input type="password" value={securityData.confirmPassword} onChange={e => setSecurityData({...securityData, confirmPassword: e.target.value})} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100" /></div>
                     </div>
                  </div>
               </div>
 
-              {/* Added missing Save icon from lucide-react */}
               <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
                 {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} {t('حفظ التغييرات', 'Save Changes')}
               </button>
            </form>
         </div>
       </div>
-
-      <div className="max-w-4xl mx-auto mt-20">
-         <div className="bg-red-50/50 dark:bg-red-900/5 p-8 md:p-12 rounded-[3rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="flex items-center gap-6">
-               <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-[1.5rem] flex items-center justify-center shrink-0"><AlertTriangle size={32} /></div>
-               <div>
-                  <h3 className="text-xl font-black text-red-600 uppercase">{t('منطقة الخطر', 'Danger Zone')}</h3>
-                  <p className="text-xs font-bold text-gray-500 leading-relaxed mt-1">{t('حذف الحساب سيؤدي لمسح كافة بطاقاتك نهائياً.', 'Deleting your account will wipe all cards forever.')}</p>
-               </div>
-            </div>
-            <button onClick={() => setShowDeleteConfirm(true)} className="w-full md:w-auto px-10 py-5 bg-white dark:bg-gray-800 text-red-600 border border-red-200 dark:border-red-900/30 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm shrink-0">
-              {t('حذف الحساب', 'Delete Account')}
-            </button>
-         </div>
-      </div>
-
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl">
-             <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
-             <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد الحذف', 'Confirm')}</h3>
-             <p className="text-sm font-bold text-gray-500 mb-8 leading-relaxed">{t('هل أنت متأكد؟ لا يمكن التراجع.', 'Are you sure? No undo.')}</p>
-             <div className="flex flex-col gap-3">
-                <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-5 bg-red-600 text-white rounded-3xl font-black uppercase shadow-xl">{t('حذف نهائي', 'Delete')}</button>
-                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 bg-gray-50 text-gray-500 rounded-3xl font-black uppercase">{t('إلغاء', 'Cancel')}</button>
-             </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
