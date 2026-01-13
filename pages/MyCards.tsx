@@ -7,11 +7,11 @@ import {
   Plus, Trash2, ExternalLink, Edit2, User as UserIcon, 
   Share2, AlertTriangle, X, Eye, Calendar, ShieldCheck, 
   Clock, TrendingUp, Sparkles, Crown, Zap, ArrowUpRight,
-  Loader2,
-  CreditCard, Star
+  Loader2, Save, CheckCircle2,
+  CreditCard, Star, CalendarPlus
 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
-import { auth, getUserProfile } from '../services/firebase';
+import { auth, getUserProfile, saveCardToDB } from '../services/firebase';
 
 interface MyCardsProps {
   lang: Language;
@@ -25,9 +25,21 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   const isRtl = lang === 'ar';
   const navigate = useNavigate();
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
+  
   const [sharingCard, setSharingCard] = useState<CardData | null>(null);
   const [cardToDelete, setCardToDelete] = useState<CardData | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // خاص بإدارة العضوية السريعة
+  const [membershipEditingCard, setMembershipEditingCard] = useState<CardData | null>(null);
+  const [isUpdatingMembership, setIsUpdatingMembership] = useState(false);
+  const [membershipForm, setMembershipForm] = useState({
+    showMembership: false,
+    titleAr: '',
+    titleEn: '',
+    startDate: '',
+    expiryDate: ''
+  });
 
   useEffect(() => {
     if (auth.currentUser) {
@@ -39,13 +51,54 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
     }
   }, []);
 
-  // تعديل منطق التحقق ليشمل الباقة المفعلة
   const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId;
 
   const handleDeleteConfirm = () => {
     if (cardToDelete) {
       onDelete(cardToDelete.id, cardToDelete.ownerId || '');
       setCardToDelete(null);
+    }
+  };
+
+  const openMembershipManager = (card: CardData) => {
+    setMembershipEditingCard(card);
+    setMembershipForm({
+      showMembership: card.showMembership || false,
+      titleAr: card.membershipTitleAr || (isRtl ? 'اشتراك مفعل' : 'Active Subscription'),
+      titleEn: card.membershipTitleEn || 'Active Subscription',
+      startDate: card.membershipStartDate || new Date().toISOString().split('T')[0],
+      expiryDate: card.membershipExpiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    });
+  };
+
+  const handleQuickExtend = (days: number) => {
+    const currentExpiry = new Date(membershipForm.expiryDate);
+    const newExpiry = new Date(currentExpiry.getTime() + days * 24 * 60 * 60 * 1000);
+    setMembershipForm({ ...membershipForm, expiryDate: newExpiry.toISOString().split('T')[0] });
+  };
+
+  const saveMembershipUpdates = async () => {
+    if (!membershipEditingCard) return;
+    setIsUpdatingMembership(true);
+    try {
+      const updatedCard: CardData = {
+        ...membershipEditingCard,
+        showMembership: membershipForm.showMembership,
+        membershipTitleAr: membershipForm.titleAr,
+        membershipTitleEn: membershipForm.titleEn,
+        membershipStartDate: membershipForm.startDate,
+        membershipExpiryDate: membershipForm.expiryDate
+      };
+      await saveCardToDB({ cardData: updatedCard });
+      // تحديث القائمة محلياً
+      const idx = cards.findIndex(c => c.id === updatedCard.id);
+      if (idx !== -1) cards[idx] = updatedCard;
+      
+      setMembershipEditingCard(null);
+    } catch (e) {
+      alert(isRtl ? "فشل تحديث العضوية" : "Failed to update membership");
+    } finally {
+      setIsUpdatingMembership(false);
     }
   };
 
@@ -69,7 +122,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 space-y-12 animate-fade-in-up">
+    <div className="max-w-7xl mx-auto px-4 space-y-12 animate-fade-in-up pb-32">
       
       {/* Premium Upgrade Banner for Basic Users */}
       {!isPremium && cards.length > 0 && (
@@ -170,9 +223,9 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                 </div>
               </div>
 
-              <div className="px-8 py-4">
+              <div className="px-8 py-4 relative">
                 {card.showMembership && mStats ? (
-                  <div className="p-5 bg-gray-50 dark:bg-white/[0.03] rounded-[2rem] border border-gray-100 dark:border-white/5 space-y-4">
+                  <div className="p-5 bg-gray-50 dark:bg-white/[0.03] rounded-[2rem] border border-gray-100 dark:border-white/5 space-y-4 group/membership relative">
                     <div className="flex justify-between items-center">
                        <div className="flex items-center gap-2">
                           <ShieldCheck size={14} className={mStats.daysLeft > 0 ? "text-emerald-500" : "text-red-500"} />
@@ -191,10 +244,30 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                        <div className="flex items-center gap-1"><Calendar size={10}/> {mStats.start.toLocaleDateString()}</div>
                        <div className="flex items-center gap-1">{mStats.end.toLocaleDateString()} <Clock size={10}/></div>
                     </div>
+                    
+                    {/* زر الإدارة السريع للمحترفين */}
+                    {isPremium && (
+                      <button 
+                        onClick={() => openMembershipManager(card)}
+                        className="absolute inset-0 bg-blue-600/90 text-white rounded-[2rem] flex flex-col items-center justify-center gap-2 opacity-0 group-hover/membership:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
+                      >
+                         <ShieldCheck size={28} />
+                         <span className="text-[10px] font-black uppercase tracking-widest">{isRtl ? 'إدارة سريعة للعضوية' : 'Manage Membership'}</span>
+                      </button>
+                    )}
                   </div>
                 ) : (
-                  <div className="h-[102px] flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] group-hover:border-blue-500/30 transition-colors">
+                  <div className="h-[102px] flex items-center justify-center border border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] group-hover:border-blue-500/30 transition-colors relative group/membership">
                      <p className="text-[9px] font-black text-gray-300 dark:text-gray-700 uppercase tracking-widest">{isRtl ? 'العضوية غير مفعلة للبطاقة' : 'Membership not enabled'}</p>
+                     {isPremium && (
+                      <button 
+                        onClick={() => openMembershipManager(card)}
+                        className="absolute inset-0 bg-blue-600/90 text-white rounded-[2rem] flex flex-col items-center justify-center gap-2 opacity-0 group-hover/membership:opacity-100 transition-opacity duration-300 backdrop-blur-sm"
+                      >
+                         <ShieldCheck size={28} />
+                         <span className="text-[10px] font-black uppercase tracking-widest">{isRtl ? 'تفعيل العضوية الآن' : 'Enable Membership Now'}</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -220,6 +293,119 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
           </span>
         </button>
       </div>
+
+      {/* Modal: إدارة العضوية السريعة */}
+      {membershipEditingCard && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
+              <div className="p-8 bg-blue-600 text-white flex justify-between items-center">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                       <ShieldCheck size={28} />
+                    </div>
+                    <div>
+                       <h3 className="text-xl font-black uppercase tracking-tighter">{isRtl ? 'إدارة عضوية البطاقة' : 'Card Membership Hub'}</h3>
+                       <p className="text-[10px] font-bold text-blue-100 uppercase tracking-widest">{membershipEditingCard.name}</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setMembershipEditingCard(null)} className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"><X size={24}/></button>
+              </div>
+
+              <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
+                 {/* تفعيل العضوية */}
+                 <div className="flex items-center justify-between p-6 bg-blue-50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/30">
+                    <div className="flex items-center gap-4">
+                       <Zap size={24} className={membershipForm.showMembership ? "text-blue-600" : "text-gray-400"} />
+                       <span className="text-xs font-black uppercase tracking-widest dark:text-white">{isRtl ? 'تفعيل قسم العضوية' : 'Enable Membership Section'}</span>
+                    </div>
+                    <button 
+                      onClick={() => setMembershipForm({ ...membershipForm, showMembership: !membershipForm.showMembership })} 
+                      className={`w-14 h-7 rounded-full relative transition-all ${membershipForm.showMembership ? 'bg-blue-600 shadow-lg' : 'bg-gray-300 dark:bg-gray-700'}`}
+                    >
+                       <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (membershipForm.showMembership ? 'left-1' : 'left-8') : (membershipForm.showMembership ? 'right-1' : 'right-8')}`} />
+                    </button>
+                 </div>
+
+                 <div className={membershipForm.showMembership ? "space-y-6 opacity-100 transition-all" : "opacity-30 pointer-events-none transition-all"}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{isRtl ? 'عنوان العضوية (عربي)' : 'Membership Title (AR)'}</label>
+                          <input 
+                            type="text" 
+                            value={membershipForm.titleAr} 
+                            onChange={e => setMembershipForm({ ...membershipForm, titleAr: e.target.value })}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100" 
+                          />
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{isRtl ? 'عنوان العضوية (EN)' : 'Membership Title (EN)'}</label>
+                          <input 
+                            type="text" 
+                            value={membershipForm.titleEn} 
+                            onChange={e => setMembershipForm({ ...membershipForm, titleEn: e.target.value })}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100" 
+                          />
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1"><Clock size={10} className="inline mr-1" /> {isRtl ? 'تاريخ البدء' : 'Start Date'}</label>
+                          <input 
+                            type="date" 
+                            value={membershipForm.startDate} 
+                            onChange={e => setMembershipForm({ ...membershipForm, startDate: e.target.value })}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100" 
+                          />
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1"><Calendar size={10} className="inline mr-1" /> {isRtl ? 'تاريخ الانتهاء' : 'Expiry Date'}</label>
+                          <input 
+                            type="date" 
+                            value={membershipForm.expiryDate} 
+                            onChange={e => setMembershipForm({ ...membershipForm, expiryDate: e.target.value })}
+                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100" 
+                          />
+                       </div>
+                    </div>
+
+                    {/* أزرار تمديد سريعة */}
+                    <div className="pt-4 border-t dark:border-gray-800">
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 block">{isRtl ? 'تمديد سريع لفترة الاشتراك' : 'Quick Expiry Extension'}</label>
+                       <div className="grid grid-cols-3 gap-3">
+                          <button onClick={() => handleQuickExtend(30)} className="py-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl font-black text-[10px] text-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center gap-1">
+                             <CalendarPlus size={18} />
+                             <span>{isRtl ? '30 يوم' : '30 Days'}</span>
+                          </button>
+                          <button onClick={() => handleQuickExtend(90)} className="py-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl font-black text-[10px] text-indigo-600 hover:bg-indigo-50 transition-all flex flex-col items-center gap-1">
+                             <TrendingUp size={18} />
+                             <span>{isRtl ? '90 يوم' : '90 Days'}</span>
+                          </button>
+                          <button onClick={() => handleQuickExtend(365)} className="py-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl font-black text-[10px] text-amber-600 hover:bg-amber-50 transition-all flex flex-col items-center gap-1">
+                             <Star size={18} fill="currentColor" />
+                             <span>{isRtl ? 'سنة كاملة' : '1 Year'}</span>
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="p-8 pt-0 flex gap-3">
+                 <button 
+                   onClick={saveMembershipUpdates}
+                   disabled={isUpdatingMembership}
+                   className="flex-1 py-5 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                 >
+                    {isUpdatingMembership ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    {isRtl ? 'حفظ التغييرات' : 'Save Changes'}
+                 </button>
+                 <button onClick={() => setMembershipEditingCard(null)} className="px-10 py-5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-3xl font-black text-xs uppercase hover:bg-gray-200 transition-all">
+                    {isRtl ? 'إلغاء' : 'Cancel'}
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
       
       {sharingCard && (
         <ShareModal data={sharingCard} lang={lang} onClose={() => setSharingCard(null)} />
