@@ -320,7 +320,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       headerOpacity: 100,
       bodyGlassy: false,
       bodyOpacity: 100,
-      bodyOffsetY: 30, // Default changed from 0 to 30
+      bodyOffsetY: 0,
       bodyOffsetX: 0,
       bodyBorderRadius: 48,
       nameColor: '#111827',
@@ -358,7 +358,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       desktopLayout: 'centered-card',
       cardMaxWidth: 500,
       desktopBodyOffsetY: -60,
-      mobileBodyOffsetY: 30, // Default changed from 0 to 30
+      mobileBodyOffsetY: 0,
       headerPatternId: 'none',
       headerPatternOpacity: 20,
       headerPatternScale: 100,
@@ -425,10 +425,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   };
 
   const updateConfig = (key: keyof TemplateConfig, value: any) => {
-    setTemplate(prev => ({
-      ...prev,
-      config: { ...prev.config, [key]: value }
-    }));
+    setTemplate(prev => {
+       const newConfig = { ...prev.config, [key]: value };
+       // ضمان مزامنة الإزاحات لمنع التشتت
+       if (key === 'bodyOffsetY') newConfig.mobileBodyOffsetY = value;
+       if (key === 'mobileBodyOffsetY') newConfig.bodyOffsetY = value;
+       
+       return { ...prev, config: newConfig };
+    });
   };
 
   const resetOffsets = () => {
@@ -453,7 +457,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       contactButtonsOffsetX: 0,
       socialLinksOffsetY: 0,
       socialLinksOffsetX: 0,
-      bodyOffsetY: 30, // Reset to 30
+      bodyOffsetY: 0,
       bodyOffsetX: 0,
       qrOffsetY: 0,
       qrOffsetX: 0,
@@ -474,7 +478,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       membershipOffsetX: 0,
       spacing: 'normal',
       contentAlign: 'center',
-      mobileBodyOffsetY: 30, // Reset to 30
+      mobileBodyOffsetY: 0,
       desktopBodyOffsetY: -60
     };
 
@@ -598,17 +602,15 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
-  // تصحيح: خيار "بطاقة في الوسط" يجب أن يستخدم دائماً إزاحة الجوال mobileBodyOffsetY (التداخل الداخلي)
+  // ضمان أن الإزاحة تتبع أحدث قيمة تم ضبطها في باني القوالب (bodyOffsetY)
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || template.config.desktopLayout !== 'full-width-header') 
-    ? (template.config.mobileBodyOffsetY ?? 30) 
+    ? (template.config.bodyOffsetY ?? 0) 
     : 0;
 
-  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط
   const previewDesktopPullUp = (previewDevice === 'desktop')
     ? (template.config.desktopBodyOffsetY ?? 0)
     : 0;
 
-  // استنتاج خلفية الصفحة للمعاينة
   const getPreviewPageBg = () => {
     if (template.config.pageBgStrategy === 'mirror-header') {
       if (template.config.defaultThemeType === 'gradient') {
@@ -712,7 +714,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     setMouseYPercentage(percentage);
   };
 
-  // --- Accordion Logic ---
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'group1': true, 
     'group2': false,
@@ -722,10 +723,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   });
 
   const toggleGroup = (groupId: string) => {
-    setOpenGroups(prev => ({
-      ...prev,
-      [groupId]: !prev[groupId]
-    }));
+    setOpenGroups(prev => {
+      const newState: Record<string, boolean> = {
+        'group1': false, 'group2': false, 'group3': false, 'group4': false, 'group5': false
+      };
+      newState[groupId] = !prev[groupId];
+      return newState;
+    });
   };
 
   useEffect(() => {
@@ -739,7 +743,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     
     const targetGroup = groups.find(g => g.tabs.includes(activeTab));
     if (targetGroup && !openGroups[targetGroup.id]) {
-      setOpenGroups(prev => ({ ...prev, [targetGroup.id]: true }));
+      setOpenGroups({
+        'group1': false, 'group2': false, 'group3': false, 'group4': false, 'group5': false,
+        [targetGroup.id]: true
+      });
     }
   }, [activeTab]);
 
@@ -820,24 +827,23 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-4 space-y-3">
+        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-3 space-y-2">
           
-          {/* Group 1: الترويسة والانماط - Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group1')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-blue-50 dark:bg-blue-900/10 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg' : 'bg-blue-50 dark:bg-blue-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group1'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <LayoutTemplate size={20} />
+                      <LayoutTemplate size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group1'] ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-blue-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-blue-400'}`} />
              </button>
              {openGroups['group1'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -845,22 +851,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 2: بيانات الهوية - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group2')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group2'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <UserIcon size={20} />
+                      <UserIcon size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group2'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group2'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -869,22 +874,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 3: التواصل والروابط - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group3')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group3'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Share2 size={20} />
+                      <Share2 size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-white'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-white'}`} />
              </button>
              {openGroups['group3'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -893,44 +897,43 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 4: المحتوى الإضافي - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Plus size={20} />
+                      <Plus size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group4'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group4'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'} icon={Sticker} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
 
-          {/* Group 5: المميزات والإعدادات - Gray-Blue Theme */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group5')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group5'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Settings2 size={20} />
+                      <Settings2 size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group5'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group5'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -939,4 +942,143 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           </div>
 
         </div>
-        {/* ... (Rest of the component content) ... */}
+
+        <div className="flex-1 p-8 overflow-y-auto no-scrollbar bg-gray-50/20 dark:bg-transparent">
+          <div className="max-w-3xl mx-auto space-y-10 animate-fade-in pb-32">
+            
+            {activeTab === 'header' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-indigo-50 dark:bg-indigo-950/20 p-8 rounded-[3rem] border border-indigo-100 dark:border-indigo-900/30 space-y-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-3">
+                          <Wand2 className="text-indigo-600" size={24} />
+                          <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('استيراد ترويسة من المختبر', 'Import Header DNA')}</h4>
+                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                       {visualStyles.map(style => (
+                         <button 
+                           key={style.id} 
+                           type="button"
+                           onClick={() => applyVisualStyle(style)}
+                           className={`p-3 bg-white dark:bg-gray-900 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group hover:scale-105 ${template.parentStyleId === style.id ? 'border-indigo-600 ring-4 ring-indigo-500/10' : 'border-gray-100 dark:border-gray-800'}`}
+                         >
+                            <div className="w-full h-12 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-indigo-500">
+                               <LayoutTemplate size={20} />
+                            </div>
+                            <span className="text-[8px] font-black uppercase text-center truncate w-full">{isRtl ? style.nameAr : style.nameEn}</span>
+                         </button>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                    <div className="flex items-center gap-4"><Shapes className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('هندسة الترويسة', 'Header Geometry')}</h4></div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                         {[
+                           {id: 'classic', icon: LayoutTemplate, label: 'كلاسيك'},
+                           {id: 'overlay', icon: Layers, label: 'متداخل'},
+                           {id: 'side-left', icon: ChevronLeft, label: 'جانبي يسار'},
+                           {id: 'side-right', icon: ChevronRight, label: 'جانبي يمين'},
+                           {id: 'curved', icon: Wind, label: 'منحني'},
+                           {id: 'wave', icon: Waves, label: 'موجي'},
+                           {id: 'diagonal', icon: RefreshCcw, label: 'قطري'},
+                           {id: 'split-left', icon: AlignLeft, label: 'قطري يسار'},
+                           {id: 'split-right', icon: AlignRight, label: 'قطري يمين'},
+                           {id: 'floating', icon: Square, label: 'عائم'},
+                           {id: 'glass-card', icon: GlassWater, label: 'زجاجي'},
+                           {id: 'modern-split', icon: Columns, label: 'حديث'}
+                         ].map(item => (
+                           <button 
+                            key={item.id} 
+                            onClick={() => updateConfig('headerType', item.id)} 
+                            className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.headerType === item.id ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
+                           >
+                             <item.icon size={20} /> 
+                             <span className="text-[7px] font-black uppercase text-center leading-tight">{t(item.label, item.id)}</span>
+                           </button>
+                         ))}
+                    </div>
+                    <RangeControl label={t('ارتفاع الترويسة', 'Header Height')} min={40} max={1000} value={template.config.headerHeight} onChange={(v: number) => updateConfig('headerHeight', v)} icon={Maximize2} />
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'body-style' && (
+               <div className="space-y-8 animate-fade-in">
+                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                     <div className="flex items-center gap-3"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                        
+                        <div className="md:col-span-2 space-y-4">
+                           <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
+                              {['color', 'image'].map(type => (
+                                <button type="button" key={type} onClick={() => updateConfig('cardBodyThemeType', type)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${template.config.cardBodyThemeType === type ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
+                                  {type === 'color' ? <Palette size={20}/> : <ImageIconLucide size={20}/>}
+                                  <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون' : 'صورة خلفية', type.toUpperCase())}</span>
+                                </button>
+                              ))}
+                           </div>
+
+                           {template.config.cardBodyThemeType === 'color' ? (
+                             <ColorPicker label={isRtl ? 'لون جسم البطاقة' : 'Card Body Color'} value={template.config.cardBodyColor || ''} onChange={(v: string) => updateConfig('cardBodyColor', v)} />
+                           ) : (
+                             <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+                                <div className="w-full h-32 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 mb-4 flex items-center justify-center overflow-hidden relative">
+                                   {template.config.cardBodyBackgroundImage ? (
+                                     <img src={template.config.cardBodyBackgroundImage} className="w-full h-full object-cover" alt="Body BG" />
+                                   ) : (
+                                     <ImageIconLucide size={32} className="text-gray-200" />
+                                   )}
+                                   {uploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
+                                </div>
+                                <input type="file" ref={bodyBgInputRef} onChange={handleBodyBgUpload} className="hidden" accept="image/*" />
+                                <button type="button" onClick={() => checkAuthAndClick(bodyBgInputRef)} className="w-full py-4 bg-white dark:bg-gray-900 border rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-2 shadow-sm">
+                                   <UploadCloud size={16} className="text-blue-500" />
+                                   {t('رفع خلفية جسم البطاقة', 'Upload Body BG Image')}
+                                </button>
+                             </div>
+                           )}
+                        </div>
+
+                        <RangeControl 
+                           label={t('شفافية جسم البطاقة', 'Body Transparency')} 
+                           min={0} max={100} unit="%" 
+                           value={template.config.bodyOpacity ?? 100} 
+                           onChange={(v: number) => updateConfig('bodyOpacity', v)} 
+                           icon={Sun} 
+                           hint={t('اضبطه على 0 للكتابة مباشرة فوق الصورة', 'Set to 0 to write directly over background')}
+                        />
+                        
+                        <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
+                        
+                        <div className="md:col-span-2">
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الرأسي)' : 'Body Vertical Offset'} min={-2000} max={2000} value={template.config.bodyOffsetY ?? 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} />
+                        </div>
+                     </div>
+
+                     <div className="pt-8 border-t dark:border-gray-800 space-y-6">
+                        <div className="flex items-center gap-3"><AlignJustify className="text-indigo-600" size={20} /><label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('محاذات المحتوى ونمط التباعد', 'Alignment & Spacing DNA')}</label></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-3 gap-2">
+                             {['start', 'center', 'end'].map(align => (
+                                <button type="button" key={align} onClick={() => updateConfig('contentAlign', align)} className={`py-3 rounded-xl border-2 transition-all flex items-center justify-center ${template.config.contentAlign === align ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+                                   {align === 'start' ? <AlignLeft size={18}/> : align === 'center' ? <AlignCenter size={18}/> : <AlignRight size={18}/>}
+                                </button>
+                             ))}
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                             {['compact', 'normal', 'relaxed'].map(s => (
+                                <button type="button" key={s} onClick={() => { updateConfig('spacing', s) }} className={`py-3 rounded-xl border-2 transition-all font-black text-[8px] uppercase ${template.config.spacing === s ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+                                   {t(s === 'compact' ? 'مضغوط' : (s === 'normal' ? 'عادي' : 'مريح'), s.toUpperCase())}
+                                </button>
+                             ))}
+                          </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            )}
+            {/* ... Rest of the tabs remain similar, ensure they call updateConfig which now syncs both offsetY fields ... */}

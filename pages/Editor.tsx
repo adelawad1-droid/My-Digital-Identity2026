@@ -98,9 +98,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     const targetTemplateId = initialData?.templateId || forcedTemplateId || templates[0]?.id || 'classic';
     const selectedTmpl = templates.find(t => t.id === targetTemplateId);
     
-    // الأولوية دائماً لأصل التصميم (DNA) في حال كانت البيانات فارغة أو 0
     const templateName = selectedTmpl?.config.defaultName;
     const templateOffset = selectedTmpl?.config.bodyOffsetY;
+    const templateMobileOffset = selectedTmpl?.config.mobileBodyOffsetY;
 
     if (initialData) {
       return { 
@@ -109,11 +109,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         websites: initialData.websites || [], 
         specialLinks: initialData.specialLinks || [], 
         socialIconColumns: initialData.socialIconColumns || 0,
-        // *** تصحيح حاسم: إذا كانت الإزاحة 0، نسحب القيمة الأصلية من القالب (مثلاً 70) ***
-        bodyOffsetY: (initialData.bodyOffsetY === 0 || initialData.bodyOffsetY === undefined) 
-           ? (templateOffset ?? 30) 
-           : initialData.bodyOffsetY,
-        // تصحيح الاسم: إذا كان فارغاً أو "---" نسحب اسم القالب
+        // ذكاء اصطناعي: إذا كانت القيمة في البيانات هي "0" والقالب يحتوي على قيمة مختلفة، فمن المرجح أن المستخدم لم يخصصها بعد ويريد القيمة الجديدة للقالب
+        bodyOffsetY: (initialData.bodyOffsetY !== undefined && initialData.bodyOffsetY !== 0) 
+           ? initialData.bodyOffsetY 
+           : (templateOffset ?? 0),
+        mobileBodyOffsetY: (initialData.mobileBodyOffsetY !== undefined && initialData.mobileBodyOffsetY !== 0)
+           ? initialData.mobileBodyOffsetY
+           : (templateMobileOffset ?? 0),
         name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || ''))
       };
     }
@@ -125,7 +127,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
        return {
          ...baseData,
          templateId: targetTemplateId,
-         // إعطاء الأولوية لاسم القالب الافتراضي
          name: templateName || baseData.name,
          themeType: selectedTmpl.config.defaultThemeType || baseData.themeType,
          themeColor: selectedTmpl.config.defaultThemeColor || baseData.themeColor,
@@ -135,8 +136,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          cardBodyColor: selectedTmpl.config.cardBodyColor || '#ffffff',
          cardBodyThemeType: selectedTmpl.config.cardBodyThemeType || 'color',
          bodyBorderRadius: selectedTmpl.config.bodyBorderRadius,
-         // سحب إزاحة التصميم الأصلية للبطاقة الجديدة
-         bodyOffsetY: templateOffset !== undefined ? templateOffset : 30,
+         bodyOffsetY: templateOffset !== undefined ? templateOffset : 0,
+         mobileBodyOffsetY: templateMobileOffset !== undefined ? templateMobileOffset : 0,
          specialLinksCols: selectedTmpl.config.specialLinksCols || 2,
          showSpecialLinks: selectedTmpl.config.showSpecialLinksByDefault ?? true,
          specialLinks: selectedTmpl.config.defaultSpecialLinks || [],
@@ -146,8 +147,22 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          qrBgColor: selectedTmpl.config.qrBgColor || baseData.qrBgColor || 'transparent'
        } as CardData;
     }
-    return { ...baseData, bodyOffsetY: 30 }; 
+    return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0 }; 
   });
+
+  // إضافة Effect للتحديث التلقائي للقيم عند تغيير القالب يدوياً في المحرر
+  useEffect(() => {
+    if (currentIndex === 0 && !initialData) {
+       const selectedTmpl = templates.find(t => t.id === formData.templateId);
+       if (selectedTmpl) {
+          setFormData(prev => ({
+             ...prev,
+             bodyOffsetY: selectedTmpl.config.bodyOffsetY ?? prev.bodyOffsetY,
+             mobileBodyOffsetY: selectedTmpl.config.mobileBodyOffsetY ?? prev.mobileBodyOffsetY
+          }));
+       }
+    }
+  }, [formData.templateId]);
 
   const handleChange = (field: keyof CardData, value: any) => {
     if (field === 'id') { 
@@ -276,10 +291,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const isFullHeaderPreview = currentTemplate?.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
   
-  // دالة ذكية لحساب الإزاحة في المعاينة تضمن عدم التصاق البطاقة
-  // إذا كانت القيمة الحالية 0، سنحاول جلب قيمة التصميم الأصلي
-  const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || currentTemplate?.config.desktopLayout !== 'full-width-header') 
-    ? (formData.bodyOffsetY !== 0 && formData.bodyOffsetY !== undefined ? formData.bodyOffsetY : (currentTemplate?.config.bodyOffsetY ?? currentTemplate?.config.mobileBodyOffsetY ?? 30)) 
+  // توحيد قيمة الإزاحة لتكون دائماً مطابقة لإصدار الجوال (الداخلي) في المعاينة
+  const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || !isFullHeaderPreview) 
+    ? (formData.mobileBodyOffsetY ?? 0) 
     : 0;
 
   const previewDesktopPullUp = (previewDevice === 'desktop')
@@ -289,7 +303,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
       
-      {/* عرض رسالة نوع المحرر */}
       {showModeInfo && !isPremium && (
          <div className="max-w-[1440px] mx-auto px-4 md:px-6 pt-6">
             <div className={`p-6 rounded-[2.5rem] border bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in`}>
@@ -316,7 +329,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          </div>
       )}
 
-      {/* زر المعاينة العائم للجوال */}
       <div className="lg:hidden fixed bottom-24 right-6 z-[2000]">
          <button 
            onClick={() => setShowMobilePreview(true)}
@@ -326,7 +338,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          </button>
       </div>
 
-      {/* نافذة المعاينة في الجوال */}
       {showMobilePreview && (
         <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-2xl animate-fade-in flex flex-col">
             <div className="p-4 flex justify-between items-center bg-black/40 text-white shrink-0">
@@ -363,7 +374,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
         
-        {/* شريط التبويبات الجانبي لسطح المكتب */}
         <aside className="hidden lg:flex w-64 flex-col gap-2 shrink-0 sticky top-24 h-fit">
            <div className="bg-white dark:bg-gray-900 p-4 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-1">
               {tabs.map((tab) => {
@@ -372,11 +382,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                   <button 
                     key={tab.id} 
                     onClick={() => {
-                      if (isLocked) {
-                        setActiveTab(tab.id); 
-                      } else {
-                        setActiveTab(tab.id);
-                      }
+                      setActiveTab(tab.id);
                     }}
                     className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                   >
@@ -391,7 +397,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
            </div>
         </aside>
 
-        {/* منطقة المحتوى الرئيسية */}
         <main className="flex-1 animate-fade-in-up">
             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl relative overflow-hidden flex flex-col min-h-[700px]">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
@@ -912,9 +917,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                           <div className="md:col-span-2">
                                             <RangeControl 
                                               label={isRtl ? 'إزاحة جسم البطاقة (رأسي)' : 'Body Vertical Offset'} 
-                                              min={-1000} max={1000} 
-                                              value={formData.bodyOffsetY ?? currentTemplate?.config.bodyOffsetY ?? 30} 
-                                              onChange={(v: number) => handleChange('bodyOffsetY', v)} 
+                                              min={-2000} max={2000} 
+                                              value={formData.mobileBodyOffsetY ?? 0} 
+                                              onChange={(v: number) => handleChange('mobileBodyOffsetY', v)} 
                                               icon={Move} 
                                             />
                                           </div>

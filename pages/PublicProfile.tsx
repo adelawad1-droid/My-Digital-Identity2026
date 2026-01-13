@@ -120,9 +120,8 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
   const isDesktop = windowWidth >= 1024;
   const isFullHeaderEnabled = customConfig?.desktopLayout === 'full-width-header' && isDesktop;
   
-  // في حال كان سطح المكتب "بطاقة في الوسط" أو كان وضع جوال، نطبق إزاحة التداخل (mobileBodyOffsetY)
-  const shouldApplyInternalOffset = !isFullHeaderEnabled;
-  const cardBodyOffset = shouldApplyInternalOffset ? (customConfig?.mobileBodyOffsetY ?? 0) : 0;
+  // مزامنة الإزاحة لتكون 1:1 مع المحرر وباني القوالب
+  const cardBodyOffset = (isDesktop && isFullHeaderEnabled) ? 0 : (data.mobileBodyOffsetY ?? customConfig?.mobileBodyOffsetY ?? 0);
   
   const containerMarginTop = isDesktop ? (customConfig?.desktopBodyOffsetY ?? 0) : 0;
   const verticalPadding = isDesktop ? '100px' : '40px';
@@ -153,7 +152,6 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
              customConfig={customConfig} 
              hideSaveButton={true} 
              hideHeader={isFullHeaderEnabled} 
-             // نلغي وضع isFullFrame في حال كانت البطاقة في الوسط لتظهر الحواف الدائرية
              isFullFrame={isFullHeaderEnabled} 
              bodyOffsetYOverride={cardBodyOffset} 
            />

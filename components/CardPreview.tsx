@@ -319,9 +319,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       case 'top-bar': baseStyle.height = '12px'; break;
       case 'minimal': baseStyle.height = '4px'; break;
       case 'hero': baseStyle.height = '350px'; break;
-      case 'custom-asset': 
-        // We handle this inside the return block as a child element
-        break;
     }
 
     return baseStyle;
@@ -337,11 +334,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const needsSideMargins = headerType.startsWith('side') || isBodyGlassy || bodyOpacity < 1 || config.headerType === 'floating' || hideHeader;
 
+  // الحفاظ على أحدث قيمة إزاحة، مع جعلها مرنة بين القالب والبيانات الخاصة
   const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
   const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
   const bodyContentStyles: React.CSSProperties = {
-    marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? `${headerHeight * 0.4}px` : (headerType.startsWith('side') ? '40px' : '-60px')),
+    // تقليل الاعتماد على نوع الترويسة في "الهوامش" لضمان ثبات المعاينة
+    marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? '40px' : (headerType.startsWith('side') ? '40px' : '-40px')),
     transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
     borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
@@ -447,7 +446,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const finalWebsites = data.websites && data.websites.length > 0 ? data.websites : (data.website ? [data.website] : []);
   const hasDirectLinks = (showEmail && finalEmails.length > 0) || (showWebsite && finalWebsites.length > 0);
 
-  // Fallback Logic: User Data -> Template Default -> Generic
   const finalName = data.name?.trim() || config.defaultName || '---';
   const finalTitle = data.title?.trim() || config.defaultTitle || '';
   const finalCompany = data.company?.trim() || config.defaultCompany || '';
@@ -477,34 +475,20 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const currentFont = data.fontFamily || config.fontFamily || 'var(--site-font), sans-serif';
 
-  // --- SVG Processing Engine with Visual Color Injection ---
   const cleanSvgRaw = (raw: string, userConfig: TemplateConfig) => {
     if (!raw) return '';
-    
     const targetColor = userConfig.headerSvgColor || themeColor;
     let processed = raw;
-    
     if (targetColor) {
-      // استبدال currentColor بشكل افتراضي
       processed = processed.replace(/currentColor/g, targetColor);
-      
-      // استبدال أي تعبئة (fill) أو إطار (stroke) ثابث باللون الجديد 
-      // (نقوم باستثناء 'none' و 'transparent')
       processed = processed.replace(/fill="((?!none|transparent|url)[^"]+)"/gi, `fill="${targetColor}"`);
       processed = processed.replace(/stroke="((?!none|transparent|url)[^"]+)"/gi, `stroke="${targetColor}"`);
-      
-      // التعامل مع الأنماط المدمجة (style="fill:#...")
-      processed = processed.replace(/style="([^"]*?)fill:\s*?#[a-fA-F0-9]{3,6}([^"]*?)"/gi, (match, p1, p2) => {
-         return `style="${p1}fill:${targetColor}${p2}"`;
-      });
+      processed = processed.replace(/style="([^"]*?)fill:\s*?#[a-fA-F0-9]{3,6}([^"]*?)"/gi, (match, p1, p2) => `style="${p1}fill:${targetColor}${p2}"`);
     }
-
     const rotation = userConfig.headerSvgRotation || 0;
     const scale = (userConfig.headerPatternScale || 100) / 100;
     const opacity = (userConfig.headerPatternOpacity ?? 100) / 100;
-
     const transformStyle = `transform: rotate(${rotation}deg) scale(${scale}); width: 100%; height: 100%; display: block; opacity: ${opacity}; transition: all 0.3s ease;`;
-
     return processed
       .replace(/width="[^"]*"/g, 'width="100%"')
       .replace(/height="[^"]*"/g, 'height="100%"')
