@@ -121,7 +121,7 @@ const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = 
   <button 
     type="button" 
     onClick={() => setActiveTab(id)} 
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-white shadow-lg` : `${colorClass} hover:bg-gray-100 dark:hover:bg-white/5`}`}
+    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-white shadow-md` : `${colorClass} hover:bg-gray-100 dark:hover:bg-white/5`}`}
   >
     <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'} transition-colors`}>
       <Icon size={14} className={activeTab === id ? 'text-white' : 'text-gray-400'} />
@@ -712,7 +712,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     setMouseYPercentage(percentage);
   };
 
-  // --- Accordion Logic ---
+  // --- Accordion Logic (Exclusive) ---
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'group1': true, 
     'group2': false,
@@ -722,10 +722,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   });
 
   const toggleGroup = (groupId: string) => {
-    setOpenGroups(prev => ({
-      ...prev,
-      [groupId]: !prev[groupId]
-    }));
+    setOpenGroups(prev => {
+      const isCurrentlyOpen = prev[groupId];
+      // إغلاق الكل أولاً
+      const newState: Record<string, boolean> = {
+        'group1': false,
+        'group2': false,
+        'group3': false,
+        'group4': false,
+        'group5': false
+      };
+      // فتح القسم المختار فقط إذا لم يكن مفتوحاً بالفعل
+      if (!isCurrentlyOpen) {
+        newState[groupId] = true;
+      }
+      return newState;
+    });
   };
 
   useEffect(() => {
@@ -739,7 +751,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     
     const targetGroup = groups.find(g => g.tabs.includes(activeTab));
     if (targetGroup && !openGroups[targetGroup.id]) {
-      setOpenGroups(prev => ({ ...prev, [targetGroup.id]: true }));
+      setOpenGroups({
+        'group1': false, 'group2': false, 'group3': false, 'group4': false, 'group5': false,
+        [targetGroup.id]: true
+      });
     }
   }, [activeTab]);
 
@@ -820,24 +835,25 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-4 space-y-3">
+        {/* Sidebar Container with independent scroll */}
+        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-3 space-y-2">
           
-          {/* Group 1: الترويسة والانماط - Blue Theme */}
+          {/* Group 1: الترويسة والانماط */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group1')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-blue-50 dark:bg-blue-900/10 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg' : 'bg-blue-50 dark:bg-blue-900/10 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group1'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <LayoutTemplate size={20} />
+                      <LayoutTemplate size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group1'] ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-blue-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-blue-400'}`} />
              </button>
              {openGroups['group1'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -845,22 +861,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 2: بيانات الهوية - Gray-Blue Theme */}
+          {/* Group 2: بيانات الهوية */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group2')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group2'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <UserIcon size={20} />
+                      <UserIcon size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group2'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group2'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -869,22 +885,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 3: التواصل والروابط - Gray-Blue Theme */}
+          {/* Group 3: التواصل والروابط */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group3')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group3'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Share2 size={20} />
+                      <Share2 size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-white'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-white'}`} />
              </button>
              {openGroups['group3'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -893,22 +909,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 4: المحتوى الإضافي - Gray-Blue Theme */}
+          {/* Group 4: المحتوى الإضافي */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Plus size={20} />
+                      <Plus size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group4'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group4'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'} icon={Sticker} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-blue-600" activeBg="bg-blue-600" />
@@ -916,22 +932,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 5: المميزات والإعدادات - Gray-Blue Theme */}
+          {/* Group 5: المميزات والإعدادات */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group5')}
-               className={`w-full flex items-center justify-between p-5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
                    <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group5'] ? 'bg-white text-blue-600' : 'bg-blue-600 text-white shadow-md'}`}>
-                      <Settings2 size={20} />
+                      <Settings2 size={18} />
                    </div>
                    <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group5'] ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
                 </div>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group5'] && (
-                <div className="px-2 pb-4 pt-3 space-y-1 animate-fade-in bg-blue-50/20 dark:bg-blue-900/5 rounded-b-2xl">
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
                    <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} colorClass="text-blue-600" activeBg="bg-blue-600" />
