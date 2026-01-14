@@ -198,7 +198,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       
       {showCelebration && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-blue-600/90 backdrop-blur-xl animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
               <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                  <PartyPopper size={48} />
               </div>
@@ -238,40 +238,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4 space-y-8">
-           {/* Sub Status */}
-           <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
-              <div className="flex items-center gap-4">
-                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-[1.5rem]">
-                    <Zap size={28} />
-                 </div>
-                 <div>
-                    <h3 className="text-2xl font-black dark:text-white leading-none">{t('الاشتراك', 'Subscription')}</h3>
-                    <p className="text-sm font-bold text-blue-600 mt-1">{activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : t('باقة مجانية', 'Free Plan')}</p>
-                 </div>
-              </div>
-
-              {isPremium && userProfile?.premiumUntil && (
-                 <div className="p-5 bg-gray-50 dark:bg-white/5 rounded-2xl space-y-3 border border-gray-100 dark:border-white/10">
-                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-gray-400">
-                       <span>{t('صالح حتى', 'Valid Until')}</span>
-                       <span className="text-gray-900 dark:text-white">{new Date(userProfile.premiumUntil).toLocaleDateString()}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
-                       <div className="h-full bg-blue-600 w-full" />
-                    </div>
-                 </div>
-              )}
-
-              <button 
-                onClick={() => navigate(isPremium ? '#' : `/${lang}/pricing`)}
-                className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
-              >
-                 {isPremium ? t('إدارة الاشتراك', 'Manage Sub') : t('ترقية الآن', 'Upgrade Now')}
-                 <ArrowUpRight size={18} />
-              </button>
-           </div>
-
-           {/* Custom Domain Section (Pro Feature) */}
+           
+           {/* 1. Custom Domain Section (Pro Feature) - Moved to Top */}
            {isPremium && (
              <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
                 <div className="flex items-center gap-4">
@@ -340,6 +308,39 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                 </div>
              </div>
            )}
+
+           {/* 2. Sub Status - Moved Below Domain */}
+           <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
+              <div className="flex items-center gap-4">
+                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-[1.5rem]">
+                    <Zap size={28} />
+                 </div>
+                 <div>
+                    <h3 className="text-2xl font-black dark:text-white leading-none">{t('الاشتراك', 'Subscription')}</h3>
+                    <p className="text-sm font-bold text-blue-600 mt-1">{activePlan ? (isRtl ? activePlan.nameAr : activePlan.nameEn) : t('باقة مجانية', 'Free Plan')}</p>
+                 </div>
+              </div>
+
+              {isPremium && userProfile?.premiumUntil && (
+                 <div className="p-5 bg-gray-50 dark:bg-white/5 rounded-2xl space-y-3 border border-gray-100 dark:border-white/10">
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-gray-400">
+                       <span>{t('صالح حتى', 'Valid Until')}</span>
+                       <span className="text-gray-900 dark:text-white">{new Date(userProfile.premiumUntil).toLocaleDateString()}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
+                       <div className="h-full bg-blue-600 w-full" />
+                    </div>
+                 </div>
+              )}
+
+              <button 
+                onClick={() => navigate(isPremium ? '#' : `/${lang}/pricing`)}
+                className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-sm uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
+              >
+                 {isPremium ? t('إدارة الاشتراك', 'Manage Sub') : t('ترقية الآن', 'Upgrade Now')}
+                 <ArrowUpRight size={18} />
+              </button>
+           </div>
         </div>
 
         {/* Security Form */}
@@ -381,7 +382,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                  </div>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
+              {/* Fix: Added flex items-center justify-center to center the icon and text correctly */}
+              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
                 {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} {t('حفظ التغييرات', 'Save Changes')}
               </button>
            </form>
