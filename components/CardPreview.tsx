@@ -15,6 +15,7 @@ interface CardPreviewProps {
   isFullFrame?: boolean; 
   hideHeader?: boolean; 
   bodyOffsetYOverride?: number;
+  forCapture?: boolean; // خاصية جديدة لتحديد ما إذا كان العرض لغرض التقاط صورة
 }
 
 const MembershipBar = ({ 
@@ -139,7 +140,7 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor, lang }: { targetDate
   );
 };
 
-const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hideSaveButton = false, isFullFrame = false, hideHeader = false, bodyOffsetYOverride }) => {
+const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hideSaveButton = false, isFullFrame = false, hideHeader = false, bodyOffsetYOverride, forCapture = false }) => {
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
@@ -159,6 +160,17 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const socialIconsColor = data.socialIconsColor || config.socialIconsColor || linksColor;
   const phoneBtnColor = data.contactPhoneColor || config.contactPhoneColor || '#2563eb';
   const whatsappBtnColor = data.contactWhatsappColor || config.contactWhatsappColor || '#10b981';
+
+  // دالة مساعدة لتحديد ما إذا كان يجب استخدام crossOrigin
+  const getImgProps = (url: string) => {
+    if (!url) return {};
+    // نستخدم anonymous فقط إذا كان الرابط خارجياً (http) وكنا في وضع الالتقاط
+    const isExternal = url.startsWith('http');
+    if (forCapture && isExternal) {
+      return { src: url, crossOrigin: 'anonymous' as const };
+    }
+    return { src: url };
+  };
 
   const hexToRgb = (hex: string) => {
     hex = (hex || '#000000').replace('#', '');
@@ -535,10 +547,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
           }}
         >
           <img 
-            src={data.floatingAssetUrl || config.floatingAssetUrl} 
+            {...getImgProps(data.floatingAssetUrl || config.floatingAssetUrl || '')} 
             className="w-full h-auto object-contain pointer-events-none" 
             alt="Floating Asset" 
-            crossOrigin="anonymous"
           />
         </div>
       )}
@@ -569,7 +580,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
             )}
 
             <div className={`w-full h-full ${getAvatarRadiusClasses(true)} overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center`}>
-              {finalProfileImage ? <img src={finalProfileImage} className="w-full h-full object-cover" crossOrigin="anonymous" /> : <Camera size={40} className="text-gray-200" />}
+              {finalProfileImage ? <img {...getImgProps(finalProfileImage)} className="w-full h-full object-cover" /> : <Camera size={40} className="text-gray-200" />}
             </div>
           </div>
         )}
@@ -806,7 +817,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                       fontFamily: 'inherit'
                     }}
                   >
-                    <img src={link.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Link Image" crossOrigin="anonymous" />
+                    <img {...getImgProps(link.imageUrl)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Link Image" />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                        <ExternalLink size={24} className="text-white drop-shadow-lg" />
                     </div>

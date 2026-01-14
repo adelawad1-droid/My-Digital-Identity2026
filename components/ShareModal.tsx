@@ -72,7 +72,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
     try {
       // إعطاء وقت كافٍ جداً لتحميل الصور والخطوط
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       const captureTarget = document.getElementById('share-card-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
@@ -125,7 +125,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
       <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '450px', zIndex: -100 }}>
           <div id="share-card-capture-area" className="bg-white dark:bg-black flex flex-col" style={{ width: '450px', height: 'auto', minHeight: '800px' }}>
              <div className="w-full pb-20"> {/* مسافة أمان سفلية لمنع القطع من الأسفل */}
-               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
+               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} forCapture={true} />
              </div>
           </div>
       </div>
@@ -187,7 +187,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             <div className="flex flex-col items-center gap-6 mb-8">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-blue-500/10 rounded-[3rem] blur-xl group-hover:bg-blue-500/20 transition-all"></div>
-                <div className="relative p-5 bg-white rounded-[2.5rem] shadow-inner border border-gray-50">
+                <div className="relative p-5 bg-white rounded-[2.5rem] shadow-inner border border-gray-100 dark:border-gray-800">
                   <img src={qrApiUrl} alt="QR Code" className="w-32 h-32" crossOrigin="anonymous" />
                 </div>
               </div>
