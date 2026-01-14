@@ -123,14 +123,14 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor, lang }: { targetDate
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
 
   const Unit = ({ val, label }: { val: number, label: string }) => (
-    <div className={`flex flex-col items-center justify-center flex-1 p-3 rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} border shadow-sm transition-all duration-500 hover:scale-105`} style={{ fontFamily: 'inherit' }}>
+    <div className={`flex flex-col items-center justify-center w-full p-3 rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} border shadow-sm transition-all duration-500 hover:scale-105`} style={{ fontFamily: 'inherit' }}>
       <span className="text-xl font-black leading-none" style={{ color: primaryColor, fontFamily: 'inherit' }}>{val}</span>
       <span className="text-[7px] font-black uppercase tracking-widest opacity-40 mt-1.5" style={{ fontFamily: 'inherit' }}>{label}</span>
     </div>
   );
 
   return (
-    <div className="flex gap-2 justify-between w-full mt-6 animate-fade-in-up" style={{ animationDelay: '300ms', fontFamily: 'inherit' }}>
+    <div className="grid grid-cols-4 gap-2 w-full mt-6 animate-fade-in-up" style={{ animationDelay: '300ms', fontFamily: 'inherit' }}>
       <Unit val={timeLeft.s} label={t('unitSeconds')} />
       <Unit val={timeLeft.m} label={t('unitMinutes')} />
       <Unit val={timeLeft.h} label={t('unitHours')} />
