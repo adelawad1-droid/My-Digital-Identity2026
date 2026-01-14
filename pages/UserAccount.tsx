@@ -1,16 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
-import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription, saveCardToDB, getUserCards, deleteUserCard } from '../services/firebase';
+import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
-import { Language, PricingPlan, CardData } from '../types';
+import { Language, PricingPlan } from '../types';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Added missing import for TRANSLATIONS
-import { TRANSLATIONS } from '../constants';
+// Added missing Save icon to the imports
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, Save,
   AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
   Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield,
-  ExternalLink, CreditCard, PartyPopper, Globe, Link2, Info, Copy
+  ExternalLink, CreditCard, PartyPopper
 } from 'lucide-react';
 
 interface UserAccountProps {
@@ -30,25 +28,25 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const [activePlan, setActivePlan] = useState<PricingPlan | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [userCards, setUserCards] = useState<CardData[]>([]);
   
-  // حالات الدومين المخصص
-  const [selectedCardForDomain, setSelectedCardForDomain] = useState<string>('');
-  const [customDomainInput, setCustomDomainInput] = useState('');
-  const [isUpdatingDomain, setIsUpdatingDomain] = useState(false);
+  const [securityData, setSecurityData] = useState({
+    currentPassword: '',
+    newEmail: user?.email || '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
-  // Fix: Redefine t to support both ad-hoc translations (2 args) and TRANSLATIONS keys (1 arg)
-  const t = (keyOrAr: string, en?: string) => {
-    if (en) return isRtl ? keyOrAr : en;
-    return TRANSLATIONS[keyOrAr] ? (TRANSLATIONS[keyOrAr][lang] || TRANSLATIONS[keyOrAr]['en'] || keyOrAr) : keyOrAr;
-  };
+  const t = (ar: string, en: string) => isRtl ? ar : en;
 
+  // منطق التحقق من الدفع القادم من URL
   useEffect(() => {
+    // في HashRouter، المعاملات تكون جزءاً من الـ search داخل الـ location
     const queryParams = new URLSearchParams(location.search);
     const paymentStatus = queryParams.get('payment');
     const planIdFromUrl = queryParams.get('planId');
 
     if (paymentStatus === 'success' && user && userProfile) {
+      // التحقق من أن المستخدم لم يتم ترقيته بالفعل لتجنب التكرار
       if (userProfile.role !== 'premium' && userProfile.role !== 'admin') {
         handleAutoUpgrade(planIdFromUrl);
       }
@@ -59,20 +57,36 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!user) return;
     setLoading(true);
     try {
+      // جلب كافة الباقات للعثور على الباقة المشتراة
       const allPlans = await getAllPricingPlans();
       const targetPlan = allPlans.find(p => p.id === planId);
+      
       const expiryDate = new Date();
+      // استخدام عدد الأشهر من الباقة، إذا لم يوجد نفترض سنة (12)
       const monthsToAdd = targetPlan?.durationMonths || 12;
       expiryDate.setMonth(expiryDate.getMonth() + monthsToAdd);
+      
       const finalPlanId = planId || 'pro_yearly';
 
-      await updateUserSubscription(user.uid, 'premium', finalPlanId, expiryDate.toISOString());
+      // تحديث قاعدة البيانات
+      await updateUserSubscription(
+        user.uid, 
+        'premium', 
+        finalPlanId, 
+        expiryDate.toISOString()
+      );
+      
+      // تحديث الواجهة
       if (targetPlan) setActivePlan(targetPlan);
       const updatedProfile = await getUserProfile(user.uid);
       setUserProfile(updatedProfile);
+      
       setShowCelebration(true);
+      
+      // إزالة معاملات الدفع من الرابط للحفاظ على نظافته
       navigate(`/${lang}/account`, { replace: true });
     } catch (e) {
+      console.error("Upgrade Error:", e);
       setStatus({ type: 'error', message: t("فشل تفعيل الباقة آلياً. يرجى مراسلة الدعم.", "Failed to auto-activate plan. Please contact support.") });
     } finally {
       setLoading(false);
@@ -83,13 +97,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     const loadData = async () => {
       if (user) {
         try {
-          const [profile, plans, cards] = await Promise.all([
+          const [profile, plans] = await Promise.all([
             getUserProfile(user.uid),
-            getAllPricingPlans(),
-            getUserCards(user.uid)
+            getAllPricingPlans()
           ]);
           setUserProfile(profile);
-          setUserCards(cards as CardData[]);
           if (profile?.planId) {
             const plan = plans.find(p => p.id === profile.planId);
             if (plan) setActivePlan(plan);
@@ -109,55 +121,24 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     window.location.reload();
   };
 
-  // Fix: Implementation of handleDeleteAccount to remove user data and account
   const handleDeleteAccount = async () => {
     if (!user) return;
     setLoading(true);
     try {
-      // Clean up all user cards first
-      for (const card of userCards) {
-        await deleteUserCard({ ownerId: user.uid, cardId: card.id });
-      }
-      // Delete user from Firebase Auth
       await deleteUser(user);
-      navigate(`/${lang}/`);
+      window.location.reload();
     } catch (error: any) {
-      console.error("Delete account error:", error);
-      setStatus({ type: 'error', message: getAuthErrorMessage(error.code, isRtl ? 'ar' : 'en') });
+      setStatus({ 
+        type: 'error', 
+        message: error.code === 'auth/requires-recent-login' 
+          ? t("يجب تسجيل الدخول مرة أخرى قبل حذف الحساب.", "Please re-login before deleting your account.")
+          : getAuthErrorMessage(error.code, isRtl ? 'ar' : 'en') 
+      });
+      setShowDeleteConfirm(false);
     } finally {
       setLoading(false);
-      setShowDeleteConfirm(false);
     }
   };
-
-  const handleUpdateDomain = async () => {
-    if (!selectedCardForDomain) return;
-    setIsUpdatingDomain(true);
-    try {
-      const card = userCards.find(c => c.id === selectedCardForDomain);
-      if (card) {
-        const updatedCard = { ...card, customDomain: customDomainInput.toLowerCase().trim() };
-        await saveCardToDB({ cardData: updatedCard });
-        setStatus({ type: 'success', message: t("تم تحديث إعدادات الدومين بنجاح", "Domain settings updated successfully") });
-        // تحديث الحالة المحلية
-        const newCards = [...userCards];
-        const idx = newCards.findIndex(c => c.id === card.id);
-        newCards[idx] = updatedCard;
-        setUserCards(newCards);
-      }
-    } catch (e) {
-      setStatus({ type: 'error', message: t("فشل حفظ الدومين", "Failed to save domain") });
-    } finally {
-      setIsUpdatingDomain(false);
-    }
-  };
-
-  const [securityData, setSecurityData] = useState({
-    currentPassword: '',
-    newEmail: user?.email || '',
-    newPassword: '',
-    confirmPassword: ''
-  });
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,7 +179,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       
       {showCelebration && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-blue-600/90 backdrop-blur-xl animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
               <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                  <PartyPopper size={48} />
               </div>
@@ -238,78 +219,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4 space-y-8">
-           
-           {/* 1. Custom Domain Section (Pro Feature) - Moved to Top */}
-           {isPremium && (
-             <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
-                <div className="flex items-center gap-4">
-                   <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-[1.5rem]">
-                      <Globe size={28} />
-                   </div>
-                   <div>
-                      <h3 className="text-2xl font-black dark:text-white leading-none">{t('customDomain', 'Custom Domain')}</h3>
-                      <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{t('PRO FEATURE', 'PRO FEATURE')}</p>
-                   </div>
-                </div>
-
-                <div className="space-y-4">
-                   <div className="space-y-2">
-                      <label className={labelClasses}>{isRtl ? 'اختر البطاقة المستهدفة' : 'Select Target Card'}</label>
-                      <select 
-                        value={selectedCardForDomain} 
-                        onChange={(e) => {
-                          const id = e.target.value;
-                          setSelectedCardForDomain(id);
-                          const card = userCards.find(c => c.id === id);
-                          setCustomDomainInput(card?.customDomain || '');
-                        }}
-                        className={inputClasses}
-                      >
-                         <option value="">{isRtl ? 'اختر بطاقة...' : 'Select a card...'}</option>
-                         {userCards.map(card => (
-                           <option key={card.id} value={card.id}>{card.name} (ID: {card.id})</option>
-                         ))}
-                      </select>
-                   </div>
-
-                   <div className="space-y-2">
-                      <label className={labelClasses}>{t('customDomain')}</label>
-                      <input 
-                        type="text" 
-                        value={customDomainInput}
-                        onChange={(e) => setCustomDomainInput(e.target.value)}
-                        placeholder={t('domainPlaceholder')}
-                        className={inputClasses} 
-                      />
-                   </div>
-
-                   <button 
-                     onClick={handleUpdateDomain}
-                     disabled={isUpdatingDomain || !selectedCardForDomain}
-                     className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 transition-all"
-                   >
-                      {isUpdatingDomain ? <Loader2 size={16} className="animate-spin" /> : <Link2 size={16} />}
-                      {t('verifyDomain')}
-                   </button>
-                </div>
-
-                <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
-                   <div className="flex items-center gap-2 text-blue-600">
-                      <Info size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{t('dnsInstructions')}</span>
-                   </div>
-                   <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl space-y-3">
-                      <p className="text-[9px] font-bold text-gray-500 leading-relaxed">{t('dnsNote')}</p>
-                      <div className="flex items-center justify-between bg-white dark:bg-black p-2 rounded-lg border border-gray-200 dark:border-gray-800">
-                         <code className="text-xs font-black text-blue-600">76.76.21.21</code>
-                         <button onClick={() => { navigator.clipboard.writeText('76.76.21.21'); alert("Copied!"); }} className="p-1.5 hover:bg-gray-100 rounded"><Copy size={12} /></button>
-                      </div>
-                   </div>
-                </div>
-             </div>
-           )}
-
-           {/* 2. Sub Status - Moved Below Domain */}
+           {/* Sub Status */}
            <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in">
               <div className="flex items-center gap-4">
                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-[1.5rem]">
@@ -382,8 +292,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                  </div>
               </div>
 
-              {/* Fix: Added flex items-center justify-center to center the icon and text correctly */}
-              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
+              {/* Added missing Save icon from lucide-react */}
+              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
                 {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} {t('حفظ التغييرات', 'Save Changes')}
               </button>
            </form>
@@ -407,7 +317,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3.5rem] p-10 text-center shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl">
              <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
              <h3 className="text-2xl font-black dark:text-white mb-4">{t('تأكيد الحذف', 'Confirm')}</h3>
              <p className="text-sm font-bold text-gray-500 mb-8 leading-relaxed">{t('هل أنت متأكد؟ لا يمكن التراجع.', 'Are you sure? No undo.')}</p>

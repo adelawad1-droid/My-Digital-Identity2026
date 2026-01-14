@@ -14,14 +14,15 @@ import TemplatesGallery from './pages/TemplatesGallery';
 import CustomRequest from './pages/CustomRequest';
 import Pricing from './pages/Pricing';
 import TermsOfService from './pages/TermsOfService';
-import PrivacyPolicy from './pages/PrivacyPolicy';
+import PrivacyPolicy from './pages/PrivacyPolicy'; 
+import CustomDomain from './pages/CustomDomain'; 
 import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
-import { auth, getCardBySerial, getCardByDomain, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
+import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap } from 'lucide-react';
+import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap, Globe } from 'lucide-react';
 
 const getBrowserLanguage = (): Language => {
   const supportedLanguages = Object.keys(LANGUAGES_CONFIG);
@@ -119,48 +120,21 @@ const AppContent: React.FC = () => {
     const initializeApp = async () => {
       if (initFlag.current) return;
       initFlag.current = true;
-
-      // 1. منطق كشف الدومين المخصص و رابط البطاقة
-      const currentHostname = window.location.hostname;
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
-      
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
       ]);
-
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
-
-      // التحقق أولاً من الدومين المخصص
-      const isMainDomain = currentHostname === 'nextid.my' || currentHostname === 'localhost' || currentHostname === '127.0.0.1';
-      
-      if (!isMainDomain) {
-        try {
-          const card = await getCardByDomain(currentHostname);
-          if (card) {
-            setPublicCard(card as CardData);
-            setIsDarkMode(card.isDark);
-            setIsInitializing(false);
-            return; // توقف هنا واعرض البطاقة
-          }
-        } catch (e) { console.warn("Domain check failed"); }
-      }
-
-      // إذا لم يكن دومين مخصص، ابحث عن المعلمة u
       if (slug) {
         try {
           const card = await getCardBySerial(slug);
-          if (card) { 
-            setPublicCard(card as CardData); 
-            setIsDarkMode(card.isDark); 
-          } else { 
-            setIsCardDeleted(true); 
-          }
+          if (card) { setPublicCard(card as CardData); setIsDarkMode(card.isDark); } 
+          else { setIsCardDeleted(true); }
         } catch (e) { setIsCardDeleted(true); }
       }
-
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {
@@ -171,7 +145,7 @@ const AppContent: React.FC = () => {
           } catch (e) {
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
-          if (!slug && isMainDomain) {
+          if (!slug) {
             try {
               const cards = await getUserCards(user.uid);
               setUserCards(cards as CardData[]);
@@ -284,6 +258,7 @@ const AppContent: React.FC = () => {
              <>
                <div className="pt-4 pb-2"><span className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-4">My Account</span></div>
                <SidebarItem icon={CreditCard} label={t('myCards')} onClick={() => navigateWithLang('/my-cards')} active={location.pathname.includes('/my-cards')} />
+               <SidebarItem icon={Globe} label={t('customDomain')} onClick={() => navigateWithLang('/custom-domain')} active={location.pathname.includes('/custom-domain')} />
                <SidebarItem icon={UserIcon} label={t('account')} onClick={() => navigateWithLang('/account')} active={location.pathname.includes('/account')} />
                {isAdmin && <SidebarItem icon={ShieldCheck} label={t('admin')} onClick={() => navigateWithLang('/admin')} active={location.pathname.includes('/admin')} color="text-amber-600" />}
              </>
@@ -331,7 +306,12 @@ const AppContent: React.FC = () => {
               <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
               <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
               <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
-              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
+              {currentUser && (
+                <>
+                  <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>
+                  <button onClick={() => navigateWithLang('/custom-domain')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-domain') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customDomain')}</button>
+                </>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-2">
@@ -372,9 +352,10 @@ const AppContent: React.FC = () => {
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
+          <Route path="/custom-domain" element={currentUser ? <CustomDomain lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/terms" element={<TermsOfService lang={lang} />} />
-          <Route path="/privacy" element={<PrivacyPolicy lang={lang} />} />
+          <Route path="/privacy" element={<PrivacyPolicy lang={lang} />} /> 
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>
       </main>

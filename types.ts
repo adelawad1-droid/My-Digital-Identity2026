@@ -18,16 +18,27 @@ export interface SpecialLinkItem {
 export type ThemeType = 'color' | 'gradient' | 'image';
 export type PageBgStrategy = 'solid' | 'mirror-header';
 
+export interface DomainData {
+  hostname: string;
+  status: 'pending' | 'active' | 'failed';
+  verifiedAt?: string;
+  dnsRecords: {
+    type: string;
+    host: string;
+    value: string;
+  }[];
+}
+
 export interface PricingPlan {
   id: string;
   nameAr: string;
   nameEn: string;
   price: string;
-  originalPrice?: string;
-  billingCycleAr: string;
-  billingCycleEn: string;
-  durationMonths: number;
-  maxCards: number;
+  originalPrice?: string; 
+  billingCycleAr: string; 
+  billingCycleEn: string; 
+  durationMonths: number; 
+  maxCards: number; 
   featuresAr: string[];
   featuresEn: string[];
   isPopular: boolean;
@@ -49,8 +60,8 @@ export interface TemplateConfig {
   headerHeight: number;
   headerCustomAsset?: string; 
   headerSvgRaw?: string;
-  headerSvgColor?: string;
-  headerSvgRotation?: number;
+  headerSvgColor?: string; 
+  headerSvgRotation?: number; 
   headerPatternId?: string; 
   headerPatternOpacity?: number; 
   headerPatternScale?: number; 
@@ -194,14 +205,21 @@ export interface TemplateConfig {
   showButtonsByDefault?: boolean;
 
   showOccasionByDefault?: boolean;
+  occasionTitle?: string;
+  occasionDesc?: string;
   occasionTitleAr?: string; 
   occasionTitleEn?: string; 
   occasionDate?: string;
+  occasionMapUrl?: string;
   occasionOffsetY?: number;
   occasionOffsetX?: number;
+  occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
+  occasionTitleColor?: string;
   occasionGlassy?: boolean;
+  occasionOpacity?: number;
+  showCountdown?: boolean;
 
   showBodyFeatureByDefault?: boolean;
   bodyFeatureTextAr?: string;
@@ -236,6 +254,16 @@ export interface TemplateConfig {
   isVerifiedByDefault?: boolean;
   hasGoldenFrameByDefault?: boolean;
 
+  occasionPrefixColor?: string;
+  occasionNameColor?: string;
+  occasionWelcomeColor?: string;
+
+  invitationPrefix?: string;
+  invitationWelcome?: string;
+  invitationWelcomeAr?: string;
+  invitationWelcomeEn?: string;
+  invitationYOffset?: number;
+
   nameColor?: string;
   titleColor?: string;
   bioTextColor?: string;
@@ -249,10 +277,12 @@ export interface TemplateConfig {
   defaultThemeColor?: string;
   defaultThemeGradient?: string;
   defaultBackgroundImage?: string;
+  defaultBackgroundImageId?: string;
   defaultProfileImage?: string;
   defaultName?: string;
   defaultTitle?: string;
   defaultCompany?: string;
+  defaultNameSize?: number;
   defaultIsDark?: boolean;
   cardBodyColor?: string;
   cardBodyBackgroundImage?: string;
@@ -262,6 +292,8 @@ export interface TemplateConfig {
   pageBgStrategy?: PageBgStrategy; 
   
   fontFamily?: string;
+
+  customCss?: string;
 }
 
 export interface CardData {
@@ -314,9 +346,6 @@ export interface CardData {
   specialLinksCols?: number;
   fontFamily?: string;
 
-  // الحقل الجديد لربط الدومين المخصص
-  customDomain?: string;
-
   specialLinksOffsetY?: number;
   specialLinksOffsetX?: number;
   specialLinksAspectRatio?: 'square' | 'video' | 'portrait';
@@ -345,14 +374,27 @@ export interface CardData {
   isVerified?: boolean;
   hasGoldenFrame?: boolean;
 
+  occasionTitle?: string;
+  occasionDesc?: string;
   occasionTitleAr?: string; 
   occasionTitleEn?: string; 
   occasionDate?: string;
+  occasionMapUrl?: string;
   occasionOffsetY?: number;
   occasionOffsetX?: number;
+  occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
+  occasionTitleColor?: string;
   occasionGlassy?: boolean;
+  occasionOpacity?: number;
+
+  invitationPrefix?: string;
+  invitationWelcome?: string;
+  invitationYOffset?: number;
+  occasionPrefixColor?: string;
+  occasionNameColor?: string;
+  occasionWelcomeColor?: string;
 
   showBodyFeature?: boolean;
   bodyFeatureText?: string;
@@ -420,6 +462,7 @@ export interface CardData {
   avatarOffsetY?: number;
   locationOffsetX?: number;
   locationOffsetY?: number;
+  customDomain?: string; // الحقل الجديد للدومين الخاص
 }
 
 export interface VisualStyle {

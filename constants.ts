@@ -196,6 +196,8 @@ export const TRANSLATIONS: TranslationStrings = {
   admin: { en: 'Admin', ar: 'الإدارة' },
   account: { en: 'Account', ar: 'الحساب' },
   login: { en: 'Login / Register', ar: 'دخول / تسجيل' },
+  loginOnly: { en: 'Login', ar: 'دخول' },
+  registerOnly: { en: 'Register', ar: 'تسجيل جديد' },
   logout: { en: 'Logout', ar: 'خروج' },
   saveChanges: { en: 'Save Changes', ar: 'حفظ التعديلات' },
   fullName: { en: 'Full Name', ar: 'الاسم الكامل' },
@@ -228,7 +230,14 @@ export const TRANSLATIONS: TranslationStrings = {
   noCardsYet: { en: 'No cards yet', ar: 'لا توجد بطاقات حتى الآن' },
   supportProject: { en: 'Support this free project', ar: 'ادعم استمرارية هذا المشروع مجاناً' },
   buyMeCoffee: { en: 'Buy Me a Coffee', ar: 'تبرع بكوب قهوة' },
-  rightsReserved: { ar: 'كافة الحقوق محفوظة', en: 'All Rights Reserved' },
+  supportProjectText: { 
+    ar: 'تبرع بكوب قهوة ليسر الموقع مجاناً للأبد', 
+    en: 'Donate a coffee to keep the site free forever' 
+  },
+  rightsReserved: { 
+    ar: 'كافة الحقوق محفوظة', 
+    en: 'All Rights Reserved' 
+  },
   customOrders: { en: 'Custom Orders', ar: 'طلبات خاصة' },
   corporateTitle: { en: 'Design Cards for Your Team', ar: 'صمم كروت فريق العمل الخاص بك' },
   corporateDesc: { en: 'Special and unique cards with exclusive specifications to fit your brand identity.', ar: 'كروت خاصة ومميزة بمواصفات حصرية تناسب هويتك التجارية وفريق عملك.' },
@@ -241,6 +250,8 @@ export const TRANSLATIONS: TranslationStrings = {
   featureSecurity: { en: 'Account Protection & Verification', ar: 'حماية وتوثيق الحساب' },
   featureCustomDesign: { en: 'Unique Design', ar: 'تصميم خاص وفريد' },
   featureDashboard: { en: 'Team Control', ar: 'لوحة تحكم للفريق' },
+  invitationPrefix: { en: 'Invited by', ar: 'يتشرف' },
+  invitationWelcome: { en: 'Welcomes you to', ar: 'بدعوتكم لحضور' },
   editTemplate: { en: 'Edit Template', ar: 'تعديل القالب' },
   saveTemplate: { en: 'Save Template', ar: 'حفظ القالب' },
   appearance: { en: 'Appearance', ar: 'المظهر' },
@@ -334,12 +345,19 @@ export const TRANSLATIONS: TranslationStrings = {
   cardUsage: { ar: 'استهلاك البطاقات', en: 'Card Usage' },
   upgradeToAdd: { ar: 'قم بالترقية لزيادة عدد البطاقات', en: 'Upgrade to add more cards' },
 
-  // نصوص الدومين المخصص
-  customDomain: { ar: 'دومين مخصص', en: 'Custom Domain' },
-  customDomainDesc: { ar: 'اربط دومينك الخاص (أو دومين فرعي) ببطاقتك الرقمية مباشرة.', en: 'Link your own domain (or subdomain) directly to your digital card.' },
-  domainPlaceholder: { ar: 'مثال: card.myname.com', en: 'Example: card.myname.com' },
-  dnsInstructions: { ar: 'إرشادات الـ DNS', en: 'DNS Instructions' },
-  dnsNote: { ar: 'قم بإضافة سجل من نوع A في إعدادات الدومين يوجه إلى IP السيرفر الخاص بنا:', en: 'Add an A record in your domain settings pointing to our server IP:' },
-  verifyDomain: { ar: 'تحقق من الربط', en: 'Verify Link' },
-  domainLinked: { ar: 'تم ربط الدومين بنجاح', en: 'Domain linked successfully' },
+  // نصوص صفحة الدومين الجديد
+  customDomain: { ar: 'الدومين الخاص', en: 'Custom Domain' },
+  customDomainDesc: { ar: 'اربط بطاقتك الرقمية بدومينك الشخصي الاحترافي (مثال: cards.yourname.com)', en: 'Link your digital card to your own professional domain (e.g., cards.yourname.com)' },
+  domainSettings: { ar: 'إعدادات الدومين', en: 'Domain Settings' },
+  domainInstructions: { ar: 'تعليمات الربط', en: 'Connection Instructions' },
+  bestPractices: { ar: 'أفضل الممارسات', en: 'Best Practices' },
+  connectDomain: { ar: 'ربط دومين جديد', en: 'Connect New Domain' },
+  enterDomain: { ar: 'أدخل الدومين الخاص بك', en: 'Enter your domain' },
+  domainPending: { ar: 'بانتظار التحقق', en: 'Pending Verification' },
+  domainActive: { ar: 'متصل بنجاح', en: 'Connected Successfully' },
+  domainFailed: { ar: 'فشل الربط', en: 'Connection Failed' },
+  howToConnect: { ar: 'كيفية الربط بخطوات بسيطة:', en: 'How to connect in simple steps:' },
+  step1Dns: { ar: '1. توجه إلى لوحة تحكم الدومين الخاص بك (GoDaddy, Namecheap, Cloudflare..)', en: '1. Go to your domain control panel (GoDaddy, Namecheap, Cloudflare..)' },
+  step2Dns: { ar: '2. أضف سجل من نوع CNAME يشير إلى خوادمنا.', en: '2. Add a CNAME record pointing to our servers.' },
+  propagationWarning: { ar: 'ملاحظة: قد يستغرق انتشار إعدادات الـ DNS عالمياً ما يصل إلى 24 ساعة.', en: 'Note: DNS propagation can take up to 24 hours globally.' },
 };

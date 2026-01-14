@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, PricingPlan } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -8,8 +9,7 @@ import {
   Clock, TrendingUp, Sparkles, Crown, Zap, ArrowUpRight,
   Loader2, Save, CheckCircle2,
   CreditCard, Star, CalendarPlus, Search, FolderSearch,
-  // Added missing Layers icon import from lucide-react
-  Layers
+  Layers, Globe
 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
 import { auth, getUserProfile, saveCardToDB, getAllPricingPlans } from '../services/firebase';
@@ -366,11 +366,12 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
               </div>
 
               <div className="mt-auto p-8 pt-2">
-                <div className="grid grid-cols-4 gap-2">
-                  <button onClick={() => onEdit(card)} className="p-3.5 bg-gray-900 text-white rounded-2xl flex items-center justify-center hover:bg-black transition-all shadow-lg" title={t('تعديل')}><Edit2 size={18} /></button>
-                  <button onClick={() => setSharingCard(card)} className="p-3.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm" title={t('مشاركة')}><Share2 size={18} /></button>
-                  <a href={`?u=${card.id}`} target="_blank" rel="noopener noreferrer" className="p-3.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title={t('عرض')}><ExternalLink size={18} /></a>
-                  <button onClick={() => setCardToDelete(card)} className="p-3.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-sm" title={t('حذف')}><Trash2 size={18} /></button>
+                <div className="grid grid-cols-5 gap-2">
+                  <button onClick={() => onEdit(card)} className="p-3 bg-gray-900 text-white rounded-xl flex items-center justify-center hover:bg-black transition-all shadow-sm" title={t('تعديل')}><Edit2 size={16} /></button>
+                  <button onClick={() => setSharingCard(card)} className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm" title={t('مشاركة')}><Share2 size={16} /></button>
+                  <button onClick={() => navigate(`/${lang}/custom-domain`)} className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm" title={t('customDomain')}><Globe size={16} /></button>
+                  <a href={`?u=${card.id}`} target="_blank" rel="noopener noreferrer" className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title={t('عرض')}><ExternalLink size={16} /></a>
+                  <button onClick={() => setCardToDelete(card)} className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-sm" title={t('حذف')}><Trash2 size={16} /></button>
                 </div>
               </div>
             </div>
