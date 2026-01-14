@@ -96,7 +96,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     primaryColor: '#3b82f6',
     secondaryColor: '#8b5cf6',
     fontFamily: 'Cairo',
-    imageStorageType: 'firebase' as 'database' | 'server' | 'firebase', 
+    avatarStorageType: 'database' as 'database' | 'server' | 'firebase',
+    mediaStorageType: 'firebase' as 'database' | 'server' | 'firebase',
     serverUploadUrl: '',
     analyticsCode: '',
     stripeLiveMode: false,
@@ -143,7 +144,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
           primaryColor: stData.primaryColor || '#3b82f6',
           secondaryColor: stData.secondaryColor || '#8b5cf6',
           fontFamily: stData.fontFamily || 'Cairo',
-          imageStorageType: stData.imageStorageType || 'firebase',
+          avatarStorageType: stData.avatarStorageType || 'database',
+          mediaStorageType: stData.mediaStorageType || 'firebase',
           serverUploadUrl: stData.serverUploadUrl || '',
           analyticsCode: stData.analyticsCode || '',
           stripeLiveMode: stData.stripeLiveMode || false,
@@ -285,7 +287,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'siteLogo' | 'siteIcon') => {
     const file = e.target.files?.[0]; if (!file) return;
     try {
-      const url = await uploadImageToCloud(file, 'logo', { storageType: settings.imageStorageType, uploadUrl: settings.serverUploadUrl });
+      const url = await uploadImageToCloud(file, 'logo', { storageType: settings.mediaStorageType, uploadUrl: settings.serverUploadUrl });
       if (url) setSettings(prev => ({ ...prev, [field]: url }));
     } catch (e) { alert("Upload failed"); }
   };
@@ -672,10 +674,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                        <div className={`p-3 rounded-2xl ${settings.stripeLiveMode ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
                           {settings.stripeLiveMode ? <LiveIcon size={24}/> : <TestIcon size={24}/>}
                        </div>
-                       <div>
-                          <span className="text-xs font-black uppercase tracking-widest dark:text-white block">{settings.stripeLiveMode ? t('الوضع المباشر (LIVE)', 'Live Production Mode') : t('وضع الاختبار (TEST)', 'Development Test Mode')}</span>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{settings.stripeLiveMode ? t('يتم استقبال دفع حقيقي الآن', 'Real payments are active') : t('الدفع في بيئة تجريبية فقط', 'Sandboxed test environment')}</p>
-                       </div>
                     </div>
                     <button onClick={() => setSettings({...settings, stripeLiveMode: !settings.stripeLiveMode})} className={`w-14 h-7 rounded-full relative transition-all ${settings.stripeLiveMode ? 'bg-emerald-600 shadow-lg' : 'bg-amber-600 shadow-lg'}`}>
                        <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (settings.stripeLiveMode ? 'left-1' : 'left-8') : (settings.stripeLiveMode ? 'right-1' : 'right-8')}`} />
@@ -862,10 +860,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
         )}
 
         {activeTab === 'settings' && (
-           <div className="w-full max-w-4xl mx-auto space-y-8 animate-fade-in">
-              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-10">
+           <div className="w-full max-w-7xl mx-auto space-y-10 animate-fade-in">
+              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-12">
                  <div className="flex items-center gap-4"><div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><Settings size={24}/></div><h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('إعدادات الموقع العامة', 'Global Site Settings')}</h2></div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="space-y-6">
                        <div><label className={labelTextClasses}>{t('اسم الموقع (AR)', 'Site Name (AR)')}</label><input type="text" value={settings.siteNameAr} onChange={e => setSettings({...settings, siteNameAr: e.target.value})} className={inputClasses} /></div>
                        <div><label className={labelTextClasses}>{t('اسم الموقع (EN)', 'Site Name (EN)')}</label><input type="text" value={settings.siteNameEn} onChange={e => setSettings({...settings, siteNameEn: e.target.value})} className={inputClasses} /></div>
@@ -891,7 +890,70 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                  </div>
 
-                 <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
+                 {/* Advanced Image Storage Section - Based on provided requirement */}
+                 <div className="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-12">
+                    <div className="flex items-center gap-5">
+                       <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><HardDrive size={26}/></div>
+                       <h3 className="text-2xl font-black dark:text-white uppercase leading-none">{isRtl ? 'إعدادات تخزين الملفات المتقدمة' : 'Advanced Media DNA'}</h3>
+                    </div>
+
+                    {/* Avatar Storage Strategy */}
+                    <div className="space-y-6">
+                       <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{isRtl ? 'استراتيجية تخزين الصور الشخصية (AVATAR)' : 'Avatar Storage Strategy'}</h4>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <button 
+                            onClick={() => setSettings({...settings, avatarStorageType: 'database'})}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-2xl scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                          >
+                             <Database size={32} className={settings.avatarStorageType === 'database' ? 'text-white' : 'group-hover:text-indigo-500'} />
+                             <div>
+                                <span className="text-sm font-black uppercase tracking-tight block mb-1">{isRtl ? 'قاعدة البيانات (BASE64)' : 'DATABASE (BASE64)'}</span>
+                                <p className={`text-[9px] font-bold leading-relaxed ${settings.avatarStorageType === 'database' ? 'text-indigo-100' : 'text-gray-400'}`}>
+                                   {isRtl ? 'الأفضل للمشاركة - تظهر فوراً وبدون مشاكل في المتصفحات' : 'Best for sharing - appears instantly and reliably in browsers'}
+                                </p>
+                             </div>
+                          </button>
+                          <button 
+                            onClick={() => setSettings({...settings, avatarStorageType: 'firebase'})}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType !== 'database' ? 'bg-blue-600 border-blue-600 text-white shadow-2xl scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                          >
+                             <Cloud size={32} className={settings.avatarStorageType !== 'database' ? 'text-white' : 'group-hover:text-blue-500'} />
+                             <div>
+                                <span className="text-sm font-black uppercase tracking-tight block mb-1">{isRtl ? 'تخزين سحابي (CLOUD STORAGE)' : 'CLOUD STORAGE'}</span>
+                                <p className={`text-[9px] font-bold leading-relaxed ${settings.avatarStorageType !== 'database' ? 'text-blue-100' : 'text-gray-400'}`}>
+                                   {isRtl ? 'يستخدم الإعداد المختار أدناه (Firebase أو سيرفر خاص)' : 'Uses the global setting below (Firebase or Private Server)'}
+                                </p>
+                             </div>
+                          </button>
+                       </div>
+                    </div>
+
+                    {/* Large Files Storage Strategy */}
+                    <div className="space-y-6">
+                       <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{isRtl ? 'استراتيجية تخزين الملفات الكبيرة (خلفيات/ملحقات)' : 'Large Files Storage Strategy'}</h4>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {[
+                             {id: 'server', label: 'PRIVATE SERVER (PHP)', desc: isRtl ? 'سيرفرك الخاص' : 'Your private server', icon: Server, color: 'indigo'},
+                             {id: 'firebase', label: 'FIREBASE STORAGE', desc: isRtl ? 'تخزين سحابي مجاني' : 'Free cloud storage', icon: Cloud, color: 'blue'},
+                             {id: 'database', label: 'BASE64 (ALL)', desc: isRtl ? 'حفظ الكل في الداتابيز' : 'Save all in database', icon: Database, color: 'slate'}
+                          ].map(storage => (
+                             <button 
+                               key={storage.id}
+                               onClick={() => setSettings({...settings, mediaStorageType: storage.id as any})}
+                               className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.mediaStorageType === storage.id ? `bg-${storage.color}-600 border-${storage.color}-600 text-white shadow-2xl scale-[1.02]` : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                             >
+                                <storage.icon size={24} />
+                                <div>
+                                   <span className="text-[11px] font-black uppercase tracking-tight block mb-1">{storage.label}</span>
+                                   <p className={`text-[8px] font-bold ${settings.mediaStorageType === storage.id ? 'opacity-80' : 'text-gray-400'}`}>{storage.desc}</p>
+                                </div>
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
                     <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Contact2 size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{isRtl ? 'بيانات التواصل الرسمية' : 'Official Contact DNA'}</h3></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div className="space-y-2">
@@ -908,26 +970,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                             <input type="text" value={settings.siteContactPhone} onChange={e => setSettings({...settings, siteContactPhone: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
                           </div>
                        </div>
-                    </div>
-                 </div>
-
-                 <div className="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-8">
-                    <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><HardDrive size={22}/></div><h3 className="text-xl font-black dark:text-white uppercase leading-none">{t('إعدادات تخزين الملفات', 'Media Storage DNA')}</h3></div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                       {[
-                          {id: 'database', label: 'Database (Base64)', icon: Database},
-                          {id: 'firebase', label: 'Firebase Storage', icon: Cloud},
-                          {id: 'server', label: 'Private Server (PHP)', icon: Server}
-                       ].map(storage => (
-                          <button 
-                            key={storage.id}
-                            onClick={() => setSettings({...settings, imageStorageType: storage.id as any})}
-                            className={`p-6 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 ${settings.imageStorageType === storage.id ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
-                          >
-                             <storage.icon size={24} />
-                             <span className="text-[10px] font-black uppercase tracking-widest">{storage.label}</span>
-                          </button>
-                       ))}
                     </div>
                  </div>
 
@@ -1088,7 +1130,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                    disabled={isSavingSub}
                    className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl flex items-center justify-center gap-3"
                  >
-                    {/* Fix: Removed duplicate JSX attributes on Loader2 */}
                     {isSavingSub ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
                     {t('حفظ التعديلات', 'Save Changes')}
                  </button>

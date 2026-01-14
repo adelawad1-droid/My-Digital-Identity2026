@@ -1,5 +1,5 @@
 
-import { storage, auth } from './firebase';
+import { storage, auth, getSiteSettings } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 /**
@@ -16,7 +16,21 @@ export const uploadImageToCloud = async (
   const processedBase64 = await processImageClientSide(file, type);
   if (!processedBase64) return null;
 
-  const storageType = config?.storageType || 'firebase'; // Firebase is now the default
+  // جلب إعدادات الموقع لتحديد استراتيجية التخزين المناسبة
+  const siteSettings = await getSiteSettings();
+  
+  // تحديد الاستراتيجية: 
+  // إذا كانت صورة شخصية، نستخدم avatarStorageType
+  // إذا كانت خلفية أو غيرها، نستخدم mediaStorageType
+  let storageType: 'database' | 'server' | 'firebase' = 'firebase';
+  
+  if (config?.storageType) {
+    storageType = config.storageType;
+  } else if (siteSettings) {
+    storageType = type === 'avatar' 
+      ? (siteSettings.avatarStorageType || 'database') 
+      : (siteSettings.mediaStorageType || 'firebase');
+  }
 
   // خيار Firebase Storage (الأفضل والمستقر)
   if (storageType === 'firebase') {
@@ -38,26 +52,29 @@ export const uploadImageToCloud = async (
   }
 
   // خيار السيرفر الخاص (PHP)
-  if (storageType === 'server' && config?.uploadUrl) {
-    try {
-      const formData = new FormData();
-      const blob = await base64ToBlob(processedBase64);
-      const fileName = file.name || (type + '.jpg');
-      formData.append('file', blob, fileName); 
-      formData.append('type', type);
+  if (storageType === 'server') {
+    const uploadUrl = config?.uploadUrl || siteSettings?.serverUploadUrl;
+    if (uploadUrl) {
+      try {
+        const formData = new FormData();
+        const blob = await base64ToBlob(processedBase64);
+        const fileName = file.name || (type + '.jpg');
+        formData.append('file', blob, fileName); 
+        formData.append('type', type);
 
-      const response = await fetch(config.uploadUrl, {
-        method: 'POST',
-        body: formData,
-      });
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (!response.ok) throw new Error("Server upload failed");
-      
-      const result = await response.json();
-      return result.url || result.data?.url || null;
-    } catch (error) {
-      console.error("Private Server Upload Error:", error);
-      return processedBase64; // Fallback
+        if (!response.ok) throw new Error("Server upload failed");
+        
+        const result = await response.json();
+        return result.url || result.data?.url || null;
+      } catch (error) {
+        console.error("Private Server Upload Error:", error);
+        return processedBase64; // Fallback
+      }
     }
   }
 
