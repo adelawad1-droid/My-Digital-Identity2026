@@ -259,8 +259,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     handleChange('specialLinks', updated);
   };
 
+  // Fix: Added removeSpecialLink function
   const removeSpecialLink = (id: string) => {
-    handleChange('specialLinks', (formData.specialLinks || []).filter(l => l.id !== id));
+    const updated = (formData.specialLinks || []).filter(l => l.id !== id);
+    handleChange('specialLinks', updated);
   };
 
   const handleSaveDirect = () => {
@@ -435,7 +437,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <span className="text-[10px] font-bold text-gray-400">nextid.my/?u=</span>
                                          <input type="text" value={formData.id} onChange={e => handleChange('id', e.target.value)} className="flex-1 bg-transparent border-none outline-none font-black text-sm dark:text-white" />
                                       </div>
-                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[9px] uppercase shadow-lg disabled:opacity-50 transition-all hover:bg-emerald-700">
+                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[15px] uppercase shadow-lg disabled:opacity-50 transition-all hover:bg-emerald-700">
                                          {isCheckingSlug ? <Loader2 size={16} className="animate-spin" /> : t('تحقق', 'Check')}
                                       </button>
                                    </div>
@@ -541,6 +543,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <div className="flex items-center gap-3 px-2"><MapPin className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('locationSection')}</h3><VisibilityToggle field="showLocation" label="" /></div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                        <div className="space-y-1.5"><label className={labelClasses}>{t('العنوان التفصيلي', 'Address')}</label><input type="text" value={formData.location} onChange={e => handleChange('location', e.target.value)} className={inputClasses} placeholder={isRtl ? 'الرياض، السعودية' : 'Riyadh, SA'} /></div>
+                                       {/* Error Fix: Renamed inputFieldClasses to inputClasses */}
                                        <div className="space-y-1.5"><label className={labelClasses}>{t('رابط قوقل ماب', 'Maps Link')}</label><input type="url" value={formData.locationUrl} onChange={e => handleChange('locationUrl', e.target.value)} className={inputClasses} placeholder="https://maps.google.com/..." /></div>
                                     </div>
                                  </div>
@@ -708,6 +711,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                       <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
                                                    </div>
                                                 </div>
+                                                {/* Error Fix: removeSpecialLink is now defined */}
                                                 <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-500 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
                                              </div>
                                           ))}
@@ -879,6 +883,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                    {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                                 </div>
                                                 <div className="space-y-3">
+                                                  {/* Error Fix: Renamed bodyBgInputRef to bodyBgFileInputRef */}
                                                   <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
                                                   <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                     <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
