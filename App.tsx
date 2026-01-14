@@ -14,12 +14,12 @@ import TemplatesGallery from './pages/TemplatesGallery';
 import CustomRequest from './pages/CustomRequest';
 import Pricing from './pages/Pricing';
 import TermsOfService from './pages/TermsOfService';
-import PrivacyPolicy from './pages/PrivacyPolicy'; // New import
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
-import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
+import { auth, getCardBySerial, getCardByDomain, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap } from 'lucide-react';
 
@@ -119,21 +119,48 @@ const AppContent: React.FC = () => {
     const initializeApp = async () => {
       if (initFlag.current) return;
       initFlag.current = true;
+
+      // 1. منطق كشف الدومين المخصص و رابط البطاقة
+      const currentHostname = window.location.hostname;
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
+      
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
       ]);
+
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
+
+      // التحقق أولاً من الدومين المخصص
+      const isMainDomain = currentHostname === 'nextid.my' || currentHostname === 'localhost' || currentHostname === '127.0.0.1';
+      
+      if (!isMainDomain) {
+        try {
+          const card = await getCardByDomain(currentHostname);
+          if (card) {
+            setPublicCard(card as CardData);
+            setIsDarkMode(card.isDark);
+            setIsInitializing(false);
+            return; // توقف هنا واعرض البطاقة
+          }
+        } catch (e) { console.warn("Domain check failed"); }
+      }
+
+      // إذا لم يكن دومين مخصص، ابحث عن المعلمة u
       if (slug) {
         try {
           const card = await getCardBySerial(slug);
-          if (card) { setPublicCard(card as CardData); setIsDarkMode(card.isDark); } 
-          else { setIsCardDeleted(true); }
+          if (card) { 
+            setPublicCard(card as CardData); 
+            setIsDarkMode(card.isDark); 
+          } else { 
+            setIsCardDeleted(true); 
+          }
         } catch (e) { setIsCardDeleted(true); }
       }
+
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {
@@ -144,7 +171,7 @@ const AppContent: React.FC = () => {
           } catch (e) {
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
-          if (!slug) {
+          if (!slug && isMainDomain) {
             try {
               const cards = await getUserCards(user.uid);
               setUserCards(cards as CardData[]);
@@ -347,7 +374,7 @@ const AppContent: React.FC = () => {
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/terms" element={<TermsOfService lang={lang} />} />
-          <Route path="/privacy" element={<PrivacyPolicy lang={lang} />} /> // Added route
+          <Route path="/privacy" element={<PrivacyPolicy lang={lang} />} />
           <Route path="*" element={<Navigate to={`/${lang}/`} replace />} />
         </Routes>
       </main>

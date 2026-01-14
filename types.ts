@@ -23,11 +23,11 @@ export interface PricingPlan {
   nameAr: string;
   nameEn: string;
   price: string;
-  originalPrice?: string; // السعر قبل الخصم (يظهر مشطوباً)
-  billingCycleAr: string; // مثال: شهر، 3 أشهر، سنة
-  billingCycleEn: string; // example: Monthly, 3 Months, Yearly
-  durationMonths: number; // الحقل الجديد: مدة الباقة بالأشهر
-  maxCards: number; // الحقل الجديد: الحد الأقصى للبطاقات في هذه الباقة
+  originalPrice?: string;
+  billingCycleAr: string;
+  billingCycleEn: string;
+  durationMonths: number;
+  maxCards: number;
   featuresAr: string[];
   featuresEn: string[];
   isPopular: boolean;
@@ -49,8 +49,8 @@ export interface TemplateConfig {
   headerHeight: number;
   headerCustomAsset?: string; 
   headerSvgRaw?: string;
-  headerSvgColor?: string; // الخاصية الجديدة للتحكم في لون الـ SVG
-  headerSvgRotation?: number; // الخاصية الجديدة للتحكم في تدوير الـ SVG
+  headerSvgColor?: string;
+  headerSvgRotation?: number;
   headerPatternId?: string; 
   headerPatternOpacity?: number; 
   headerPatternScale?: number; 
@@ -78,7 +78,6 @@ export interface TemplateConfig {
   websiteOffsetY: number;
   websiteOffsetX?: number;
   
-  // Contact Buttons Section
   contactButtonsOffsetY: number;
   contactButtonsOffsetX?: number;
   contactButtonsGap?: number;
@@ -116,7 +115,6 @@ export interface TemplateConfig {
   socialIconPadding?: number;
   useSocialBrandColors?: boolean;
 
-  // Special Links Config
   showSpecialLinksByDefault?: boolean;
   specialLinksCols?: number;
   specialLinksGap?: number;
@@ -126,7 +124,6 @@ export interface TemplateConfig {
   specialLinksOffsetX?: number;
   defaultSpecialLinks?: SpecialLinkItem[];
 
-  // Floating Asset Config
   floatingAssetUrl?: string;
   floatingAssetSize?: number;
   floatingAssetOffsetY?: number;
@@ -134,7 +131,6 @@ export interface TemplateConfig {
   floatingAssetOpacity?: number;
   showFloatingAssetByDefault?: boolean;
 
-  // Membership & Subscription Config
   showMembershipByDefault?: boolean;
   membershipTitleAr?: string;
   membershipTitleEn?: string;
@@ -148,7 +144,6 @@ export interface TemplateConfig {
   membershipTextColor?: string;
   membershipAccentColor?: string;
 
-  // Location Config
   showLocationByDefault?: boolean;
   locationOffsetY?: number;
   locationOffsetX?: number;
@@ -160,7 +155,6 @@ export interface TemplateConfig {
   locationPaddingV?: number; 
   locationAddressSize?: number; 
 
-  // Direct Links Section (Email & Website)
   linksSectionVariant?: 'list' | 'grid' | 'pills';
   linksSectionBgColor?: string;
   linksSectionTextColor?: string;
@@ -200,21 +194,14 @@ export interface TemplateConfig {
   showButtonsByDefault?: boolean;
 
   showOccasionByDefault?: boolean;
-  occasionTitle?: string;
-  occasionDesc?: string;
   occasionTitleAr?: string; 
   occasionTitleEn?: string; 
   occasionDate?: string;
-  occasionMapUrl?: string;
   occasionOffsetY?: number;
   occasionOffsetX?: number;
-  occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
-  occasionTitleColor?: string;
   occasionGlassy?: boolean;
-  occasionOpacity?: number;
-  showCountdown?: boolean;
 
   showBodyFeatureByDefault?: boolean;
   bodyFeatureTextAr?: string;
@@ -228,7 +215,6 @@ export interface TemplateConfig {
   bodyFeatureBorderRadius?: number;
   bodyFeatureGlassy?: boolean;
 
-  // Bio Advanced Config
   bioBorderRadius?: number;
   bioBorderWidth?: number;
   bioBorderColor?: string;
@@ -241,26 +227,14 @@ export interface TemplateConfig {
   defaultBioAr?: string;
   defaultBioEn?: string;
 
-  // Desktop Display Config
   desktopLayout?: 'full-width-header' | 'centered-card';
   cardMaxWidth?: number;
   desktopBodyOffsetY?: number;
   mobileBodyOffsetY?: number;
 
-  // Premium Features
   showStarsByDefault?: boolean;
   isVerifiedByDefault?: boolean;
   hasGoldenFrameByDefault?: boolean;
-
-  occasionPrefixColor?: string;
-  occasionNameColor?: string;
-  occasionWelcomeColor?: string;
-
-  invitationPrefix?: string;
-  invitationWelcome?: string;
-  invitationWelcomeAr?: string;
-  invitationWelcomeEn?: string;
-  invitationYOffset?: number;
 
   nameColor?: string;
   titleColor?: string;
@@ -275,12 +249,10 @@ export interface TemplateConfig {
   defaultThemeColor?: string;
   defaultThemeGradient?: string;
   defaultBackgroundImage?: string;
-  defaultBackgroundImageId?: string;
   defaultProfileImage?: string;
   defaultName?: string;
   defaultTitle?: string;
   defaultCompany?: string;
-  defaultNameSize?: number;
   defaultIsDark?: boolean;
   cardBodyColor?: string;
   cardBodyBackgroundImage?: string;
@@ -290,8 +262,6 @@ export interface TemplateConfig {
   pageBgStrategy?: PageBgStrategy; 
   
   fontFamily?: string;
-
-  customCss?: string;
 }
 
 export interface CardData {
@@ -320,7 +290,6 @@ export interface CardData {
   emails?: string[];   
   websites?: string[]; 
   useSocialBrandColors?: boolean; 
-  // Fix: Add socialIconColumns to CardData to resolve type error in Editor.tsx
   socialIconColumns?: number;
   ownerId?: string;
   ownerEmail?: string;
@@ -344,6 +313,9 @@ export interface CardData {
   linksShowBg?: boolean;
   specialLinksCols?: number;
   fontFamily?: string;
+
+  // الحقل الجديد لربط الدومين المخصص
+  customDomain?: string;
 
   specialLinksOffsetY?: number;
   specialLinksOffsetX?: number;
@@ -373,27 +345,14 @@ export interface CardData {
   isVerified?: boolean;
   hasGoldenFrame?: boolean;
 
-  occasionTitle?: string;
-  occasionDesc?: string;
   occasionTitleAr?: string; 
   occasionTitleEn?: string; 
   occasionDate?: string;
-  occasionMapUrl?: string;
   occasionOffsetY?: number;
   occasionOffsetX?: number;
-  occasionFloating?: boolean;
   occasionPrimaryColor?: string;
   occasionBgColor?: string;
-  occasionTitleColor?: string;
   occasionGlassy?: boolean;
-  occasionOpacity?: number;
-
-  invitationPrefix?: string;
-  invitationWelcome?: string;
-  invitationYOffset?: number;
-  occasionPrefixColor?: string;
-  occasionNameColor?: string;
-  occasionWelcomeColor?: string;
 
   showBodyFeature?: boolean;
   bodyFeatureText?: string;

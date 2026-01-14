@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
@@ -107,7 +108,6 @@ export const getUserProfile = async (uid: string) => {
     const snap = await getDoc(doc(db, "users_registry", uid));
     if (snap.exists()) {
       const data = snap.data();
-      // تحقق من انتهاء الباقة
       if ((data.role === 'premium' || data.planId) && data.premiumUntil) {
         const expiry = new Date(data.premiumUntil);
         if (expiry < new Date()) {
@@ -204,7 +204,6 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
   const finalOwnerId = cardData.ownerId || currentUser.uid;
   const newId = cardData.id.toLowerCase();
   
-  // التحقق مما إذا كانت هذه عملية إنشاء جديدة (بطاقة جديدة تماماً)
   const isNewCard = !oldId;
   
   const dataToSave = { 
@@ -226,7 +225,6 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
     setDoc(doc(db, "users", finalOwnerId, "cards", newId), dataToSave)
   ]);
 
-  // تحديث العداد في سجل المستخدم فقط عند الإنشاء الجديد
   if (isNewCard) {
     await updateDoc(doc(db, "users_registry", finalOwnerId), {
       cardCount: increment(1)
@@ -246,6 +244,21 @@ export const getCardBySerial = async (serialId: string) => {
   } catch (error) { return null; }
 };
 
+// الوظيفة الجديدة للبحث عن بطاقة بدومين مخصص
+export const getCardByDomain = async (domain: string) => {
+  try {
+    const q = query(collection(db, "public_cards"), where("customDomain", "==", domain.toLowerCase()), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const cardData = snap.docs[0].data();
+      const cardRef = doc(db, "public_cards", snap.docs[0].id);
+      updateDoc(cardRef, { viewCount: increment(1) }).catch(() => {});
+      return cardData;
+    }
+    return null;
+  } catch (error) { return null; }
+};
+
 export const getUserCards = async (userId: string) => {
   try {
     const snap = await getDocs(query(collection(db, "users", userId, "cards"), orderBy("updatedAt", "desc")));
@@ -257,7 +270,6 @@ export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, car
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
     deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase())),
-    // تحديث العداد بنقص واحد
     updateDoc(doc(db, "users_registry", ownerId), {
       cardCount: increment(-1)
     })
