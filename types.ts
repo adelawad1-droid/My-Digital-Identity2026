@@ -27,6 +27,7 @@ export interface PricingPlan {
   billingCycleAr: string; // مثال: شهر، 3 أشهر، سنة
   billingCycleEn: string; // example: Monthly, 3 Months, Yearly
   durationMonths: number; // الحقل الجديد: مدة الباقة بالأشهر
+  maxCards: number; // الحقل الجديد: الحد الأقصى للبطاقات في هذه الباقة
   featuresAr: string[];
   featuresEn: string[];
   isPopular: boolean;

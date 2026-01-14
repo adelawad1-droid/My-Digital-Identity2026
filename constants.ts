@@ -339,5 +339,9 @@ export const TRANSLATIONS: TranslationStrings = {
   advancedEditorDesc: { ar: 'تحكم كامل في الألوان، التنسيقات، الأبعاد، ونظام العضويات.', en: 'Full control over colors, layouts, dimensions, and membership systems.' },
   upgradeToCustomize: { ar: 'قم بالترقية لفتح أدوات التصميم', en: 'Upgrade to unlock design tools' },
   termsOfService: { ar: 'شروط الخدمة', en: 'Terms of Service' },
-  privacyPolicy: { ar: 'سياسة الخصوصية', en: 'Privacy Policy' }
+  privacyPolicy: { ar: 'سياسة الخصوصية', en: 'Privacy Policy' },
+  maxCards: { ar: 'الحد الأقصى للبطاقات', en: 'Max Cards Limit' },
+  limitReached: { ar: 'لقد وصلت للحد الأقصى من البطاقات المسموح بها في باقتك الحالية.', en: 'You have reached the maximum card limit allowed for your current plan.' },
+  cardUsage: { ar: 'استهلاك البطاقات', en: 'Card Usage' },
+  upgradeToAdd: { ar: 'قم بالترقية لزيادة عدد البطاقات', en: 'Upgrade to add more cards' }
 };

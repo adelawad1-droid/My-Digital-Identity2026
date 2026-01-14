@@ -1,11 +1,11 @@
 
 import { Language, CardData, CustomTemplate, TemplateCategory } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA } from '../constants';
-import { getAllTemplates, getAllCategories, auth } from '../services/firebase';
+import { getAllTemplates, getAllCategories, auth, getUserProfile, getUserCards, getAllPricingPlans } from '../services/firebase';
 import CardPreview from '../components/CardPreview';
-import { Layout, Palette, Loader2, Plus, FolderOpen, Briefcase, PartyPopper, LayoutGrid, Star, ShieldCheck, Crown } from 'lucide-react';
+import { Layout, Palette, Loader2, Plus, FolderOpen, Briefcase, PartyPopper, LayoutGrid, Star, ShieldCheck, Crown, AlertTriangle } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface TemplatesGalleryProps {
   lang: Language;
@@ -14,6 +14,7 @@ interface TemplatesGalleryProps {
 
 const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) => {
   const isRtl = lang === 'ar';
+  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isPrivateMode = searchParams.get('mode') === 'private';
@@ -23,21 +24,38 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLimitReached, setIsLimitReached] = useState(false);
+  const [maxLimit, setMaxLimit] = useState(5);
 
   const sampleCardData = (SAMPLE_DATA[lang] || SAMPLE_DATA['en']) as CardData;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tData, cData] = await Promise.all([
+        const [tData, cData, plans] = await Promise.all([
           getAllTemplates(),
-          getAllCategories()
+          getAllCategories(),
+          getAllPricingPlans()
         ]);
         
+        const currentUid = auth.currentUser?.uid;
+        if (currentUid) {
+           const [profile, cards] = await Promise.all([
+              getUserProfile(currentUid),
+              getUserCards(currentUid)
+           ]);
+           
+           let limit = 5;
+           if (profile?.planId) {
+              const plan = plans.find(p => p.id === profile.planId);
+              limit = plan?.maxCards || 10;
+           }
+           setMaxLimit(limit);
+           setIsLimitReached(cards.length >= limit);
+        }
+
         let filteredTemplates = (tData as CustomTemplate[]).filter(t => t.isActive);
         
-        const currentUid = auth.currentUser?.uid;
-
         if (isPrivateMode) {
            filteredTemplates = filteredTemplates.filter(t => t.restrictedUserId === currentUid);
         } else {
@@ -61,6 +79,14 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
     fetchData();
   }, [isPrivateMode]);
 
+  const handleSelectTemplate = (id: string) => {
+    if (isLimitReached) {
+       alert(t('limitReached'));
+       return;
+    }
+    onSelect(id);
+  };
+
   const filteredTemplates = customTemplates.filter(tmpl => tmpl.categoryId === activeCategoryId);
 
   const getCategoryTheme = (name: string) => {
@@ -79,6 +105,27 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 animate-fade-in-up space-y-10 md:space-y-16">
+      
+      {isLimitReached && (
+        <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-[2rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake">
+           <div className="flex items-center gap-4">
+              <div className="p-3 bg-red-100 text-red-600 rounded-xl">
+                 <AlertTriangle size={24} />
+              </div>
+              <div>
+                 <h3 className="font-black dark:text-white uppercase tracking-tight">{isRtl ? 'وصلت للحد الأقصى للبطاقات' : 'Card Limit Reached'}</h3>
+                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">{t('limitReached')}</p>
+              </div>
+           </div>
+           <button 
+            onClick={() => navigate(`/${lang}/pricing`)}
+            className="px-8 py-3 bg-red-600 text-white rounded-xl font-black text-xs uppercase shadow-lg shadow-red-600/20 hover:scale-105 transition-all"
+           >
+              {isRtl ? 'ترقية الباقة الآن' : 'Upgrade Plan Now'}
+           </button>
+        </div>
+      )}
+
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/10 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/20">
           {isPrivateMode ? <Crown size={12} className="text-amber-500" /> : <Palette size={12} />}
@@ -121,8 +168,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-10 md:gap-14 pt-4 max-w-6xl mx-auto">
         {filteredTemplates.map(tmpl => (
-          /* Fix: Using sampleCardData instead of undefined sampleData */
-          <TemplateCard key={tmpl.id} tmpl={tmpl} lang={lang} onSelect={onSelect} sampleData={sampleCardData} isPrivate={isPrivateMode} />
+          <TemplateCard key={tmpl.id} tmpl={tmpl} lang={lang} onSelect={handleSelectTemplate} sampleData={sampleCardData} isPrivate={isPrivateMode} disabled={isLimitReached} />
         ))}
       </div>
 
@@ -137,7 +183,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
   );
 };
 
-const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
+const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }: any) => {
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en'];
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
@@ -156,7 +202,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
   };
 
   return (
-    <div className="group flex flex-col transition-all duration-500">
+    <div className={`group flex flex-col transition-all duration-500 ${disabled ? 'opacity-70 grayscale-[0.5]' : ''}`}>
       {/* Phone Mockup Container */}
       <div 
         ref={containerRef}
@@ -239,9 +285,9 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
                e.stopPropagation();
                onSelect(tmpl.id);
              }}
-             className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-[11px] md:text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer"
+             className={`${disabled ? 'bg-gray-500' : 'bg-blue-600'} text-white px-10 py-5 rounded-2xl font-black text-[11px] md:text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
            >
-             {isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate')}
+             {disabled ? (isRtl ? 'تم الوصول للحد الأقصى' : 'Limit Reached') : (isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate'))}
              <Plus size={16} />
            </button>
         </div>

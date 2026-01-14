@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { CardData, Language } from '../types';
+import { CardData, Language, PricingPlan } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -8,10 +7,12 @@ import {
   Share2, AlertTriangle, X, Eye, Calendar, ShieldCheck, 
   Clock, TrendingUp, Sparkles, Crown, Zap, ArrowUpRight,
   Loader2, Save, CheckCircle2,
-  CreditCard, Star, CalendarPlus, Search, FolderSearch
+  CreditCard, Star, CalendarPlus, Search, FolderSearch,
+  // Added missing Layers icon import from lucide-react
+  Layers
 } from 'lucide-react';
 import ShareModal from '../components/ShareModal';
-import { auth, getUserProfile, saveCardToDB } from '../services/firebase';
+import { auth, getUserProfile, saveCardToDB, getAllPricingPlans } from '../services/firebase';
 
 interface MyCardsProps {
   lang: Language;
@@ -30,6 +31,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   const [cardToDelete, setCardToDelete] = useState<CardData | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [maxCardsLimit, setMaxCardsLimit] = useState(5); // افتراضياً 5 للمجاني
   
   // خاص بإدارة العضوية السريعة
   const [membershipEditingCard, setMembershipEditingCard] = useState<CardData | null>(null);
@@ -44,15 +46,28 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
 
   useEffect(() => {
     if (auth.currentUser) {
-      getUserProfile(auth.currentUser.uid).then(profile => {
+      const uid = auth.currentUser.uid;
+      Promise.all([
+        getUserProfile(uid),
+        getAllPricingPlans()
+      ]).then(([profile, plans]) => {
         if (profile) {
           setUserProfile(profile);
+          if (profile.planId) {
+            const currentPlan = plans.find(p => p.id === profile.planId);
+            if (currentPlan) {
+              setMaxCardsLimit(currentPlan.maxCards || 10);
+            }
+          } else {
+            setMaxCardsLimit(5); // الحد للمجاني
+          }
         }
       });
     }
   }, []);
 
   const isPremium = userProfile?.role === 'premium' || userProfile?.role === 'admin' || !!userProfile?.planId;
+  const isLimitReached = cards.length >= maxCardsLimit;
 
   // منطق الفلترة بناءً على البحث
   const filteredCards = cards.filter(card => 
@@ -125,7 +140,19 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
   };
 
   const handleCreateMembershipCard = () => {
+    if (isLimitReached) {
+       alert(t('limitReached'));
+       return;
+    }
     navigate(`/${lang}/templates?mode=private`);
+  };
+
+  const handleAddNewCard = () => {
+    if (isLimitReached) {
+       alert(t('limitReached'));
+       return;
+    }
+    onAdd();
   };
 
   return (
@@ -162,6 +189,33 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
         </div>
       )}
 
+      {/* Card Limit Status */}
+      <div className="bg-white dark:bg-[#0f0f12] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+         <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className={`p-3 rounded-xl ${isLimitReached ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-600'}`}>
+               <Layers size={20} />
+            </div>
+            <div>
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{t('cardUsage')}</p>
+               <h4 className="text-lg font-black dark:text-white">{cards.length} / {maxCardsLimit} <span className="text-gray-400 text-xs font-bold">{isRtl ? 'بطاقة' : 'Cards'}</span></h4>
+            </div>
+         </div>
+         <div className="flex-1 w-full max-w-md h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-1000 ${isLimitReached ? 'bg-red-500' : 'bg-blue-600'}`} 
+              style={{ width: `${(cards.length / maxCardsLimit) * 100}%` }} 
+            />
+         </div>
+         {!isPremium && isLimitReached && (
+            <button 
+              onClick={() => navigate(`/${lang}/pricing`)}
+              className="px-6 py-3 bg-amber-500 text-white rounded-xl font-black text-[10px] uppercase shadow-lg shadow-amber-500/20 hover:scale-105 transition-all"
+            >
+               {t('upgradeToAdd')}
+            </button>
+         )}
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
            <div className={`p-4 rounded-[1.5rem] shadow-lg ${isPremium ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-blue-600 text-white shadow-blue-500/20'}`}>
@@ -183,12 +237,20 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
         </div>
         <div className="flex flex-wrap items-center gap-3">
             {isPremium && (
-               <button onClick={handleCreateMembershipCard} className="flex items-center justify-center gap-3 px-6 py-4 bg-amber-500 text-white rounded-2xl font-black text-xs uppercase shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all">
+               <button 
+                onClick={handleCreateMembershipCard} 
+                disabled={isLimitReached}
+                className={`flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-black text-xs uppercase shadow-xl transition-all ${isLimitReached ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-amber-500 text-white shadow-amber-500/20 hover:scale-105 active:scale-95'}`}
+               >
                 <ShieldCheck size={20} />
                 {isRtl ? 'بطاقة عضوية خاصة' : 'Private Member Card'}
                </button>
             )}
-            <button onClick={onAdd} className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all">
+            <button 
+              onClick={handleAddNewCard} 
+              disabled={isLimitReached}
+              className={`flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl transition-all ${isLimitReached ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white shadow-blue-500/20 hover:scale-105 active:scale-95'}`}
+            >
               <Plus size={20} />
               {isRtl ? 'إنشاء بطاقة جديدة' : 'Create New Card'}
             </button>
@@ -332,7 +394,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
         )}
 
         {cards.length === 0 && (
-          <button onClick={onAdd} className="flex flex-col items-center justify-center p-12 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:bg-blue-50/10 transition-all duration-500 group">
+          <button onClick={handleAddNewCard} className="flex flex-col items-center justify-center p-12 rounded-[3rem] border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-blue-500 hover:bg-blue-50/10 transition-all duration-500 group">
             <div className="w-20 h-20 rounded-[2rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner mb-6">
               <Plus size={32} />
             </div>
@@ -462,7 +524,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
 
       {cardToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm md:max-w-md rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                  <AlertTriangle size={40} />
               </div>
