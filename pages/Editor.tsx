@@ -11,7 +11,8 @@ import {
   GlassWater, Link2, Sparkle, LayoutGrid, EyeOff, Ruler, Wand2, Building2, Timer,
   QrCode, Share2, Trash2, LogIn, Shapes, Navigation2, ImagePlus, Check, Search, AlertTriangle, Zap,
   Briefcase, ShieldCheck, Crown, ShoppingCart, Globe2, Star, ChevronRight, ChevronLeft,
-  Quote, PhoneCall, MonitorDot, ArrowLeftRight, Box, SlidersHorizontal, Grid, Maximize2, ExternalLink, Lock
+  Quote, PhoneCall, MonitorDot, ArrowLeftRight, Box, SlidersHorizontal, Grid, Maximize2, ExternalLink, Lock,
+  ChevronDown
 } from 'lucide-react';
 import CardPreview from '../components/CardPreview';
 import SocialIcon, { BRAND_COLORS } from '../components/SocialIcon';
@@ -63,10 +64,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [uploadConfig, setUploadConfig] = useState({ storageType: 'database' as const, uploadUrl: '' });
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
   const [showModeInfo, setShowModeInfo] = useState(true);
-
-  // Mouse Follow Preview Scroll States
-  const [mouseYPercentage, setMouseYPercentage] = useState(0);
-  const [mouseYPercentageMobile, setMouseYPercentageMobile] = useState(0);
 
   useEffect(() => {
     getSiteSettings().then(settings => {
@@ -190,7 +187,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const VisibilityToggle = ({ field, label }: { field: keyof CardData, label: string }) => {
     const isVisible = formData[field] !== false;
     return (
-      <button type="button" onClick={() => handleChange(field, !isVisible)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${isVisible ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-400 bg-gray-100 dark:bg-gray-800'}`}>
+      <button type="button" onClick={() => handleChange(field, !isVisible)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${isVisible ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 bg-gray-100 dark:bg-gray-800'}`}>
         {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
         <span className="text-[9px] font-black uppercase">{label || (isVisible ? t('إظهار', 'Show') : t('إخفاء', 'Hide'))}</span>
       </button>
@@ -203,8 +200,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         <div className="flex items-center gap-2">
            {Icon && <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Icon size={14} /></div>}
            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
-              {hint && <span className="text-[7px] text-gray-400 font-bold">{hint}</span>}
+              <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">{label}</span>
+              {hint && <span className="text-[7px] text-gray-500 font-bold">{hint}</span>}
            </div>
         </div>
         <div className="flex items-center bg-blue-50 dark:bg-blue-900/20 rounded-full px-3 py-0.5 border border-blue-100 dark:border-blue-800/30">
@@ -218,7 +215,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const ColorPickerUI = ({ label, field, icon: Icon, onAfterChange }: { label: string, field: keyof CardData, icon?: any, onAfterChange?: (val: string) => void }) => (
     <div className="bg-white dark:bg-gray-900 p-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 flex items-center justify-between shadow-sm">
-      <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-gray-400" />}<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span></div>
+      <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-indigo-600" />}<span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">{label}</span></div>
       <div className="flex items-center gap-3">
          <div className="relative w-8 h-8 rounded-xl overflow-hidden border shadow-sm">
             <input type="color" value={(formData[field] as string) || '#3b82f6'} onChange={(v) => { handleChange(field, v.target.value); if (onAfterChange) onAfterChange(v.target.value); }} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
@@ -230,7 +227,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   );
 
   const inputClasses = "w-full px-5 py-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 transition-all font-bold text-sm shadow-none";
-  const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-2";
+  const labelClasses = "block text-[10px] font-black text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-widest px-2";
 
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
     ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
@@ -280,20 +277,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     ? (formData.mobileBodyOffsetY ?? 0) 
     : 0;
 
-  const handleMouseMoveSidebar = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
-    setMouseYPercentage(percentage);
-  };
-
-  const handleMouseMoveMobile = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
-    setMouseYPercentageMobile(percentage);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
       
@@ -308,7 +291,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                       <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">
                         {t('basicEditorTitle')}
                       </h3>
-                      <p className="text-xs font-bold text-gray-400 mt-1">
+                      <p className="text-xs font-bold text-gray-500 mt-1">
                         {t('basicEditorDesc')}
                       </p>
                    </div>
@@ -317,7 +300,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                    <button onClick={() => navigate(`/${lang}/pricing`)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">
                       {t('upgradeToCustomize')}
                    </button>
-                   <button onClick={() => setShowModeInfo(false)} className="p-2 text-gray-400 hover:text-red-500"><X size={20}/></button>
+                   <button onClick={() => setShowModeInfo(false)} className="p-2 text-gray-500 hover:text-red-500"><X size={20}/></button>
                 </div>
             </div>
          </div>
@@ -333,32 +316,39 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       </div>
 
       {showMobilePreview && (
-        <div className="fixed inset-0 z-[3000] bg-black/90 backdrop-blur-2xl animate-fade-in flex flex-col">
-            <div className="p-4 flex justify-between items-center bg-black/40 text-white shrink-0">
+        <div className="fixed inset-0 z-[3000] bg-black/95 backdrop-blur-2xl animate-fade-in flex flex-col overflow-hidden">
+            <div className="p-4 flex justify-between items-center bg-black/40 text-white shrink-0 border-b border-white/10">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                         <Smartphone size={18} />
                     </div>
-                    <span className="font-black text-xs uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span>
+                    <span className="font-black text-[11px] uppercase tracking-[0.2em]">{t('معاينة حية', 'Live Preview')}</span>
                 </div>
-                <button onClick={() => setShowMobilePreview(false)} className="p-2 bg-white/10 rounded-xl hover:bg-red-500 transition-colors"><X size={20}/></button>
+                <button onClick={() => setShowMobilePreview(false)} className="p-2.5 bg-white/10 rounded-xl hover:bg-red-500 transition-colors shadow-lg"><X size={20}/></button>
             </div>
-            <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
-                <div 
-                   onMouseMove={handleMouseMoveMobile}
-                   onMouseLeave={() => setMouseYPercentageMobile(0)}
-                   className="w-full max-w-[340px] h-full max-h-[85vh] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative cursor-ns-resize"
-                >
+            
+            <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden touch-pan-y">
+                <div className="w-full max-w-[350px] h-full max-h-[85vh] rounded-[3.5rem] border-[10px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black shadow-[0_0_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden relative">
+                    {/* Dynamic Island Mock */}
                     <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
-                    <div className="w-full h-full overflow-hidden relative z-0" style={{ borderRadius: '2.6rem', clipPath: 'inset(0 round 2.6rem)' }}>
-                        <div 
-                          className="w-full transition-transform duration-500 ease-out origin-top"
-                          style={{ transform: `translateY(-${mouseYPercentageMobile * 0.7}%)` }}
-                        >
-                           <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
+                    
+                    {/* Scrollable Card Content */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar scroll-smooth overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <div className="min-h-full pb-32"> {/* extra padding at bottom for better view */}
+                          <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
                         </div>
                     </div>
+
+                    {/* Bottom Indicator */}
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-50 pointer-events-none"></div>
+                </div>
+
+                {/* Hint for scrolling */}
+                <div className="mt-4 flex flex-col items-center gap-2 opacity-50">
+                    <div className="w-6 h-6 border-2 border-white/30 rounded-full flex items-center justify-center animate-bounce">
+                        <ChevronDown size={14} className="text-white" />
+                    </div>
+                    <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">{isRtl ? 'اسحب للأعلى للتمرير' : 'Swipe up to scroll'}</span>
                 </div>
             </div>
         </div>
@@ -368,7 +358,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
         
-        <aside className="hidden lg:flex w-64 flex-col gap-2 shrink-0 sticky top-24 h-fit">
+        <aside className="hidden lg:flex w-72 flex-col gap-2 shrink-0 sticky top-24 h-fit">
            <div className="bg-white dark:bg-gray-900 p-4 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-1">
               {tabs.map((tab) => {
                 const isLocked = tab.isPro && !isPremium;
@@ -378,13 +368,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     onClick={() => {
                       setActiveTab(tab.id);
                     }}
-                    className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                    className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                   >
                     <div className="flex items-center gap-3">
-                       <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-500'} />
-                       <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
+                       <tab.icon size={20} className={activeTab === tab.id ? 'text-white' : 'text-gray-500 group-hover:text-blue-500'} />
+                       <span className="text-sm font-black uppercase tracking-tight">{tab.label}</span>
                     </div>
-                    {isLocked && <Lock size={12} className="text-gray-300" />}
+                    {isLocked && <Lock size={12} className="text-gray-400" />}
                   </button>
                 );
               })}
@@ -406,7 +396,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                           </div>
                           <div>
                               <h2 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{tabs[currentIndex].label}</h2>
-                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{t('المرحلة', 'Step')} {currentIndex + 1} {t('من', 'of')} {tabs.length}</p>
+                              <p className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-0.5">{t('المرحلة', 'Step')} {currentIndex + 1} {t('من', 'of')} {tabs.length}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
@@ -422,7 +412,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                               </div>
                               <div className="space-y-3">
                                  <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'ميزة مخصصة للمشتركين' : 'Exclusive Pro Feature'}</h3>
-                                 <p className="text-sm font-bold text-gray-400 max-w-sm mx-auto leading-relaxed">
+                                 <p className="text-sm font-bold text-gray-500 max-w-sm mx-auto leading-relaxed">
                                    {isRtl ? 'أنت تستخدم المحرر الأساسي المجاني. تعديل هذا القسم متاح فقط لمشتركي الباقات الاحترافية.' : 'You are using the Basic Free Editor. Customizing this section is only available for Pro subscribers.'}
                                  </p>
                               </div>
@@ -440,12 +430,12 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                               <div className="space-y-8 animate-fade-in">
                                 <div className="space-y-3">
                                    <label className={labelClasses}>{t('رابط البطاقة المخصص (URL)', 'Personal URL Path')}</label>
-                                   <div className="flex gap-2">
-                                      <div className={`flex-1 flex items-center bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border ${slugStatus === 'available' ? 'border-emerald-500' : slugStatus === 'taken' ? 'border-red-500' : 'border-gray-100 dark:border-gray-800'} px-5 py-4`}>
+                                   <div className={`flex flex-col sm:flex-row gap-2 ${isRtl ? 'sm:flex-row' : 'sm:flex-row'}`}>
+                                      <div className={`flex-1 flex items-center bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border ${slugStatus === 'available' ? 'border-emerald-500' : slugStatus === 'taken' ? 'border-red-500' : 'border-gray-100 dark:border-gray-800'} px-5 py-4`} dir="ltr">
                                          <span className="text-[10px] font-bold text-gray-400">nextid.my/?u=</span>
                                          <input type="text" value={formData.id} onChange={e => handleChange('id', e.target.value)} className="flex-1 bg-transparent border-none outline-none font-black text-sm dark:text-white" />
                                       </div>
-                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[9px] uppercase shadow-lg disabled:opacity-50 transition-all hover:bg-emerald-700">
+                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[9px] uppercase shadow-lg disabled:opacity-50 transition-all hover:bg-emerald-700">
                                          {isCheckingSlug ? <Loader2 size={16} className="animate-spin" /> : t('تحقق', 'Check')}
                                       </button>
                                    </div>
@@ -519,7 +509,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     </div>
                                     {(formData.emails || []).map((email, idx) => (
                                        <div key={idx} className="flex gap-2">
-                                          <div className="relative flex-1"><Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={inputClasses} placeholder="mail@example.com" /></div>
+                                          <div className="relative flex-1">
+                                             <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                             <input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="mail@example.com" />
+                                          </div>
                                           <button type="button" onClick={() => { const l = [...(formData.emails || [])]; l.splice(idx, 1); handleChange('emails', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
                                        </div>
                                     ))}
@@ -535,7 +528,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     </div>
                                     {(formData.websites || []).map((web, idx) => (
                                        <div key={idx} className="flex gap-2">
-                                          <div className="relative flex-1"><Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} /><input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={inputClasses} placeholder="www.yoursite.com" /></div>
+                                          <div className="relative flex-1">
+                                             <Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                             <input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="www.yoursite.com" />
+                                          </div>
                                           <button type="button" onClick={() => { const l = [...(formData.websites || [])]; l.splice(idx, 1); handleChange('websites', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
                                        </div>
                                     ))}
@@ -557,7 +553,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-xl text-indigo-600 shadow-sm"><PhoneCall size={24}/></div>
                                    <div>
                                       <h3 className="font-black dark:text-white uppercase tracking-tighter">{t('أرقام الاتصال والواتساب', 'Contact Numbers')}</h3>
-                                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
+                                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
                                    </div>
                                 </div>
 
@@ -565,21 +561,21 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    <div className="space-y-3">
                                       <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
                                       <div className="relative">
-                                         <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                         <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={inputClasses} placeholder="+966 5..." />
+                                         <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                         <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="+966 5..." />
                                       </div>
                                     </div>
                                     <div className="space-y-3">
                                       <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الواتساب', 'WhatsApp Number')}</label><VisibilityToggle field="showWhatsapp" label="" /></div>
                                       <div className="relative">
-                                         <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                         <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={inputClasses} placeholder="9665..." />
+                                         <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                         <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
                                       </div>
                                    </div>
                                 </div>
 
                                 <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                                   <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
+                                   <h4 className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <ColorPickerUI label={t('لون زر الاتصال', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
                                       <ColorPickerUI label={t('لون زر واتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
@@ -599,7 +595,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                        <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
                                           <div className="flex items-center gap-3">
-                                             <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
+                                             <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-400"} />
                                              <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('ألوان المنصات الأصلية', 'Use Brand Colors')}</span>
                                           </div>
                                           <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
@@ -636,7 +632,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                       <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 group transition-all">
                                          <div className="flex items-center gap-3">
                                             <div className="p-2 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-800"><SocialIcon platformId={link.platformId} size={18} /></div>
-                                            <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-400">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
+                                            <div className="min-w-0"><p className="text-[8px] font-black uppercase text-gray-500">{link.platform}</p><p className="text-xs font-bold truncate max-w-[120px] dark:text-white">{link.url}</p></div>
                                          </div>
                                          <button type="button" onClick={() => { const u = [...formData.socialLinks]; u.splice(idx, 1); handleChange('socialLinks', u); }} className="p-2 text-red-400 hover:text-red-500 rounded-lg transition-all"><Trash2 size={16}/></button>
                                       </div>
@@ -662,7 +658,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                        </div>
 
                                        <div className="space-y-4 pt-4 border-t dark:border-white/5">
-                                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('نسبة العرض للارتفاع', 'Aspect Ratio Selection')}</label>
+                                          <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest px-1">{t('نسبة العرض للارتفاع', 'Aspect Ratio Selection')}</label>
                                           <div className="grid grid-cols-3 gap-3">
                                              {[
                                                { id: 'square', label: 'مربع' },
@@ -672,7 +668,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                 <button 
                                                   key={ratio.id} 
                                                   onClick={() => handleChange('specialLinksAspectRatio', ratio.id)} 
-                                                  className={`py-4 rounded-2xl border-2 transition-all font-black text-[9px] uppercase ${formData.specialLinksAspectRatio === ratio.id ? 'bg-pink-600 text-white border-pink-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
+                                                  className={`py-4 rounded-2xl border-2 transition-all font-black text-[9px] uppercase ${formData.specialLinksAspectRatio === ratio.id ? 'bg-pink-600 text-white border-pink-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700'}`}
                                                 >
                                                    {t(ratio.label, ratio.id.toUpperCase())}
                                                 </button>
@@ -712,7 +708,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                       <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
                                                    </div>
                                                 </div>
-                                                <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-400 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
+                                                <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-500 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
                                              </div>
                                           ))}
                                        </div>
@@ -726,7 +722,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                 <div className="space-y-6">
                                    <div className="bg-indigo-50 dark:bg-indigo-900/10 p-5 rounded-[1.5rem] flex items-center justify-between border border-indigo-100 dark:border-indigo-900/30">
                                       <div className="flex items-center gap-3"><ShieldCheck size={20} className="text-indigo-600" /><p className="font-black dark:text-white text-xs uppercase">{t('تفعيل شريط العضوية', 'Enable Membership Bar')}</p></div>
-                                      <button type="button" onClick={() => handleChange('showMembership', !formData.showMembership)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showMembership ? 'bg-indigo-600' : 'bg-gray-300'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showMembership ? 'right-6' : 'right-0.5') : (formData.showMembership ? 'left-6' : 'left-0.5')}`} /></button>
+                                      <button type="button" onClick={() => handleChange('showMembership', !formData.showMembership)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showMembership ? 'bg-indigo-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showMembership ? 'right-6' : 'right-0.5') : (formData.showMembership ? 'left-6' : 'left-0.5')}`} /></button>
                                    </div>
                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                       <div className="space-y-2"><label className={labelClasses}>{t('عنوان العضوية', 'Membership Title')}</label><input type="text" value={formData.membershipTitleAr} onChange={e => handleChange('membershipTitleAr', e.target.value)} className={inputClasses} /></div>
@@ -742,7 +738,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                               <div className="space-y-8 animate-fade-in">
                                  <div className="bg-rose-50 dark:bg-rose-900/10 p-5 rounded-[1.5rem] flex items-center justify-between border border-rose-100 dark:border-rose-900/30">
                                     <div className="flex items-center gap-3"><PartyPopper size={20} className="text-rose-600" /><p className="font-black dark:text-white text-xs uppercase">{t('عرض المناسبة والعد التنازلي', 'Event & Countdown')}</p></div>
-                                    <button type="button" onClick={() => handleChange('showOccasion', !formData.showOccasion)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showOccasion ? 'bg-rose-600' : 'bg-gray-300'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showOccasion ? 'right-6' : 'right-0.5') : (formData.showOccasion ? 'left-6' : 'left-0.5')}`} /></button>
+                                    <button type="button" onClick={() => handleChange('showOccasion', !formData.showOccasion)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showOccasion ? 'bg-rose-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showOccasion ? 'right-6' : 'right-0.5') : (formData.showOccasion ? 'left-6' : 'left-0.5')}`} /></button>
                                  </div>
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2 md:col-span-2"><label className={labelClasses}>{t('عنوان المناسبة', 'Event Title')}</label><input type="text" value={formData.occasionTitleAr} onChange={e => handleChange('occasionTitleAr', e.target.value)} className={inputClasses} /></div>
@@ -759,7 +755,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     
                                     <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                                          {['color', 'gradient', 'image'].map(type => (
-                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
+                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-500 border-transparent shadow-sm'}`}>
                                              {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
                                              <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                                            </button>
@@ -768,7 +764,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                     {formData.themeType === 'color' && (
                                       <div className="space-y-6 animate-fade-in">
-                                         <label className="text-[10px] font-black text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
+                                         <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">{t('لوحة الألوان السريعة', 'Quick Color Palette')}</label>
                                          <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
                                             {THEME_COLORS.map((clr, i) => (
                                               <button type="button" key={i} onClick={() => { handleChange('themeColor', clr); handleChange('themeType', 'color'); }} className={`h-8 w-8 rounded-full border-2 transition-all hover:scale-125 ${formData.themeColor === clr ? 'border-blue-600 scale-125 shadow-lg' : 'border-white dark:border-gray-600'}`} style={{ backgroundColor: clr }} />
@@ -779,7 +775,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                     {formData.themeType === 'gradient' && (
                                       <div className="space-y-6 animate-fade-in">
-                                         <label className="text-[10px] font-black text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
+                                         <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">{t('اختر التدرج اللوني المفضل', 'Select Color Gradient')}</label>
                                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                                             {THEME_GRADIENTS.map((grad, i) => (
                                               <button type="button" key={i} onClick={() => { handleChange('themeGradient', grad); handleChange('themeType', 'gradient'); }} className={`h-12 rounded-2xl border-2 transition-all ${formData.themeGradient === grad ? 'border-blue-600 scale-110 shadow-lg' : 'border-transparent opacity-60'}`} style={{ background: grad }} />
@@ -790,7 +786,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                     {formData.themeType === 'image' && (
                                       <div className="space-y-6 animate-fade-in">
-                                         <label className="text-[10px] font-black text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
+                                         <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
                                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                             {BACKGROUND_PRESETS.map((url, i) => (
                                               <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
@@ -811,7 +807,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <ColorPickerUI label={t('لون السمة الأساسي', 'Base Theme Color')} field="themeColor" icon={Pipette} onAfterChange={() => handleChange('themeType', 'color')} />
                                     
                                     <div className="pt-4 border-t dark:border-gray-800 flex items-center justify-between">
-                                        <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
+                                        <div className="flex items-center gap-3"><Moon className="text-gray-500" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
                                         <button type="button" onClick={() => handleChange('isDark', !formData.isDark)} className={`w-14 h-7 rounded-full relative transition-all ${formData.isDark ? 'bg-blue-600 shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.isDark ? 'right-8' : 'right-1') : (formData.isDark ? 'left-8' : 'left-1')}`} /></button>
                                     </div>
                                  </div>
@@ -823,7 +819,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-[1.5rem] border border-indigo-100 dark:border-indigo-900/30">
                                        <div className="flex items-center gap-3"><GlassWater size={18} className="text-indigo-600" /><p className="font-black dark:text-white text-[10px] uppercase">{t('نمط زجاجي', 'Glassy Body')}</p></div>
-                                       <button type="button" onClick={() => handleChange('bodyGlassy', !formData.bodyGlassy)} className={`w-12 h-6 rounded-full relative transition-all ${formData.bodyGlassy ? 'bg-indigo-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.bodyGlassy ? 'right-6' : 'right-0.5') : (formData.bodyGlassy ? 'left-6' : 'left-0.5')}`} /></button>
+                                       <button type="button" onClick={() => handleChange('bodyGlassy', !formData.bodyGlassy)} className={`w-12 h-6 rounded-full relative transition-all ${formData.bodyGlassy ? 'bg-blue-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.bodyGlassy ? 'right-6' : 'right-0.5') : (formData.bodyGlassy ? 'left-6' : 'left-0.5')}`} /></button>
                                     </div>
                                  </div>
                                  
@@ -847,14 +843,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                           <button 
                                             type="button" 
                                             onClick={() => handleChange('cardBodyThemeType', 'color')}
-                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType !== 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType !== 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                                           >
                                             <Palette size={14} /> {t('لون ثابت', 'Solid Color')}
                                           </button>
                                           <button 
                                             type="button" 
                                             onClick={() => handleChange('cardBodyThemeType', 'image')}
-                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType === 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] uppercase transition-all ${formData.cardBodyThemeType === 'image' ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                                           >
                                             <ImageIcon size={14} /> {t('صورة خلفية', 'Background Image')}
                                           </button>
@@ -927,7 +923,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     </div>
 
                     <div className="flex items-center justify-between pt-10 border-t dark:border-gray-800">
-                        <button type="button" onClick={handlePrev} disabled={currentIndex === 0} className="px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-2xl font-black text-xs uppercase disabled:opacity-30 transition-all flex items-center gap-2">
+                        <button type="button" onClick={handlePrev} disabled={currentIndex === 0} className="px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-600 rounded-2xl font-black text-xs uppercase disabled:opacity-30 transition-all flex items-center gap-2">
                            {isRtl ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>} {t('السابق', 'Previous')}
                         </button>
                         {currentIndex < tabs.length - 1 ? (
@@ -950,19 +946,17 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               <div className="mb-6 w-full flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span>
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span>
                 </div>
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-                   <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Smartphone size={16}/></button>
-                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Tablet size={16}/></button>
-                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Monitor size={18}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Smartphone size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Tablet size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Monitor size={18}/></button>
                 </div>
               </div>
               
               <div 
-                   onMouseMove={handleMouseMoveSidebar}
-                   onMouseLeave={() => setMouseYPercentage(0)}
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate cursor-ns-resize ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg,
@@ -974,51 +968,46 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
 
-                <div className="no-scrollbar h-full overflow-hidden relative z-0" 
+                <div className="no-scrollbar h-full overflow-y-auto scroll-smooth relative z-0" 
                      style={{ 
                        borderRadius: '2.6rem', 
                        clipPath: 'inset(0 round 2.6rem)' 
                      }}>
-                   <div 
-                     className="w-full transition-transform duration-500 ease-out origin-top"
-                     style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
-                   >
-                     {isFullHeaderPreview && (
-                        <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${currentTemplate?.config.headerHeight}px` }}>
-                          <div className="absolute inset-0 z-0">
-                            {formData.themeType === 'image' && formData.backgroundImage && (
-                              <img src={formData.backgroundImage} className="w-full h-full object-cover" alt="Full Header" />
-                            )}
-                            {formData.themeType === 'gradient' && (
-                              <div className="w-full h-full" style={{ background: formData.themeGradient }} />
-                            )}
-                            {formData.themeType === 'color' && (
-                              <div className="w-full h-full" style={{ backgroundColor: formData.themeColor }} />
-                            )}
-                          </div>
+                   {isFullHeaderPreview && (
+                      <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${currentTemplate?.config.headerHeight}px` }}>
+                        <div className="absolute inset-0 z-0">
+                          {formData.themeType === 'image' && formData.backgroundImage && (
+                            <img src={formData.backgroundImage} className="w-full h-full object-cover" alt="Full Header" />
+                          )}
+                          {formData.themeType === 'gradient' && (
+                            <div className="w-full h-full" style={{ background: formData.themeGradient }} />
+                          )}
+                          {formData.themeType === 'color' && (
+                            <div className="w-full h-full" style={{ backgroundColor: formData.themeColor }} />
+                          )}
                         </div>
-                     )}
+                      </div>
+                   )}
 
-                     <div 
-                       style={{ 
-                          maxWidth: previewDevice === 'desktop' ? `${currentTemplate?.config.cardMaxWidth || 500}px` : '100%',
-                          marginRight: 'auto',
-                          marginLeft: 'auto',
-                          paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
-                          position: 'relative',
-                          zIndex: 10
-                       }}
-                     >
-                       <CardPreview 
-                         data={formData} 
-                         lang={lang} 
-                         customConfig={currentTemplate?.config} 
-                         hideSaveButton={true} 
-                         isFullFrame={isFullHeaderPreview}
-                         hideHeader={isFullHeaderPreview}
-                         bodyOffsetYOverride={previewBodyOffsetY}
-                       />
-                     </div>
+                   <div 
+                     style={{ 
+                        maxWidth: previewDevice === 'desktop' ? `${currentTemplate?.config.cardMaxWidth || 500}px` : '100%',
+                        marginRight: 'auto',
+                        marginLeft: 'auto',
+                        paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
+                        position: 'relative',
+                        zIndex: 10
+                     }}
+                   >
+                     <CardPreview 
+                       data={formData} 
+                       lang={lang} 
+                       customConfig={currentTemplate?.config} 
+                       hideSaveButton={true} 
+                       isFullFrame={isFullHeaderPreview}
+                       hideHeader={isFullHeaderPreview}
+                       bodyOffsetYOverride={previewBodyOffsetY}
+                     />
                    </div>
                 </div>
               </div>
