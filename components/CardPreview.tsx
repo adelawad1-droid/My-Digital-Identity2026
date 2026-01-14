@@ -1,3 +1,4 @@
+
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -160,7 +161,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const phoneBtnColor = data.contactPhoneColor || config.contactPhoneColor || '#2563eb';
   const whatsappBtnColor = data.contactWhatsappColor || config.contactWhatsappColor || '#10b981';
 
-  // دالة مساعدة لتحديد ما إذا كان يجب استخدام crossOrigin
   const getImgProps = (url: string) => {
     if (!url) return {};
     const isExternal = url.startsWith('http');
@@ -344,7 +344,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   const needsSideMargins = headerType.startsWith('side') || isBodyGlassy || bodyOpacity < 1 || config.headerType === 'floating' || hideHeader;
 
-  // الحفاظ على أحدث قيمة إزاحة، مع جعلها مرنة بين القالب والبيانات الخاصة
   const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
   const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
@@ -353,7 +352,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
     borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
-    paddingBottom: forCapture ? '0px' : '24px', // تقليل التعبئة السفلية عند الالتقاط
+    paddingBottom: forCapture ? '0px' : '24px', 
     position: 'relative',
     zIndex: 20,
     width: (needsSideMargins || hideHeader) ? 'calc(100% - 32px)' : '100%',
@@ -364,7 +363,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     textAlign: config.contentAlign || 'center',
     marginLeft: headerType === 'side-left' ? '28%' : (headerType === 'side-right' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
     marginRight: headerType === 'side-right' ? '28%' : (headerType === 'side-left' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
-    minHeight: forCapture ? '200px' : '400px', // ارتفاع أصغر عند التصوير
+    minHeight: forCapture ? '200px' : '400px', 
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
     boxShadow: (needsSideMargins || hideHeader) ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none',
     fontFamily: 'inherit'
@@ -730,7 +729,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     <Phone size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('call')}</span>
                   </a>
                 )}
-                {/* Fix: Removed undefined 'showAvatar_Social' variable */}
                 {showWhatsapp && data.whatsapp && (
                   <a href={`https://wa.me/${data.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(whatsappBtnColor), fontFamily: 'inherit' }}>
                     <MessageCircle size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')}</span>

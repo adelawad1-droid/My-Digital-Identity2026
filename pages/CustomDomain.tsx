@@ -61,8 +61,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
       const card = userCards.find(c => c.id === selectedCardId);
       if (card) {
         const updatedCardData: CardData = { ...card, customDomain: domainInput };
-        // Fixed: saveCardToDB expects a single object containing cardData and optional oldId.
-        // The error "Expected 1 arguments, but got 2" occurred when passing arguments separately.
+        // Fix: saveCardToDB expects a single object containing cardData and optional oldId.
         await saveCardToDB({ cardData: updatedCardData, oldId: selectedCardId });
         alert(isRtl ? "تم إرسال طلب ربط الدومين بنجاح" : "Domain connection request sent successfully");
         setActiveStep(3);
@@ -259,7 +258,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                  </div>
                  <div className="space-y-2">
                     <h4 className="text-2xl font-black dark:text-white">{isRtl ? 'الدومين قيد التحقق' : 'Domain in Verification'}</h4>
-                    <p className="text-gray-400 font-bold max-w-sm mx-auto leading-relaxed">
+                    <p className="text-gray-400 font-bold max-sm mx-auto leading-relaxed">
                        {isRtl 
                          ? 'تم استلام طلبك. نقوم الآن بالتحقق من سجلات الـ DNS وإصدار شهادة SSL أمنية لاسم النطاق الخاص بك.' 
                          : 'Request received. We are verifying DNS records and issuing a secure SSL certificate for your domain.'}

@@ -22,7 +22,7 @@ import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
 import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap, Globe } from 'lucide-react';
+import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap, Globe, ChevronDown, LogOut, Settings } from 'lucide-react';
 
 const getBrowserLanguage = (): Language => {
   const supportedLanguages = Object.keys(LANGUAGES_CONFIG);
@@ -52,8 +52,11 @@ const AppContent: React.FC = () => {
   const [sharingData, setSharingData] = useState<CardData | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   const [siteConfig, setSiteConfig] = useState({ 
     siteNameAr: 'هويتي الرقمية', 
     siteNameEn: 'NextID', 
@@ -75,30 +78,20 @@ const AppContent: React.FC = () => {
   const t = (key: string, en?: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : (en || key);
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
     if (publicCard) return;
     let title = displaySiteName;
-    let description = isRtl 
-      ? 'NextID - المنصة المتكاملة لإنشاء بطاقات الأعمال الرقمية الاحترافية والعضويات الذكية.' 
-      : 'NextID - The integrated platform for professional digital business cards and smart memberships.';
-
-    const path = location.pathname;
-    if (path.includes('/templates')) {
-      title = isRtl ? `تصفح القوالب | ${displaySiteName}` : `Browse Templates | ${displaySiteName}`;
-    } else if (path.includes('/my-cards')) {
-      title = isRtl ? `بطاقاتي | ${displaySiteName}` : `My Cards | ${displaySiteName}`;
-    } else if (path.includes('/pricing')) {
-      title = isRtl ? `باقات الاشتراك | ${displaySiteName}` : `Pricing Plans | ${displaySiteName}`;
-    }
-
     document.title = title;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', description);
-
-    const favicon = document.getElementById('site-favicon') as HTMLLinkElement;
-    if (siteConfig.siteIcon && favicon) {
-      favicon.href = siteConfig.siteIcon;
-    }
-  }, [location.pathname, displaySiteName, isRtl, publicCard, siteConfig.siteIcon]);
+  }, [location.pathname, displaySiteName, publicCard]);
 
   const isEditorActive = location.pathname.includes('/editor');
   const shouldShowFooter = !isEditorActive && !publicCard && !isCardDeleted;
@@ -108,6 +101,7 @@ const AppContent: React.FC = () => {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     navigate(`/${lang}${cleanPath}`);
     setIsSidebarOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const handleCloseShare = () => {
@@ -306,35 +300,57 @@ const AppContent: React.FC = () => {
               <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
               <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
               <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
-              {currentUser && (
-                <>
-                  <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>
-                  <button onClick={() => navigateWithLang('/custom-domain')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-domain') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customDomain')}</button>
-                </>
-              )}
+              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
             </nav>
           </div>
           <div className="flex items-center gap-2">
             <LanguageToggle currentLang={lang} /><button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm hover:text-blue-500 transition-colors">{isDarkMode ? <Sun size={18} /> : <Moon size={18} />}</button>
+            
             {currentUser ? (
-              <div className="hidden md:flex items-center gap-2">
-                {isAdmin && (
-                  <button 
-                    onClick={() => navigateWithLang('/admin')} 
-                    className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/admin') ? 'bg-amber-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
-                  >
-                    <ShieldCheck size={14} />
-                    {t('admin')}
-                  </button>
-                )}
-                <button 
-                  onClick={() => navigateWithLang('/account')} 
-                  className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase shadow-sm flex items-center gap-2 transition-all ${location.pathname.includes('/account') ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
-                >
-                  <UserIcon size={14} />
-                  {t('account')}
-                </button>
-                <button onClick={() => signOut(auth)} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[11px] font-black uppercase hover:bg-red-100 transition-all">{t('logout')}</button>
+              <div className="relative" ref={userMenuRef}>
+                 <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all border ${isUserMenuOpen ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
+                 >
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
+                       <UserIcon size={18} />
+                    </div>
+                    <span className="hidden md:block text-[11px] font-black uppercase tracking-tight truncate max-w-[120px]">{currentUser.email?.split('@')[0]}</span>
+                    <ChevronDown size={16} className={`transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                 </button>
+
+                 {isUserMenuOpen && (
+                   <div className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-2xl z-[500] animate-zoom-in overflow-hidden p-2 space-y-1`}>
+                      <div className="px-4 py-3 border-b dark:border-gray-800 mb-1">
+                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{t('مرحباً بك', 'Welcome Back')}</p>
+                         <p className="text-xs font-bold dark:text-white mt-1 truncate">{currentUser.email}</p>
+                      </div>
+                      
+                      {isAdmin && (
+                        <button onClick={() => navigateWithLang('/admin')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-600 transition-all group">
+                           <ShieldCheck size={18} className="group-hover:scale-110 transition-transform" />
+                           <span className="text-[11px] font-black uppercase tracking-tight">{t('admin')}</span>
+                        </button>
+                      )}
+
+                      <button onClick={() => navigateWithLang('/custom-domain')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 transition-all group">
+                         <Globe size={18} className="group-hover:scale-110 transition-transform" />
+                         <span className="text-[11px] font-black uppercase tracking-tight">{t('customDomain')}</span>
+                      </button>
+
+                      <button onClick={() => navigateWithLang('/account')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all group">
+                         <Settings size={18} className="group-hover:scale-110 transition-transform" />
+                         <span className="text-[11px] font-black uppercase tracking-tight">{t('account')}</span>
+                      </button>
+
+                      <div className="pt-1 border-t dark:border-gray-800 mt-1">
+                         <button onClick={() => signOut(auth)} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 transition-all group">
+                            <LogOut size={18} className="group-hover:translate-x-1 transition-transform" />
+                            <span className="text-[11px] font-black uppercase tracking-tight">{t('logout')}</span>
+                         </button>
+                      </div>
+                   </div>
+                 )}
               </div>
             ) : (
               <button onClick={() => setShowAuthModal(true)} className="hidden md:block px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[11px] font-black uppercase shadow-lg shadow-blue-600/20 active:scale-95 transition-all">{t('login')}</button>
