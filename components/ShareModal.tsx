@@ -71,19 +71,25 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 600));
+      // إعطاء وقت كافٍ لتحميل الصور والخطوط
+      await new Promise(resolve => setTimeout(resolve, 800));
       const captureTarget = document.getElementById('share-card-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
+      // تحسين خيارات الالتقاط لمنع القص وضمان الجودة
       // @ts-ignore
       const canvas = await window.html2canvas(captureTarget, {
         useCORS: true, 
         allowTaint: false,
-        scale: 2, 
+        scale: 2, // دقة عالية
         backgroundColor: data.isDark ? '#0a0a0c' : '#ffffff',
         logging: false,
         width: 400,
-        height: 700
+        // إجبار الكاميرا على الالتقاط من أعلى العنصر وتجاهل تمرير الصفحة
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight
       });
 
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
@@ -96,6 +102,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
           text: getProfessionalText()
         });
       } else {
+        // تحميل الصورة في حال عدم توفر مشاركة الملفات
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.download = `identity-${data.id}.jpg`;
@@ -112,9 +119,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="fixed top-0 left-0 -translate-x-[2000px] pointer-events-none" style={{ width: '400px' }}>
-          <div id="share-card-capture-area" className="bg-white dark:bg-black overflow-hidden" style={{ width: '400px', minHeight: '700px' }}>
-             <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
+      {/* منطقة الالتقاط المخفية - تم تحسينها لتكون مرنة الطول */}
+      <div className="fixed top-0 left-0 -translate-x-[3000px] pointer-events-none" style={{ width: '400px' }}>
+          <div id="share-card-capture-area" className="bg-white dark:bg-black overflow-hidden flex flex-col" style={{ width: '400px', height: 'auto' }}>
+             <div className="pb-10"> {/* مسافة أمان سفلية */}
+               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
+             </div>
           </div>
       </div>
 
@@ -226,7 +236,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             </div>
             
             <p className="text-[9px] font-bold text-gray-400 text-center mt-6 uppercase tracking-[0.2em] opacity-60">
-               {isRtl ? 'هويتك الرقمية جاهزة للمشاركة' : 'Your identity is ready to share'}
+               {isRtl ? 'هويتي الرقمية جاهزة للمشاركة' : 'Your identity is ready to share'}
             </p>
           </div>
         )}
