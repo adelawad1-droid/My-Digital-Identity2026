@@ -356,7 +356,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                  </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
                 <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3"><Activity className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('إدارة كافة البطاقات', 'Cards Manager')}</h3></div>
                   <div className="relative w-full md:w-80">
@@ -444,7 +444,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'users' && !permissionError && (
           <div className="space-y-8 animate-fade-in">
-             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
                 <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3"><Users className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('قائمة المستخدمين', 'User Registry')}</h3></div>
                   <div className="relative w-full md:w-80">
@@ -595,7 +595,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                 </form>
              </div>
 
-             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
                 <div className="overflow-x-auto">
                    <table className={`w-full text-${isRtl ? 'right' : 'left'}`}>
                       <thead>
@@ -657,7 +657,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'payment' && (
            <div className="w-full max-w-4xl mx-auto space-y-8 animate-fade-in">
-              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-12">
+              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-12">
                  <div className="flex items-center gap-4">
                     <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><PaymentIcon size={24}/></div>
                     <h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('مختبر إعدادات الدفع (Stripe)', 'Payment DNA & Gateway Lab')}</h2>
@@ -715,7 +715,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                  </div>
 
-                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
+                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-0 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
                     {savingSettings ? <Loader2 className="animate-spin" /> : <Save size={24} />}
                     {t('حفظ إعدادات الدفع', 'Save Gateway Config')}
                  </button>
@@ -733,7 +733,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                 <button onClick={() => setActiveTab('builder')} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center gap-3 hover:scale-105 transition-all"><Plus size={18} /> {t('إضافة قالب جديد', 'New Template')}</button>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
                 <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3"><Layout className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('قائمة القوالب', 'Template List')}</h3></div>
                   <div className="relative w-full md:w-80">
@@ -859,7 +859,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'settings' && (
            <div className="w-full max-w-4xl mx-auto space-y-8 animate-fade-in">
-              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-10">
+              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-10">
                  <div className="flex items-center gap-4"><div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><Settings size={24}/></div><h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('إعدادات الموقع العامة', 'Global Site Settings')}</h2></div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
@@ -927,7 +927,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                  </div>
 
-                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all">
+                 <button onClick={handleSaveSettings} disabled={savingSettings} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-0 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-95 transition-all">
                     {savingSettings ? <Loader2 className="animate-spin" /> : <Save size={24} />}
                     {t('حفظ كافة الإعدادات', 'Save All Settings')}
                  </button>
@@ -937,14 +937,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'security' && (
            <div className="w-full max-w-2xl mx-auto animate-fade-in">
-              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-10">
+              <div className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-10">
                  <div className="flex items-center gap-4"><div className="p-3 bg-red-600 text-white rounded-2xl shadow-lg"><Lock size={24}/></div><h2 className="text-2xl font-black dark:text-white uppercase leading-none">{t('الأمن والحماية', 'Security DNA')}</h2></div>
                  <p className="text-sm font-bold text-gray-400 leading-relaxed">{isRtl ? 'تغيير كلمة المرور والبريد الإلكتروني لحساب المسؤول.' : 'Change admin password and email address.'}</p>
                  <div className="space-y-6">
                     <div><label className={labelTextClasses}>{t('كلمة المرور الحالية', 'Current Password')}</label><input type="password" className={inputClasses} /></div>
                     <div><label className={labelTextClasses}>{t('كلمة المرور الجديدة', 'New Password')}</label><input type="password" className={inputClasses} /></div>
                  </div>
-                 <button className="w-full py-6 bg-red-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-2xl hover:brightness-110 transition-all">{t('تحديث الأمان', 'Update Security')}</button>
+                 <button className="w-full py-6 bg-red-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-0 hover:brightness-110 transition-all">{t('تحديث الأمان', 'Update Security')}</button>
               </div>
            </div>
         )}
@@ -971,7 +971,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       {/* Modals for deletion etc */}
       {templateToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القالب؟', 'Delete Template?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القالب؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure? This action cannot be undone.')}</p>
@@ -985,7 +985,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
       
       {cardToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف البطاقة؟', 'Delete Card?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذه البطاقة نهائياً؟', 'Are you sure you want to delete this card permanently?')}</p>
@@ -999,7 +999,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {planToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف الباقة؟', 'Delete Plan?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('سيؤدي هذا لحذف الباقة من الموقع نهائياً.', 'This will remove the plan from the site forever.')}</p>
@@ -1013,7 +1013,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {categoryToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl border border-red-100 dark:border-red-900/20">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القسم؟', 'Delete Category?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القسم؟', 'Are you sure you want to delete this category?')}</p>
@@ -1027,7 +1027,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {subEditUser && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
               <div className="p-8 bg-indigo-600 text-white flex justify-between items-center">
                  <div className="flex items-center gap-3">
                     <UserIcon size={24} />

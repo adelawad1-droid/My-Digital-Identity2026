@@ -311,7 +311,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       <div className="lg:hidden fixed bottom-24 right-6 z-[2000]">
          <button 
            onClick={() => setShowMobilePreview(true)}
-           className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-2xl shadow-blue-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+           className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-0 shadow-blue-600/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
          >
             <Smartphone size={24} />
          </button>
@@ -961,7 +961,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               </div>
               
               <div 
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg,
