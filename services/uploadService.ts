@@ -19,20 +19,24 @@ export const uploadImageToCloud = async (
   // جلب إعدادات الموقع لتحديد استراتيجية التخزين المناسبة
   const siteSettings = await getSiteSettings();
   
-  // تحديد الاستراتيجية: 
-  // إذا كانت صورة شخصية، نستخدم avatarStorageType
-  // إذا كانت خلفية أو غيرها، نستخدم mediaStorageType
+  // تحديد الاستراتيجية الافتراضية
   let storageType: 'database' | 'server' | 'firebase' = 'firebase';
   
   if (config?.storageType) {
     storageType = config.storageType;
   } else if (siteSettings) {
+    // التمييز بين الصور الشخصية والوسائط الأخرى حسب قرار المسؤول
     storageType = type === 'avatar' 
       ? (siteSettings.avatarStorageType || 'database') 
       : (siteSettings.mediaStorageType || 'firebase');
   }
 
-  // خيار Firebase Storage (الأفضل والمستقر)
+  // خيار التخزين المباشر في قاعدة البيانات (Base64) - ممتاز للصور الشخصية
+  if (storageType === 'database') {
+    return processedBase64;
+  }
+
+  // خيار Firebase Storage (الأفضل للملفات الكبيرة)
   if (storageType === 'firebase') {
     try {
       const blob = await base64ToBlob(processedBase64);
@@ -46,8 +50,7 @@ export const uploadImageToCloud = async (
       return await getDownloadURL(snapshot.ref);
     } catch (error) {
       console.error("Firebase Storage Upload Error:", error);
-      // Fallback to local Base64 string if upload fails to show something at least
-      return processedBase64;
+      return processedBase64; // Fallback to Base64 on error
     }
   }
 
@@ -78,7 +81,6 @@ export const uploadImageToCloud = async (
     }
   }
 
-  // التخزين المباشر (Base64)
   return processedBase64;
 };
 

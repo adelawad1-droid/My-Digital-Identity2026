@@ -61,13 +61,17 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [isUploadingBg, setIsUploadingBg] = useState(false);
   const [isUploadingBodyBg, setIsUploadingBodyBg] = useState(false);
   const [isUploadingSpecialImg, setIsUploadingSpecialImg] = useState(false);
-  const [uploadConfig, setUploadConfig] = useState({ storageType: 'database' as const, uploadUrl: '' });
+  
+  // تحديث حالة إعدادات الرفع لتشمل النوعين
+  const [siteSettings, setSiteSettings] = useState<any>(null);
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
   const [showModeInfo, setShowModeInfo] = useState(true);
 
   useEffect(() => {
     getSiteSettings().then(settings => {
-      if (settings) setUploadConfig({ storageType: (settings.imageStorageType as any) || 'database', uploadUrl: settings.serverUploadUrl || '' });
+      if (settings) {
+        setSiteSettings(settings);
+      }
     });
     if (auth.currentUser) {
       getUserProfile(auth.currentUser.uid).then(profile => { 
@@ -238,7 +242,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     if (!file) return;
     setIsUploadingSpecialImg(true);
     try {
-      const b = await uploadImageToCloud(file, 'avatar', uploadConfig as any);
+      // تمرير إعدادات السيرفر إذا كانت موجودة
+      const b = await uploadImageToCloud(file, 'avatar');
       if (b) {
         const newItem: SpecialLinkItem = {
           id: Date.now().toString(),
@@ -254,12 +259,30 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     }
   };
 
+  /**
+   * Fix: Added handleBodyBgUpload to fix "Cannot find name 'handleBodyBgUpload'" error.
+   * Handles the uploading of a background image for the card body section.
+   */
+  const handleBodyBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBodyBg(true);
+    try {
+      const url = await uploadImageToCloud(file, 'background');
+      if (url) {
+        handleChange('cardBodyBackgroundImage', url);
+        handleChange('cardBodyThemeType', 'image');
+      }
+    } finally {
+      setIsUploadingBodyBg(false);
+    }
+  };
+
   const updateSpecialLink = (id: string, field: keyof SpecialLinkItem, value: string) => {
     const updated = (formData.specialLinks || []).map(l => l.id === id ? { ...l, [field]: value } : l);
     handleChange('specialLinks', updated);
   };
 
-  // Fix: Added removeSpecialLink function
   const removeSpecialLink = (id: string) => {
     const updated = (formData.specialLinks || []).filter(l => l.id !== id);
     handleChange('specialLinks', updated);
@@ -331,21 +354,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             
             <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden touch-pan-y">
                 <div className="w-full max-w-[350px] h-full max-h-[85vh] rounded-[3.5rem] border-[10px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black shadow-[0_0_80px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden relative">
-                    {/* Dynamic Island Mock */}
                     <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
-                    
-                    {/* Scrollable Card Content */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar scroll-smooth overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className="min-h-full pb-0"> {/* extra padding at bottom for better view */}
+                        <div className="min-h-full pb-0">
                           <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
                         </div>
                     </div>
-
-                    {/* Bottom Indicator */}
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-50 pointer-events-none"></div>
                 </div>
-
-                {/* Hint for scrolling */}
                 <div className="mt-4 flex flex-col items-center gap-2 opacity-50">
                     <div className="w-6 h-6 border-2 border-white/30 rounded-full flex items-center justify-center animate-bounce">
                         <ChevronDown size={14} className="text-white" />
@@ -488,7 +504,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                       </div>
                                       <div className="flex-1 space-y-4 w-full">
-                                         <input type="file" ref={fileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploading(true); try { const url = await uploadImageToCloud(f, 'avatar', uploadConfig as any); if (url) handleChange('profileImage', url); } finally { setIsUploading(false); } }} className="hidden" accept="image/*" />
+                                         <input type="file" ref={fileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploading(true); try { const url = await uploadImageToCloud(f, 'avatar'); if (url) handleChange('profileImage', url); } finally { setIsUploading(false); } }} className="hidden" accept="image/*" />
                                          <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else fileInputRef.current?.click(); }} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all"><UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload Image')}</button>
                                          <div className="grid grid-cols-6 gap-2 overflow-x-auto no-scrollbar">
                                             {AVATAR_PRESETS.map((p, idx) => <button key={idx} onClick={() => handleChange('profileImage', p)} className="w-10 h-10 rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-600 transition-all shrink-0"><img src={p} className="w-full h-full object-cover" /></button>)}
@@ -543,7 +559,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <div className="flex items-center gap-3 px-2"><MapPin className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('locationSection')}</h3><VisibilityToggle field="showLocation" label="" /></div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                        <div className="space-y-1.5"><label className={labelClasses}>{t('العنوان التفصيلي', 'Address')}</label><input type="text" value={formData.location} onChange={e => handleChange('location', e.target.value)} className={inputClasses} placeholder={isRtl ? 'الرياض، السعودية' : 'Riyadh, SA'} /></div>
-                                       {/* Error Fix: Renamed inputFieldClasses to inputClasses */}
                                        <div className="space-y-1.5"><label className={labelClasses}>{t('رابط قوقل ماب', 'Maps Link')}</label><input type="url" value={formData.locationUrl} onChange={e => handleChange('locationUrl', e.target.value)} className={inputClasses} placeholder="https://maps.google.com/..." /></div>
                                     </div>
                                  </div>
@@ -711,7 +726,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                       <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
                                                    </div>
                                                 </div>
-                                                {/* Error Fix: removeSpecialLink is now defined */}
                                                 <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-500 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
                                              </div>
                                           ))}
@@ -759,7 +773,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     
                                     <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                                          {['color', 'gradient', 'image'].map(type => (
-                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-500 border-transparent shadow-sm'}`}>
+                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
                                              {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
                                              <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                                            </button>
@@ -799,7 +813,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                             ))}
                                          </div>
                                          <div className="pt-4 border-t dark:border-gray-800">
-                                            <input type="file" ref={bgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('backgroundImage', url); handleChange('themeType', 'image'); } } finally { setIsUploadingBg(false); } }} className="hidden" accept="image/*" />
+                                            <input type="file" ref={bgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background'); if (url) { handleChange('backgroundImage', url); handleChange('themeType', 'image'); } } finally { setIsUploadingBg(false); } }} className="hidden" accept="image/*" />
                                             <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgFileInputRef.current?.click(); }} className="w-full py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
                                                {isUploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
                                                {t('رفع خلفية خاصة للبطاقة', 'Upload Custom Background')}
@@ -883,8 +897,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                    {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                                 </div>
                                                 <div className="space-y-3">
-                                                  {/* Error Fix: Renamed bodyBgInputRef to bodyBgFileInputRef */}
-                                                  <input type="file" ref={bodyBgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBodyBg(true); try { const url = await uploadImageToCloud(f, 'background', uploadConfig as any); if (url) { handleChange('cardBodyBackgroundImage', url); handleChange('cardBodyThemeType', 'image'); } } finally { setIsUploadingBodyBg(false); } }} className="hidden" accept="image/*" />
+                                                  <input type="file" ref={bodyBgFileInputRef} onChange={handleBodyBgUpload} className="hidden" accept="image/*" />
                                                   <button type="button" onClick={() => bodyBgFileInputRef.current?.click()} className="w-full py-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all">
                                                     <UploadCloud size={16}/> {t('رفع صورة جديدة', 'Upload New')}
                                                   </button>
