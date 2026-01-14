@@ -239,7 +239,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate }: any) => {
                e.stopPropagation();
                onSelect(tmpl.id);
              }}
-             className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-[11px] md:text-xs uppercase shadow-2xl flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer"
+             className="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-[11px] md:text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer"
            >
              {isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate')}
              <Plus size={16} />

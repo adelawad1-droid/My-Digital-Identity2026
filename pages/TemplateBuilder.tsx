@@ -759,11 +759,11 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   }, [activeTab]);
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0c] rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col h-[calc(100vh-100px)] min-h-[850px] relative">
+    <div className="bg-white dark:bg-[#0a0a0c] rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col h-[calc(100vh-100px)] min-h-[850px] relative">
       
       {showAuthWarning && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-10 text-center space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden p-10 text-center space-y-6 animate-zoom-in">
               <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
                  <UserCircle size={40} />
               </div>
@@ -1619,7 +1619,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
             {activeTab === 'special-links' && (
                <div className="space-y-8 animate-fade-in">
-                  <div className="bg-white dark:bg-[#0a0a0c] p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-white/10 shadow-2xl space-y-12">
+                  <div className="bg-white dark:bg-[#0a0a0c] p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-white/10 shadow-0 space-y-12">
                     
                     <div className="flex items-center gap-5">
                        <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm">
@@ -2095,7 +2095,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               </div>
               
               <div 
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
