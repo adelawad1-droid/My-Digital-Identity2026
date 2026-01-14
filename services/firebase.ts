@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
@@ -30,7 +29,6 @@ import {
   sum,
   serverTimestamp
 } from "firebase/firestore";
-// Added missing import for getStorage
 import { getStorage } from "firebase/storage";
 import { CardData, TemplateCategory, VisualStyle, PricingPlan } from "../types";
 
@@ -46,11 +44,9 @@ const firebaseConfig = {
   measurementId: "G-GYDEKH57XN"
 };
 
-// Fix: initializeApp is a named export from 'firebase/app'
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-// Added missing export for storage to satisfy uploadService.ts requirements
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -92,7 +88,8 @@ export const syncUserProfile = async (user: User) => {
         role: isCurrentAdmin ? 'admin' : 'user',
         planId: null,
         premiumUntil: null,
-        isActive: true
+        isActive: true,
+        cardCount: 0 
       });
     } else {
       if (isCurrentAdmin) {
@@ -110,6 +107,7 @@ export const getUserProfile = async (uid: string) => {
     const snap = await getDoc(doc(db, "users_registry", uid));
     if (snap.exists()) {
       const data = snap.data();
+      // تحقق من انتهاء الباقة
       if ((data.role === 'premium' || data.planId) && data.premiumUntil) {
         const expiry = new Date(data.premiumUntil);
         if (expiry < new Date()) {
@@ -134,7 +132,6 @@ export const getAllUsersWithStats = async () => {
       const userCards = allCards.filter(card => card.ownerId === user.uid);
       return {
         ...user,
-        cardCount: userCards.length,
         totalViews: userCards.reduce((acc, card) => acc + (card.viewCount || 0), 0),
         lastCardUpdate: userCards.length > 0 ? userCards.sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt : null
       };
@@ -163,21 +160,6 @@ export const savePricingPlan = async (plan: Partial<PricingPlan>) => {
 
 export const deletePricingPlan = async (id: string) => {
   await deleteDoc(doc(db, "pricing_plans", id));
-};
-
-export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
-  const isAr = lang === 'ar';
-  switch (code) {
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
-    case 'auth/email-already-in-use':
-      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
-    case 'auth/weak-password':
-      return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
-    default:
-      return isAr ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.';
-  }
 };
 
 export const getSiteSettings = async () => {
@@ -220,6 +202,11 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
   if (!currentUser) throw new Error("Auth required");
   
   const finalOwnerId = cardData.ownerId || currentUser.uid;
+  const newId = cardData.id.toLowerCase();
+  
+  // التحقق مما إذا كانت هذه عملية إنشاء جديدة (بطاقة جديدة تماماً)
+  const isNewCard = !oldId;
+  
   const dataToSave = { 
     ...sanitizeData(cardData), 
     ownerId: finalOwnerId,
@@ -228,7 +215,6 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
     isActive: cardData.isActive ?? true,
     viewCount: cardData.viewCount || 0
   };
-  const newId = cardData.id.toLowerCase();
   
   if (oldId && oldId.toLowerCase() !== newId) {
     await deleteDoc(doc(db, "public_cards", oldId.toLowerCase()));
@@ -239,6 +225,13 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
     setDoc(doc(db, "public_cards", newId), dataToSave),
     setDoc(doc(db, "users", finalOwnerId, "cards", newId), dataToSave)
   ]);
+
+  // تحديث العداد في سجل المستخدم فقط عند الإنشاء الجديد
+  if (isNewCard) {
+    await updateDoc(doc(db, "users_registry", finalOwnerId), {
+      cardCount: increment(1)
+    });
+  }
 }
 
 export const getCardBySerial = async (serialId: string) => {
@@ -263,7 +256,11 @@ export const getUserCards = async (userId: string) => {
 export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, cardId: string }) => {
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
-    deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase()))
+    deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase())),
+    // تحديث العداد بنقص واحد
+    updateDoc(doc(db, "users_registry", ownerId), {
+      cardCount: increment(-1)
+    })
   ]);
 };
 
@@ -389,4 +386,19 @@ export const toggleUserStatus = async (uid: string, isActive: boolean) => {
     isActive,
     updatedAt: serverTimestamp()
   });
+};
+
+export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
+  const isAr = lang === 'ar';
+  switch (code) {
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
+    case 'auth/email-already-in-use':
+      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
+    case 'auth/weak-password':
+      return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
+    default:
+      return isAr ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.';
+  }
 };

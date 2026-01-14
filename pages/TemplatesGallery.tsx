@@ -1,9 +1,8 @@
-
-import { Language, CardData, CustomTemplate, TemplateCategory } from '../types';
+import { Language, CardData, CustomTemplate, TemplateCategory, PricingPlan } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA } from '../constants';
 import { getAllTemplates, getAllCategories, auth, getUserProfile, getUserCards, getAllPricingPlans } from '../services/firebase';
 import CardPreview from '../components/CardPreview';
-import { Layout, Palette, Loader2, Plus, FolderOpen, Briefcase, PartyPopper, LayoutGrid, Star, ShieldCheck, Crown, AlertTriangle } from 'lucide-react';
+import { Layout, Palette, Loader2, Plus, FolderOpen, Briefcase, PartyPopper, LayoutGrid, Star, ShieldCheck, Crown, AlertTriangle, Zap } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -40,18 +39,19 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
         
         const currentUid = auth.currentUser?.uid;
         if (currentUid) {
-           const [profile, cards] = await Promise.all([
-              getUserProfile(currentUid),
-              getUserCards(currentUid)
-           ]);
+           const profile = await getUserProfile(currentUid);
            
-           let limit = 5;
+           let limit = 5; // الافتراضي للمجاني
            if (profile?.planId) {
               const plan = plans.find(p => p.id === profile.planId);
               limit = plan?.maxCards || 10;
+           } else if (profile?.role === 'admin') {
+              limit = 1000;
            }
+           
            setMaxLimit(limit);
-           setIsLimitReached(cards.length >= limit);
+           // نعتمد على العداد المسجل في سجل المستخدم لسرعة التحقق
+           setIsLimitReached((profile?.cardCount || 0) >= limit);
         }
 
         let filteredTemplates = (tData as CustomTemplate[]).filter(t => t.isActive);
@@ -82,6 +82,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
   const handleSelectTemplate = (id: string) => {
     if (isLimitReached) {
        alert(t('limitReached'));
+       navigate(`/${lang}/pricing`);
        return;
     }
     onSelect(id);
@@ -98,8 +99,11 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
-      <Loader2 className="animate-spin text-blue-600 mb-4" size={48} />
-      <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">{isRtl ? 'جاري تحميل التصاميم...' : 'Loading Designs...'}</p>
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-blue-50 dark:border-blue-900/20 rounded-full"></div>
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+      </div>
+      <p className="mt-6 text-gray-400 font-bold uppercase tracking-widest text-xs">{isRtl ? 'جاري تحميل التصاميم...' : 'Loading Designs...'}</p>
     </div>
   );
 
@@ -107,20 +111,21 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 animate-fade-in-up space-y-10 md:space-y-16">
       
       {isLimitReached && (
-        <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-[2rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake">
-           <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-100 text-red-600 rounded-xl">
-                 <AlertTriangle size={24} />
+        <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-[2.5rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake shadow-xl">
+           <div className="flex items-center gap-5">
+              <div className="p-4 bg-red-100 text-red-600 rounded-2xl shadow-sm">
+                 <AlertTriangle size={32} />
               </div>
               <div>
-                 <h3 className="font-black dark:text-white uppercase tracking-tight">{isRtl ? 'وصلت للحد الأقصى للبطاقات' : 'Card Limit Reached'}</h3>
-                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">{t('limitReached')}</p>
+                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tight">{isRtl ? 'وصلت للحد الأقصى للبطاقات' : 'Card Limit Reached'}</h3>
+                 <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mt-1">{t('limitReached')}</p>
               </div>
            </div>
            <button 
             onClick={() => navigate(`/${lang}/pricing`)}
-            className="px-8 py-3 bg-red-600 text-white rounded-xl font-black text-xs uppercase shadow-lg shadow-red-600/20 hover:scale-105 transition-all"
+            className="px-10 py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all flex items-center gap-2"
            >
+              <Zap size={16} />
               {isRtl ? 'ترقية الباقة الآن' : 'Upgrade Plan Now'}
            </button>
         </div>
@@ -131,10 +136,10 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
           {isPrivateMode ? <Crown size={12} className="text-amber-500" /> : <Palette size={12} />}
           {isPrivateMode ? (isRtl ? 'معرض التصاميم الخاصة بك' : 'Your Private Designs') : t('templates')}
         </div>
-        <h1 className="text-3xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight">
+        <h1 className="text-4xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter">
           {isPrivateMode ? (isRtl ? 'تصاميم صممت لك خصيصاً' : 'Designs Crafted For You') : (isRtl ? 'اختر نمط هويتك' : 'Select Your Identity Style')}
         </h1>
-        <p className="text-xs md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-bold opacity-80">
+        <p className="text-sm md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-bold opacity-80 leading-relaxed">
           {isPrivateMode 
             ? (isRtl ? 'هنا تجد القوالب الحصرية المخصصة لحسابك فقط من قبل فريق هويتي.' : 'Here you find exclusive templates assigned to your account by the NextID team.')
             : (isRtl ? 'مجموعة من القوالب الاحترافية المصممة بعناية لتناسب كافة احتياجاتك.' : 'A collection of professional templates carefully designed for all your needs.')}
@@ -152,7 +157,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
               <button 
                 key={cat.id}
                 onClick={() => setActiveCategoryId(cat.id)}
-                className={`flex items-center gap-2 md:gap-4 px-5 md:px-10 py-3 md:py-5 rounded-xl md:rounded-[2.5rem] transition-all duration-500 whitespace-nowrap group ${isActive ? theme.color + ' text-white shadow-xl scale-[1.02]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                className={`flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 rounded-xl md:rounded-[2.5rem] transition-all duration-500 whitespace-nowrap group ${isActive ? theme.color + ' text-white shadow-xl scale-[1.02]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
               >
                 <div className={`p-1.5 md:p-2 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-white'}`}>
                   <Icon size={18} className={isActive ? 'text-white' : 'text-gray-400'} />
@@ -166,7 +171,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-10 md:gap-14 pt-4 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16 pt-4 max-w-6xl mx-auto">
         {filteredTemplates.map(tmpl => (
           <TemplateCard key={tmpl.id} tmpl={tmpl} lang={lang} onSelect={handleSelectTemplate} sampleData={sampleCardData} isPrivate={isPrivateMode} disabled={isLimitReached} />
         ))}
@@ -174,7 +179,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
 
       {filteredTemplates.length === 0 && (
         <div className="text-center py-24 bg-white dark:bg-gray-900 rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-gray-800 animate-fade-in mx-4">
-           <FolderOpen className="mx-auto text-gray-200 dark:text-gray-800 mb-6 opacity-30" size={64} />
+           <FolderOpen className="mx-auto text-gray-200 dark:text-gray-800 mb-6 opacity-30" size={80} />
            <h3 className="text-xl font-black dark:text-white mb-2">{isRtl ? 'لا توجد تصاميم هنا حالياً' : 'No designs here yet'}</h3>
            <p className="text-xs text-gray-400 font-bold">{isPrivateMode ? (isRtl ? 'لم يتم تخصيص أي قوالب حصرية لحسابك بعد.' : 'No exclusive templates assigned to your account yet.') : (isRtl ? 'نعمل حالياً على إضافة المزيد من القوالب لهذا القسم.' : 'We are working on adding more templates to this section.')}</p>
         </div>
@@ -202,35 +207,30 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
   };
 
   return (
-    <div className={`group flex flex-col transition-all duration-500 ${disabled ? 'opacity-70 grayscale-[0.5]' : ''}`}>
-      {/* Phone Mockup Container */}
+    <div className={`group flex flex-col transition-all duration-500 ${disabled ? 'opacity-70 grayscale-[0.3]' : ''}`}>
       <div 
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className={`relative aspect-[9/16] w-full bg-white dark:bg-black rounded-[3.8rem] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.25)] overflow-hidden mb-8 group-hover:shadow-[0_50px_120px_-20px_rgba(0,0,0,0.4)] transition-all duration-700 border-[3px] border-gray-200 dark:border-gray-800 cursor-ns-resize`}
+        className={`relative aspect-[9/16] w-full bg-white dark:bg-black rounded-[3.8rem] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.2)] overflow-hidden mb-8 group-hover:shadow-[0_50px_120px_-20px_rgba(0,0,0,0.3)] transition-all duration-700 border-[3px] border-gray-200 dark:border-gray-800 cursor-ns-resize`}
         style={{ isolation: 'isolate' }}
       >
-        
-        {/* Phone Bezel */}
         <div className="absolute inset-0 border-[8px] border-gray-950 dark:border-gray-900 rounded-[3.8rem] pointer-events-none z-50">
-           {/* Modern Island / Notch Mockup */}
            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
         </div>
         
         {isPrivate ? (
-           <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-full font-black text-[8px] uppercase shadow-xl">
-             <ShieldCheck size={10} fill="currentColor" />
-             {isRtl ? 'حصري لك' : 'Exclusive'}
+           <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-2xl animate-pulse">
+             <ShieldCheck size={12} fill="currentColor" />
+             {isRtl ? 'تصميم حصري' : 'Exclusive'}
            </div>
         ) : tmpl.isFeatured && (
-          <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full font-black text-[8px] uppercase shadow-xl">
-            <Star size={10} fill="currentColor" />
-            {isRtl ? 'مميز' : 'Pro'}
+          <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-2xl">
+            <Star size={12} fill="currentColor" />
+            {isRtl ? 'باقة برو' : 'Pro Template'}
           </div>
         )}
         
-        {/* Content Viewport */}
         <div className="absolute inset-[2px] overflow-hidden pointer-events-none" 
              style={{ 
                borderRadius: '3.6rem', 
@@ -249,12 +249,10 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                 data={{ 
                   ...sampleData, 
                   templateId: tmpl.id,
-                  // إعطاء الأولوية للبيانات التعريفية المحفوظة في القالب
                   name: tmpl.config.defaultName || sampleData.name,
                   title: tmpl.config.defaultTitle || sampleData.title,
                   company: tmpl.config.defaultCompany || sampleData.company,
                   bio: (isRtl ? tmpl.config.defaultBioAr : tmpl.config.defaultBioEn) || sampleData.bio,
-                  
                   themeType: tmpl.config.defaultThemeType || sampleData.themeType,
                   themeColor: tmpl.config.defaultThemeColor || sampleData.themeColor,
                   themeGradient: tmpl.config.defaultThemeGradient || sampleData.themeGradient,
@@ -278,30 +276,28 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
            </div>
         </div>
 
-        {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-black/15 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center z-[70]">
+        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center z-[70]">
            <button 
              onClick={(e) => {
                e.stopPropagation();
                onSelect(tmpl.id);
              }}
-             className={`${disabled ? 'bg-gray-500' : 'bg-blue-600'} text-white px-10 py-5 rounded-2xl font-black text-[11px] md:text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
+             className={`${disabled ? 'bg-red-600' : 'bg-blue-600'} text-white px-12 py-5 rounded-[1.5rem] font-black text-xs uppercase shadow-2xl flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
            >
-             {disabled ? (isRtl ? 'تم الوصول للحد الأقصى' : 'Limit Reached') : (isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate'))}
-             <Plus size={16} />
+             {disabled ? (isRtl ? 'ترقية الباقة (تم الوصول للحد)' : 'Upgrade (Limit Reached)') : (isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate'))}
+             {disabled ? <Zap size={18} /> : <Plus size={18} />}
            </button>
         </div>
       </div>
 
-      {/* Template Info Card */}
       <div className="px-6 text-center sm:text-start flex flex-col gap-2">
          <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${isPrivate ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.5)]' : tmpl.isFeatured ? 'bg-amber-50 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-blue-600'}`}></div>
-            <h3 className="text-lg md:text-2xl font-black dark:text-white uppercase tracking-tight truncate">
+            <h3 className="text-xl md:text-2xl font-black dark:text-white uppercase tracking-tight truncate">
               {isRtl ? tmpl.nameAr : tmpl.nameEn}
             </h3>
          </div>
-         <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 leading-relaxed uppercase tracking-widest px-1">
+         <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 leading-relaxed uppercase tracking-widest px-1">
            {isRtl ? tmpl.descAr : tmpl.descEn}
          </p>
       </div>

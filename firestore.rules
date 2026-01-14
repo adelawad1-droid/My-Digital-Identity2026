@@ -18,30 +18,52 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // البطاقات العامة: الجميع يقرأ (للمشاركة)، المالك أو الأدمن يكتب
+    // جلب بيانات المستخدم
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users_registry/$(userId)).data;
+    }
+
+    // جلب الحد الأقصى للبطاقات من الخطة
+    function getPlanLimit(planId) {
+      // إذا لم تكن هناك خطة (مستخدم مجاني)، الحد الافتراضي 5
+      return planId == null ? 5 : get(/databases/$(database)/documents/pricing_plans/$(planId)).data.maxCards;
+    }
+
+    // التحقق من إمكانية إنشاء بطاقة جديدة بناءً على العداد في سجل المستخدم
+    function canCreateCard(userId) {
+      let userData = getUserData(userId);
+      let currentCount = userData.cardCount == null ? 0 : userData.cardCount;
+      let limit = getPlanLimit(userData.planId);
+      return currentCount < limit;
+    }
+
+    // البطاقات العامة
     match /public_cards/{cardId} {
       allow read: if true;
-      allow create: if isSignedIn();
+      
+      // السماح بالإنشاء فقط إذا لم يتجاوز الحد المسموح أو كان أدمن
+      allow create: if isSignedIn() && (isAdmin() || (isOwner(request.resource.data.ownerId) && canCreateCard(request.auth.uid)));
+      
       allow update: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
       allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // سجل المستخدمين: المالك يقرأ ويحدث بياناته، الأدمن يتحكم في كل شيء
+    // سجل المستخدمين
     match /users_registry/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if isSignedIn() && request.auth.uid == userId;
+      // السماح بتحديث البيانات والعداد
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
       allow delete: if isAdmin();
     }
 
-    // الإعدادات، القوالب، والخطط: قراءة للجميع، تعديل للأدمن فقط
+    // الإعدادات والخطط
     match /settings/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /custom_templates/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /template_categories/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /visual_styles/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /pricing_plans/{docId} { allow read: if true; allow write: if isAdmin(); }
 
-    // البطاقات داخل مجلدات المستخدمين
     match /users/{userId}/cards/{cardId} {
       allow read, write: if isOwner(userId) || isAdmin();
     }
