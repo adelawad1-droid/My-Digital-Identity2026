@@ -195,7 +195,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   };
 
   const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px", hint }: any) => (
-    <div className="bg-white dark:bg-gray-900 p-5 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-gray-900 p-5 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-0 space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
            {Icon && <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Icon size={14} /></div>}
@@ -286,7 +286,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          <div className="max-w-[1440px] mx-auto px-4 md:px-6 pt-6">
             <div className={`p-6 rounded-[2.5rem] border bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30 flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in`}>
                 <div className="flex items-center gap-5">
-                   <div className={`p-4 rounded-2xl bg-blue-600 text-white shadow-lg`}>
+                   <div className={`p-4 rounded-2xl bg-blue-600 text-white shadow-0g`}>
                       <UserIcon size={32} />
                    </div>
                    <div>
@@ -299,7 +299,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                   <button onClick={() => navigate(`/${lang}/pricing`)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">
+                   <button onClick={() => navigate(`/${lang}/pricing`)} className="px-8 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-0 hover:scale-105 transition-all">
                       {t('upgradeToCustomize')}
                    </button>
                    <button onClick={() => setShowModeInfo(false)} className="p-2 text-gray-500 hover:text-red-500"><X size={20}/></button>
@@ -384,7 +384,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         </aside>
 
         <main className="flex-1 animate-fade-in-up">
-            <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl relative overflow-hidden flex flex-col min-h-[700px]">
+            <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 relative overflow-hidden flex flex-col min-h-[700px]">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                     {(() => { const Icon = tabs[currentIndex].icon; return <Icon size={150} />; })()}
                 </div>
@@ -409,7 +409,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     <div className="min-h-[450px]">
                         {tabs[currentIndex].isPro && !isPremium ? (
                            <div className="flex flex-col items-center justify-center text-center py-20 space-y-8 animate-fade-in">
-                              <div className="w-24 h-24 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-xl animate-bounce">
+                              <div className="w-24 h-24 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-0 animate-bounce">
                                  <Crown size={48} />
                               </div>
                               <div className="space-y-3">
@@ -420,7 +420,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                               </div>
                               <button 
                                 onClick={() => navigate(`/${lang}/pricing`)}
-                                className="px-12 py-5 bg-amber-500 text-white rounded-2xl font-black text-sm uppercase shadow-xl shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
+                                className="px-12 py-5 bg-amber-500 text-white rounded-2xl font-black text-sm uppercase shadow-0 shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                               >
                                  {t('upgradeToCustomize')}
                                  <ChevronRight size={18} className={isRtl ? 'rotate-180' : ''} />
@@ -437,7 +437,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <span className="text-[10px] font-bold text-gray-400">nextid.my/?u=</span>
                                          <input type="text" value={formData.id} onChange={e => handleChange('id', e.target.value)} className="flex-1 bg-transparent border-none outline-none font-black text-sm dark:text-white" />
                                       </div>
-                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[15px] uppercase shadow-lg disabled:opacity-50 transition-all hover:bg-emerald-700">
+                                      <button onClick={handleCheckSlug} disabled={isCheckingSlug} className="px-12 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-[15px] uppercase shadow-0 disabled:opacity-50 transition-all hover:bg-emerald-700">
                                          {isCheckingSlug ? <Loader2 size={16} className="animate-spin" /> : t('تحقق', 'Check')}
                                       </button>
                                    </div>
@@ -483,7 +483,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                       <VisibilityToggle field="showProfileImage" label="" />
                                    </div>
                                    <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50/50 dark:bg-gray-950 rounded-[2rem] border border-dashed border-gray-100 dark:border-gray-800">
-                                      <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-xl border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
+                                      <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-0 border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
                                          {formData.profileImage ? <img src={formData.profileImage} className="w-full h-full object-cover" /> : <UserIcon size={32} className="text-gray-200" />}
                                          {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
                                       </div>

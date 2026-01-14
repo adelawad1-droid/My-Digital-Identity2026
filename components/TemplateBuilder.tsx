@@ -776,7 +776,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               <div className="flex flex-col gap-3 pt-4">
                  <button 
                    onClick={() => { setShowAuthWarning(false); setShowDirectAuth(true); }}
-                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0
+                    hover:scale-105 transition-all flex items-center justify-center gap-2"
                  >
                     <LogIn size={18} />
                     {isRtl ? "تسجيل دخول" : "Login"}
@@ -830,7 +831,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              {isDragMode ? <Grab size={18} /> : <Move size={18} />}
              {isDragMode ? t('إيقاف التحريك الحر', 'Stop Drag Mode') : t('تفعيل التحريك الحر', 'Free Drag Mode')}
           </button>
-          <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
+          <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-0 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
         </div>
       </div>
 
