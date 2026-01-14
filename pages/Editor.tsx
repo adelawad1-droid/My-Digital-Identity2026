@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -62,7 +61,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [isUploadingBodyBg, setIsUploadingBodyBg] = useState(false);
   const [isUploadingSpecialImg, setIsUploadingSpecialImg] = useState(false);
   
-  // تحديث حالة إعدادات الرفع لتشمل النوعين
   const [siteSettings, setSiteSettings] = useState<any>(null);
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
   const [showModeInfo, setShowModeInfo] = useState(true);
@@ -111,6 +109,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         websites: initialData.websites || [], 
         specialLinks: initialData.specialLinks || [], 
         socialIconColumns: initialData.socialIconColumns || 0,
+        specialLinksCols: initialData.specialLinksCols || (selectedTmpl?.config.specialLinksCols || 2),
         bodyOffsetY: (initialData.bodyOffsetY !== undefined && initialData.bodyOffsetY !== 0) 
            ? initialData.bodyOffsetY 
            : (templateOffset ?? 0),
@@ -158,7 +157,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
           setFormData(prev => ({
              ...prev,
              bodyOffsetY: selectedTmpl.config.bodyOffsetY ?? prev.bodyOffsetY,
-             mobileBodyOffsetY: selectedTmpl.config.mobileBodyOffsetY ?? prev.mobileBodyOffsetY
+             mobileBodyOffsetY: selectedTmpl.config.mobileBodyOffsetY ?? prev.mobileBodyOffsetY,
+             specialLinksCols: prev.specialLinksCols || selectedTmpl.config.specialLinksCols || 2
           }));
        }
     }
@@ -242,7 +242,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     if (!file) return;
     setIsUploadingSpecialImg(true);
     try {
-      // تمرير إعدادات السيرفر إذا كانت موجودة
       const b = await uploadImageToCloud(file, 'avatar');
       if (b) {
         const newItem: SpecialLinkItem = {
@@ -259,10 +258,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     }
   };
 
-  /**
-   * Fix: Added handleBodyBgUpload to fix "Cannot find name 'handleBodyBgUpload'" error.
-   * Handles the uploading of a background image for the card body section.
-   */
   const handleBodyBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -672,7 +667,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
                                     <div className="space-y-6">
                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                          <RangeControl label={t('عدد الأعمدة', 'Columns')} min={1} max={3} value={formData.specialLinksCols || 2} onChange={(v: number) => handleChange('specialLinksCols', v)} icon={Grid} unit="" />
+                                          <RangeControl 
+                                            label={t('عدد الأعمدة', 'Columns')} 
+                                            min={1} max={3} 
+                                            value={formData.specialLinksCols ?? (currentTemplate?.config.specialLinksCols || 2)} 
+                                            onChange={(v: number) => handleChange('specialLinksCols', v)} 
+                                            icon={Grid} 
+                                            unit="" 
+                                          />
                                        </div>
 
                                        <div className="space-y-4 pt-4 border-t dark:border-white/5">
