@@ -32,7 +32,7 @@ export const uploadImageToCloud = async (
       return await getDownloadURL(snapshot.ref);
     } catch (error) {
       console.error("Firebase Storage Upload Error:", error);
-      // Fallback to database if firebase fails
+      // Fallback to local Base64 string if upload fails to show something at least
       return processedBase64;
     }
   }
@@ -61,7 +61,7 @@ export const uploadImageToCloud = async (
     }
   }
 
-  // التخزين في قاعدة البيانات (Base64)
+  // التخزين المباشر (Base64)
   return processedBase64;
 };
 
@@ -85,10 +85,10 @@ async function processImageClientSide(file: File, type: 'avatar' | 'background' 
 
           if (type === 'avatar') {
             MAX_SIZE = 450;    
-            quality = 0.7;    
+            quality = 0.75;    
           } else if (type === 'background') {
             MAX_SIZE = 1920;   
-            quality = 0.9;    
+            quality = 0.85;    
           } else if (type === 'logo') {
             MAX_SIZE = 1000;
             quality = 0.9;

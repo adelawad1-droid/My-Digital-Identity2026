@@ -2,7 +2,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // دالات التحقق الأساسية
+    // --- دالات التحقق الأساسية ---
+    
     function isSignedIn() {
       return request.auth != null;
     }
@@ -10,17 +11,13 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "adelawad1@gmail.com" || 
-        get(/databases/$(database)/documents/users_registry/$(request.auth.uid)).data.role == "admin"
+        (exists(/databases/$(database)/documents/users_registry/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users_registry/$(request.auth.uid)).data.role == "admin")
       );
     }
     
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // جلب بيانات المستخدم
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/users_registry/$(userId)).data;
     }
 
     // جلب الحد الأقصى للبطاقات من الخطة
@@ -31,41 +28,47 @@ service cloud.firestore {
 
     // التحقق من إمكانية إنشاء بطاقة جديدة بناءً على العداد في سجل المستخدم
     function canCreateCard(userId) {
-      let userData = getUserData(userId);
+      let userData = get(/databases/$(database)/documents/users_registry/$(userId)).data;
       let currentCount = userData.cardCount == null ? 0 : userData.cardCount;
       let limit = getPlanLimit(userData.planId);
       return currentCount < limit;
     }
 
-    // البطاقات العامة
+    // --- القواعد للمجموعات ---
+
+    // البطاقات العامة (تستخدم في العرض العام والتحكم المركزي)
     match /public_cards/{cardId} {
       allow read: if true;
       
-      // السماح بالإنشاء فقط إذا لم يتجاوز الحد المسموح أو كان أدمن
+      // الإنشاء: صاحب البطاقة (بشرط عدم تجاوز الحد) أو الأدمن (بدون قيود)
       allow create: if isSignedIn() && (isAdmin() || (isOwner(request.resource.data.ownerId) && canCreateCard(request.auth.uid)));
       
+      // التعديل (يشمل الإيقاف isActive): صاحب البطاقة أو الأدمن
       allow update: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
-      allow delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      
+      // الحذف: صاحب البطاقة أو الأدمن
+      allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
     }
 
-    // سجل المستخدمين
+    // سجل المستخدمين (Registry)
     match /users_registry/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow create: if isSignedIn() && request.auth.uid == userId;
-      // السماح بتحديث البيانات والعداد
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
       allow delete: if isAdmin();
     }
 
-    // الإعدادات والخطط
+    // نسخ البطاقات الخاصة (تحت مجلد المستخدم)
+    match /users/{userId}/cards/{cardId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // الإعدادات والقوالب والخطط (تحكم كامل للأدمن فقط)
     match /settings/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /custom_templates/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /template_categories/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /visual_styles/{docId} { allow read: if true; allow write: if isAdmin(); }
     match /pricing_plans/{docId} { allow read: if true; allow write: if isAdmin(); }
-
-    match /users/{userId}/cards/{cardId} {
-      allow read, write: if isOwner(userId) || isAdmin();
-    }
   }
 }

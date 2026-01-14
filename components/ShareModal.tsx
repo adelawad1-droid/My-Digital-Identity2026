@@ -71,41 +71,42 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      // إعطاء وقت كافٍ لتحميل الصور والخطوط
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // إعطاء وقت كافٍ جداً لتحميل الصور والخطوط
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const captureTarget = document.getElementById('share-card-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
-      // تحسين خيارات الالتقاط لمنع القص وضمان الجودة
       // @ts-ignore
       const canvas = await window.html2canvas(captureTarget, {
         useCORS: true, 
         allowTaint: false,
-        scale: 2, // دقة عالية
+        scale: 2, // دقة عالية جداً
         backgroundColor: data.isDark ? '#0a0a0c' : '#ffffff',
         logging: false,
-        width: 400,
-        // إجبار الكاميرا على الالتقاط من أعلى العنصر وتجاهل تمرير الصفحة
+        // تجاهل الموقع النسبي لضمان عدم القطع
+        x: 0,
+        y: 0,
         scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight
+        scrollY: 0,
+        windowWidth: 450,
+        windowHeight: captureTarget.scrollHeight + 100 // الارتفاع الكلي الفعلي للبطاقة
       });
 
-      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.90));
       
       if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'card.jpg', { type: 'image/jpeg' })] })) {
-        const file = new File([blob], `${data.id}.jpg`, { type: 'image/jpeg' });
+        const file = new File([blob], `${data.id || 'card'}.jpg`, { type: 'image/jpeg' });
         await navigator.share({
           files: [file],
           title: data.name,
           text: getProfessionalText()
         });
       } else {
-        // تحميل الصورة في حال عدم توفر مشاركة الملفات
+        // تحميل الصورة في حال عدم توفر مشاركة الملفات مباشرة
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/jpeg', 0.95);
-        link.download = `identity-${data.id}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.90);
+        link.download = `identity-${data.id || 'card'}.jpg`;
         link.click();
       }
     } catch (err) {
@@ -119,11 +120,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      {/* منطقة الالتقاط المخفية - تم تحسينها لتكون مرنة الطول */}
-      <div className="fixed top-0 left-0 -translate-x-[3000px] pointer-events-none" style={{ width: '400px' }}>
-          <div id="share-card-capture-area" className="bg-white dark:bg-black overflow-hidden flex flex-col" style={{ width: '400px', height: 'auto' }}>
-             <div className="pb-10"> {/* مسافة أمان سفلية */}
-               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
+      
+      {/* منطقة الالتقاط المخفية والمحسنة */}
+      <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '450px', zIndex: -100 }}>
+          <div id="share-card-capture-area" className="bg-white dark:bg-black flex flex-col" style={{ width: '450px', height: 'auto', minHeight: '800px' }}>
+             <div className="w-full pb-20"> {/* مسافة أمان سفلية لمنع القطع من الأسفل */}
+               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} forCapture={true} />
              </div>
           </div>
       </div>
@@ -185,7 +187,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             <div className="flex flex-col items-center gap-6 mb-8">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-blue-500/10 rounded-[3rem] blur-xl group-hover:bg-blue-500/20 transition-all"></div>
-                <div className="relative p-5 bg-white rounded-[2.5rem] shadow-inner border border-gray-50">
+                <div className="relative p-5 bg-white rounded-[2.5rem] shadow-inner border border-gray-100 dark:border-gray-800">
                   <img src={qrApiUrl} alt="QR Code" className="w-32 h-32" crossOrigin="anonymous" />
                 </div>
               </div>
