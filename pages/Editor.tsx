@@ -358,7 +358,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
       {showAuthWarning && <AuthModal lang={lang} onClose={() => setShowAuthWarning(false)} onSuccess={() => { setShowAuthWarning(false); }} />}
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
+      <div className="max-w-[1840px] mx-auto px-4 md:px-6 py-6 flex flex-col lg:flex-row gap-8">
         
         <aside className="hidden lg:flex w-72 flex-col gap-2 shrink-0 sticky top-24 h-fit">
            <div className="bg-white dark:bg-gray-900 p-4 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-1">
