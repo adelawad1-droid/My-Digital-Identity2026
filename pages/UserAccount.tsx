@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
@@ -292,9 +293,9 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
                  </div>
               </div>
 
-              {/* Added missing Save icon from lucide-react */}
-              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50">
-                {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} {t('حفظ التغييرات', 'Save Changes')}
+              {/* Fixed: Added flex centering to make the icon stay with the text */}
+              <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
+                {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} <span>{t('حفظ التغييرات', 'Save Changes')}</span>
               </button>
            </form>
         </div>
