@@ -60,8 +60,13 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
     try {
       const card = userCards.find(c => c.id === selectedCardId);
       if (card) {
-        const updatedCardData: CardData = { ...card, customDomain: domainInput };
-        // Fix: saveCardToDB expects a single object containing cardData and optional oldId.
+        const updatedCardData: CardData = { 
+          ...card, 
+          customDomain: domainInput,
+          domainStatus: 'pending' // تعيين الحالة قيد الانتظار ليراها الأدمن
+        };
+        // Fix for Error: Expected 1 arguments, but got 2.
+        // Calling saveCardToDB with a single object containing cardData and oldId properties.
         await saveCardToDB({ cardData: updatedCardData, oldId: selectedCardId });
         alert(isRtl ? "تم إرسال طلب ربط الدومين بنجاح" : "Domain connection request sent successfully");
         setActiveStep(3);

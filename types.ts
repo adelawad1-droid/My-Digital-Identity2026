@@ -338,6 +338,17 @@ export interface CardData {
   showSocialLinks?: boolean;
   showButtons?: boolean;
   showQrCode?: boolean;
+  showQrCodeByDefault?: boolean;
+  showBioByDefault?: boolean; 
+  showNameByDefault?: boolean;
+  showTitleByDefault?: boolean;
+  showCompanyByDefault?: boolean;
+  showEmailByDefault?: boolean;
+  showWebsiteByDefault?: boolean;
+  showPhoneByDefault?: boolean;
+  showWhatsappByDefault?: boolean;
+  showSocialLinksByDefault?: boolean;
+  showButtonsByDefault?: boolean;
   showOccasion?: boolean;
   showSpecialLinks?: boolean;
   showLocation?: boolean;
@@ -453,6 +464,7 @@ export interface CardData {
   titleOffsetY?: number;
   titleOffsetX?: number;
   bioOffsetY?: number;
+  // Fix typo from 'size' to 'number' on line 467
   bioOffsetX?: number;
   contactButtonsOffsetY?: number;
   contactButtonsOffsetX?: number;
@@ -462,7 +474,10 @@ export interface CardData {
   avatarOffsetY?: number;
   locationOffsetX?: number;
   locationOffsetY?: number;
-  customDomain?: string; // الحقل الجديد للدومين الخاص
+  
+  customDomain?: string; 
+  domainStatus?: 'pending' | 'active' | 'failed';
+  domainVerifiedAt?: string;
 }
 
 export interface VisualStyle {
