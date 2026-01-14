@@ -336,7 +336,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     
                     {/* Scrollable Card Content */}
                     <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar scroll-smooth overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <div className="min-h-full pb-32"> {/* extra padding at bottom for better view */}
+                        <div className="min-h-full pb-0"> {/* extra padding at bottom for better view */}
                           <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
                         </div>
                     </div>
