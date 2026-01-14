@@ -622,15 +622,28 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-4 pt-2">
-                                       <RangeControl 
-                                          label={isRtl ? 'عدد الأيقونات في الصف' : 'Icons per row'} 
-                                          min={0} max={6} 
-                                          value={formData.socialIconColumns || 0} 
-                                          onChange={(v: number) => handleChange('socialIconColumns', v)} 
-                                          icon={Grid} 
-                                          unit="" 
-                                          hint={isRtl ? 'اختر 0 للتوزيع التلقائي' : 'Choose 0 for Flex layout'}
-                                       />
+                                       <div className="bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+                                          <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Grid size={16} /></div>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isRtl ? 'عدد الأيقونات في الصف' : 'Icons per row'}</span>
+                                          </div>
+                                          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                                            {[0, 1, 2, 3, 4, 5, 6].map(num => (
+                                              <button
+                                                key={num}
+                                                type="button"
+                                                onClick={() => handleChange('socialIconColumns', num)}
+                                                className={`py-3 rounded-2xl border-2 font-black text-xs transition-all ${
+                                                  (formData.socialIconColumns || 0) === num
+                                                  ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
+                                                  : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent hover:bg-gray-100'
+                                                }`}
+                                              >
+                                                {num === 0 ? (isRtl ? 'تلقائي' : 'Auto') : num}
+                                              </button>
+                                            ))}
+                                          </div>
+                                       </div>
                                     </div>
                                  </div>
 
@@ -666,15 +679,29 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     </div>
 
                                     <div className="space-y-6">
-                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                          <RangeControl 
-                                            label={t('عدد الأعمدة', 'Columns')} 
-                                            min={1} max={3} 
-                                            value={formData.specialLinksCols ?? (currentTemplate?.config.specialLinksCols || 2)} 
-                                            onChange={(v: number) => handleChange('specialLinksCols', v)} 
-                                            icon={Grid} 
-                                            unit="" 
-                                          />
+                                       <div className="grid grid-cols-1 gap-6">
+                                          <div className="bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+                                            <div className="flex items-center gap-3">
+                                              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg"><Grid size={16} /></div>
+                                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('عدد الأعمدة', 'Columns')}</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-3">
+                                              {[1, 2, 3].map(num => (
+                                                <button
+                                                  key={num}
+                                                  type="button"
+                                                  onClick={() => handleChange('specialLinksCols', num)}
+                                                  className={`py-4 rounded-2xl border-2 font-black text-sm transition-all ${
+                                                    (formData.specialLinksCols ?? (currentTemplate?.config.specialLinksCols || 2)) === num
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg scale-105'
+                                                    : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent hover:bg-gray-100'
+                                                  }`}
+                                                >
+                                                  {num}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
                                        </div>
 
                                        <div className="space-y-4 pt-4 border-t dark:border-white/5">
