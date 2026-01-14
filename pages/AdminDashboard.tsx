@@ -180,6 +180,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     }
   };
 
+  // وظيفة حذف الدومين المخصص من البطاقة
+  const handleDeleteDomain = async (card: CardData) => {
+    const confirmMsg = isRtl ? "هل أنت متأكد من حذف ارتباط الدومين المخصص لهذه البطاقة؟ سيتمكن المشترك من إضافة دومين جديد." : "Are you sure you want to delete the custom domain association? The user will be able to add a new domain.";
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      // إزالة حقول الدومين
+      const updatedCard = { ...card };
+      delete updatedCard.customDomain;
+      delete updatedCard.domainStatus;
+      delete updatedCard.domainVerifiedAt;
+      
+      await saveCardToDB({ cardData: updatedCard, oldId: card.id });
+      await fetchData(true);
+      alert(isRtl ? "تم حذف الدومين بنجاح" : "Domain deleted successfully");
+    } catch (e) {
+      alert("Error deleting domain");
+    }
+  };
+
   const confirmDeletePlan = async () => {
     if (!planToDelete) return;
     try {
@@ -594,6 +614,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                         title={t('رفض الدومين', 'Reject Domain')}
                                      >
                                         <XCircle size={18}/>
+                                     </button>
+                                     <button 
+                                        onClick={() => handleDeleteDomain(card)}
+                                        className="p-2 text-red-600 bg-red-50 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                                        title={t('حذف الارتباط', 'Delete Domain Link')}
+                                     >
+                                        <Trash2 size={18}/>
                                      </button>
                                      <button 
                                         onClick={() => { navigator.clipboard.writeText(card.customDomain); alert("Copied!"); }}
