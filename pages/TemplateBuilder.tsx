@@ -1337,9 +1337,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <RangeControl label={t('حجم خط الاسم', 'Name Font Size')} min={16} max={56} value={template.config.nameSize} onChange={(v: number) => updateConfig('nameSize', v)} icon={TypographyIcon} />
-                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={Move} />
                            <RangeControl label={t('إزاحة الاسم (أفقياً)', 'Name X Offset')} min={-1000} max={1000} value={template.config.nameOffsetX || 0} onChange={(v: number) => updateConfig('nameOffsetX', v)} icon={ArrowLeftRight} />
-                           <RangeControl label={t('إزاحة المسمى (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة المسمى (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={Move} />
                            <RangeControl label={t('إزاحة المسمى (أفقياً)', 'Title X Offset')} min={-1000} max={1000} value={template.config.titleOffsetX || 0} onChange={(v: number) => updateConfig('titleOffsetX', v)} icon={ArrowLeftRight} />
                         </div>
                      </div>
@@ -1729,4 +1729,559 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                        <div className="p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-2xl shadow-sm"><PartyPopper size={24} /></div>
                        <div>
                           <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('occasionSection')}</h2>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'إدارة مؤقت المناسبات
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'إدارة مؤقت المناسبات والعد التنازلي' : 'Manage occasion timer and countdown'}</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-6">
+                       <ToggleSwitch label={t('إظهار قسم المناسبة', 'Show Occasion Section')} value={template.config.showOccasionByDefault} onChange={(v: boolean) => updateConfig('showOccasionByDefault', v)} icon={Eye} color="bg-rose-600" isRtl={isRtl} />
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('occasionTitleAr')}</label>
+                             <input type="text" value={template.config.occasionTitleAr || ''} onChange={e => updateConfig('occasionTitleAr', e.target.value)} className={inputClasses} placeholder="مناسبة قادمة" />
+                          </div>
+                          <div className="space-y-2">
+                             <label className={labelTextClasses}>{t('occasionTitleEn')}</label>
+                             <input type="text" value={template.config.occasionTitleEn || ''} onChange={e => updateConfig('occasionTitleEn', e.target.value)} className={inputClasses} placeholder="Upcoming Occasion" />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                             <label className={labelTextClasses}>{t('occasionDate')}</label>
+                             <input type="datetime-local" value={template.config.occasionDate || ''} onChange={e => updateConfig('occasionDate', e.target.value)} className={inputClasses} />
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t dark:border-gray-800">
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.occasionOffsetY || 0} onChange={(v: number) => updateConfig('occasionOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.occasionOffsetX || 0} onChange={(v: number) => updateConfig('occasionOffsetX', v)} icon={ArrowLeftRight} />
+                          <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف', 'Glassy Effect')} value={template.config.occasionGlassy} onChange={(v: boolean) => updateConfig('occasionGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                       </div>
+
+                       <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                          <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم المناسبة' : 'Occasion Section Colors'}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <ColorPicker label={t('اللون المميز (المؤقت)', 'Accent Color (Timer)')} value={template.config.occasionPrimaryColor} onChange={(v: string) => updateConfig('occasionPrimaryColor', v)} />
+                             <ColorPicker label={t('لون خلفية القسم', 'Section Background Color')} value={template.config.occasionBgColor} onChange={(v: string) => updateConfig('occasionBgColor', v)} />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'location' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl"><Navigation2 size={24} /></div>
+                       <h2 className="text-2xl font-black dark:text-white uppercase tracking-widest">{t('locationSection')}</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                       <ToggleSwitch label={t('تفعيل عرض الموقع', 'Show Location Section')} value={template.config.showLocationByDefault} onChange={(v: boolean) => updateConfig('showLocationByDefault', v)} icon={Eye} isRtl={isRtl} />
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <RangeControl label={t('انحناء حواف الصندوق', 'Border Radius')} min={0} max={60} value={template.config.locationBorderRadius ?? 24} onChange={(v: number) => updateConfig('locationBorderRadius', v)} icon={Ruler} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.locationOffsetY || 0} onChange={(v: number) => updateConfig('locationOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.locationOffsetX || 0} onChange={(v: number) => updateConfig('locationOffsetX', v)} icon={ArrowLeftRight} />
+                          <RangeControl label={t('تضييق الارتفاع (المساحة الداخلية)', 'Vertical Padding')} min={4} max={60} value={template.config.locationPaddingV ?? 20} onChange={(v: number) => updateConfig('locationPaddingV', v)} icon={Maximize2} />
+                          <RangeControl label={t('حجم خط العنوان التفصيلي', 'Address Font Size')} min={8} max={20} value={template.config.locationAddressSize ?? 13} onChange={(v: number) => updateConfig('locationAddressSize', v)} icon={TypographyIcon} />
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-4 border-t dark:border-gray-800">
+                          <ToggleSwitch label={t('نمط زجاجي', 'Glassy Style')} value={template.config.locationGlassy} onChange={(v: boolean) => updateConfig('locationGlassy', v)} icon={GlassWater} color="bg-blue-500" isRtl={isRtl} />
+                          <ColorPicker label={t('لون خلفية', 'Background Color')} value={template.config.locationBgColor} onChange={(v: string) => updateConfig('locationBgColor', v)} />
+                          <ColorPicker label={t('لون الأيقونة', 'Icon Color')} value={template.config.locationIconColor} onChange={(v: string) => updateConfig('locationIconColor', v)} />
+                          <ColorPicker label={t('لون النص', 'Text Color')} value={template.config.locationTextColor} onChange={(v: string) => updateConfig('locationTextColor', v)} />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'social-lab' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Share2 size={24} /></div><h2 className="text-2xl font-black dark:text-white">{t('مختبر أيقونات التواصل', 'Social Icons Lab')}</h2></div>
+                    
+                    <div className="space-y-6">
+                       <ToggleSwitch 
+                        label={t('تفعيل عرض قسم التواصل', 'Show Social Section')} 
+                        value={template.config.showSocialLinksByDefault} 
+                        onChange={(v: boolean) => updateConfig('showSocialLinksByDefault', v)} 
+                        icon={Eye} 
+                        color="bg-indigo-600" 
+                        isRtl={isRtl}
+                       />
+
+                       <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest pt-4 border-t dark:border-gray-800">{t('شكل وحجم الأيقونة', 'Shape & Size DNA')}</h4>
+                       
+                       <ToggleSwitch 
+                        label={t('استخدام ألوان المنصات الأصلية', 'Use Brand Colors')} 
+                        value={template.config.useSocialBrandColors} 
+                        onChange={(v: boolean) => updateConfig('useSocialBrandColors', v)} 
+                        icon={Zap} 
+                        color="bg-emerald-600" 
+                        isRtl={isRtl}
+                       />
+
+                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {['circle', 'squircle', 'rounded', 'square', 'none'].map(style => (
+                             <button key={style} onClick={() => updateConfig('socialIconStyle', style)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.socialIconStyle === style ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent'}`}>
+                                {style === 'circle' ? <Circle size={20}/> : style === 'squircle' ? <Shapes size={20}/> : style === 'rounded' ? <Box size={20}/> : style === 'square' ? <Square size={20}/> : <Minus size={20}/>}
+                                <span className="text-[8px] font-black uppercase">{t(style, style.toUpperCase())}</span>
+                             </button>
+                          ))}
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <RangeControl label={t('حجم الأيقونة', 'Icon Size')} min={14} max={40} value={template.config.socialIconSize || 22} onChange={(v: number) => updateConfig('socialIconSize', v)} icon={Maximize2} />
+                          <RangeControl label={t('المساحة الداخلية', 'Padding')} min={4} max={30} value={template.config.socialIconPadding || 14} onChange={(v: number) => updateConfig('socialIconPadding', v)} icon={Ruler} />
+                          <RangeControl label={t('المسافة بين الأيقونات', 'Gap')} min={4} max={40} value={template.config.socialIconGap || 12} onChange={(v: number) => updateConfig('socialIconGap', v)} icon={SlidersHorizontal} />
+                          <RangeControl label={t('عدد الأعمدة', 'Columns')} min={0} max={6} value={template.config.socialIconColumns || 0} onChange={(v: number) => updateConfig('socialIconColumns', v)} icon={Grid} hint={t('0 للتوزيع المرن', '0 for Flex Wrap')} />
+                          <RangeControl label={t('إزاحة القسم رأسياً', 'Vertical Offset')} min={-2000} max={2000} value={template.config.socialLinksOffsetY || 0} onChange={(v: number) => updateConfig('socialLinksOffsetY', v)} icon={Move} />
+                          <RangeControl label={t('إزاحة القسم أفقياً', 'Horizontal Offset')} min={-1000} max={1000} value={template.config.socialLinksOffsetX || 0} onChange={(v: number) => updateConfig('socialLinksOffsetX', v)} icon={ArrowLeftRight} />
+                       </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-gray-100 dark:border-gray-800 space-y-6">
+                       <h4 className={labelTextClasses}>{t('نمط العرض والألوان', 'Visual Style & Colors')}</h4>
+                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {['filled', 'outline', 'glass', 'ghost'].map(v => (
+                             <button key={v} onClick={() => updateConfig('socialIconVariant', v)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.socialIconVariant === v ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent'}`}>
+                                <span className="text-[8px] font-black uppercase">{t(v, v.toUpperCase())}</span>
+                             </button>
+                          ))}
+                       </div>
+
+                       {!template.config.useSocialBrandColors && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                            <ColorPicker label={t('لون خلفية الأيقونة', 'Icon Background')} value={template.config.socialIconBgColor} onChange={(v: string) => updateConfig('socialIconBgColor', v)} />
+                            <ColorPicker label={t('لون رمز التواصل', 'Icon Color')} value={template.config.socialIconColor} onChange={(v: string) => updateConfig('socialIconColor', v)} />
+                            <ColorPicker label={t('أيقونات التواصل', 'Social Icons Global Color')} value={template.config.socialIconsColor || '#3b82f6'} onChange={(v: string) => updateConfig('socialIconsColor', v)} />
+                        </div>
+                       )}
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'qrcode' && (
+               <div className="space-y-8 animate-fade-in">
+                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                     <div className="flex items-center gap-3"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
+                     <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} isRtl={isRtl} />
+                     <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
+                     <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
+                     <RangeControl label={t('إزاحة الباركود أفقياً', 'QR Horizontal Offset')} min={-1000} max={1000} value={template.config.qrOffsetX || 0} onChange={(v: number) => updateConfig('qrOffsetX', v)} icon={ArrowLeftRight} />
+                     <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
+                  </div>
+               </div>
+            )}
+
+            {activeTab === 'special-features' && (
+              <div className="space-y-8 animate-fade-in">
+                 <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/10 dark:to-blue-900/10 p-8 rounded-[3rem] border border-indigo-100 dark:border-indigo-900/20 shadow-xl space-y-10 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-10 opacity-5 rotate-12 transition-transform duration-700 pointer-events-none">
+                       <Trophy size={180} />
+                    </div>
+                    
+                    <div className="flex items-center gap-4 relative z-10">
+                       <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-lg"><Trophy size={24} /></div>
+                       <div>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('specialFeatures')}</h2>
+                          <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{t('premiumFeaturesDesc')}</p>
+                       </div>
+                    </div>
+
+                    <div className="bg-white/60 dark:bg-black/20 backdrop-blur-sm p-6 rounded-3xl border border-white dark:border-white/5 space-y-6">
+                       <div className="grid grid-cols-1 gap-4">
+                          <ToggleSwitch 
+                            label={isRtl ? 'إضافة نجوم التميز تحت الاسم' : 'Add Excellence Stars under name'} 
+                            value={template.config.showStarsByDefault} 
+                            onChange={(v: boolean) => updateConfig('showStarsByDefault', v)} 
+                            icon={Star} 
+                            color="bg-amber-500" 
+                            isRtl={isRtl}
+                          />
+                          <ToggleSwitch 
+                            label={isRtl ? 'وسام الحساب الموثق (Verified)' : 'Verified Account Badge'} 
+                            value={template.config.isVerifiedByDefault} 
+                            onChange={(v: boolean) => updateConfig('isVerifiedByDefault', v)} 
+                            icon={CheckCircle2} 
+                            color="bg-blue-500" 
+                            isRtl={isRtl}
+                          />
+                          <ToggleSwitch 
+                            label={isRtl ? 'إطار ذهبي للبطاقة كاملة' : 'Full Card Golden Frame'} 
+                            value={template.config.hasGoldenFrameByDefault} 
+                            onChange={(v: boolean) => updateConfig('hasGoldenFrameByDefault', v)} 
+                            icon={Maximize2} 
+                            color="bg-yellow-600" 
+                            isRtl={isRtl}
+                          />
+                       </div>
+
+                       <div className="pt-8 border-t dark:border-white/5 space-y-8">
+                          <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-3">
+                                <Sparkle className="text-blue-600" size={22} />
+                                <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('ميزة جسم البطاقة الخاصة (مربع حصري)', 'Special Body Feature (Exclusive Box)')}</h4>
+                             </div>
+                             <ToggleSwitch label={t('تفعيل الميزة', 'Enable')} value={template.config.showBodyFeatureByDefault} onChange={(v: boolean) => updateConfig('showBodyFeatureByDefault', v)} color="bg-emerald-600" isRtl={isRtl} />
+                          </div>
+
+                          {template.config.showBodyFeatureByDefault && (
+                             <div className="grid grid-cols-1 gap-6 animate-fade-in p-6 bg-blue-50/30 dark:bg-blue-900/10 rounded-[2.5rem] border border-blue-100 dark:border-blue-900/20">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                   <RangeControl 
+                                      label={t('توسعة الميزة جانبياً', 'Side Expansion')} 
+                                      min={0} max={60} 
+                                      value={template.config.bodyFeaturePaddingX ?? 0} 
+                                      onChange={(v: number) => updateConfig('bodyFeaturePaddingX', v)} 
+                                      icon={SlidersHorizontal} 
+                                   />
+                                   <RangeControl 
+                                      label={t('إزاحة الميزة رأسياً', 'Vertical Offset')} 
+                                      min={-2000} max={2000} 
+                                      value={template.config.bodyFeatureOffsetY ?? 0} 
+                                      onChange={(v: number) => updateConfig('bodyFeatureOffsetY', v)} 
+                                      icon={Move} 
+                                   />
+                                   <RangeControl 
+                                      label={t('إزاحة الميزة أفقياً', 'Horizontal Offset')} 
+                                      min={-1000} max={1000} 
+                                      value={template.config.bodyFeatureOffsetX || 0} 
+                                      onChange={(v: number) => updateConfig('bodyFeatureOffsetX', v)} 
+                                      icon={ArrowLeftRight} 
+                                   />
+                                   <RangeControl label={t('ارتفاع القسم', 'Height')} min={30} max={120} value={template.config.bodyFeatureHeight ?? 45} onChange={(v: number) => updateConfig('bodyFeatureHeight', v)} icon={Maximize2} />
+                                   <RangeControl label={t('انحناء الحواف', 'Radius')} min={0} max={50} value={template.config.bodyFeatureBorderRadius ?? 16} onChange={(v: number) => updateConfig('bodyFeatureBorderRadius', v)} icon={Ruler} />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                   <ColorPicker label={t('لون خلفية', 'Background')} value={template.config.bodyFeatureBgColor} onChange={(v: string) => updateConfig('bodyFeatureBgColor', v)} />
+                                   <ColorPicker label={t('لون نص', 'Text Color')} value={template.config.bodyFeatureTextColor} onChange={(v: string) => updateConfig('bodyFeatureTextColor', v)} />
+                                   <ToggleSwitch label={t('نمط زجاجي', 'Glassy')} value={template.config.bodyFeatureGlassy} onChange={(v: boolean) => updateConfig('bodyFeatureGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                                </div>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {activeTab === 'desktop-lab' && (
+               <div className="space-y-8 animate-fade-in">
+                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><Monitor size={24} /></div>
+                       <div>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{isRtl ? 'إعدادات العرض والخلفيات' : 'Display & Background Settings'}</h2>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'تحكم في شكل الصفحة بعد النشر' : 'Control page appearance after publishing'}</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-8">
+                       <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-900/30 space-y-6">
+                          <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1 flex items-center gap-2">
+                             <MonitorDot size={14} /> {isRtl ? 'نمط العرض على سطح المكتب' : 'Desktop Display Strategy'}
+                          </label>
+                          <div className="grid grid-cols-2 gap-4">
+                             <button 
+                                onClick={() => updateConfig('desktopLayout', 'full-width-header')}
+                                className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${template.config.desktopLayout === 'full-width-header' ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
+                             >
+                                <Layout size={24} />
+                                <span className="text-[10px] font-black uppercase">{isRtl ? 'ترويسة ممتدة' : 'Full Width Header'}</span>
+                             </button>
+                             <button 
+                                onClick={() => updateConfig('desktopLayout', 'centered-card')}
+                                className={`py-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${template.config.desktopLayout !== 'full-width-header' ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400'}`}
+                             >
+                                <Square size={24} />
+                                <span className="text-[10px] font-black uppercase">{isRtl ? 'بطاقة في الوسط' : 'Boxed Card'}</span>
+                             </button>
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <RangeControl 
+                             label={isRtl ? 'إزاحة البطاقة (سطح المكتب)' : 'Desktop Card Offset'} 
+                             min={-2000} max={2000} 
+                             value={template.config.desktopBodyOffsetY ?? 0} 
+                             onChange={(v: number) => updateConfig('desktopBodyOffsetY', v)} 
+                             icon={Move} 
+                             hint={isRtl ? "يسحب البطاقة كاملة للأعلى أو الأسفل" : "Pulls the whole card up or down"}
+                          />
+                          <RangeControl 
+                             label={isRtl ? 'إزاحة المحتوى الداخلي' : 'Internal Content Offset'} 
+                             min={-2000} max={2000} 
+                             value={template.config.mobileBodyOffsetY ?? 0} 
+                             onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
+                             icon={Smartphone} 
+                             hint={isRtl ? "يؤثر على الجوال والداخل في سطح المكتب" : "Affects mobile and internal content overlap"}
+                          />
+                       </div>
+
+                       <div className="pt-6 border-t dark:border-gray-800 space-y-6">
+                          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Pipette size={14}/> {isRtl ? 'خلفيات الصفحة والأرضية' : 'Page & Card Base Backgrounds'}</h4>
+                          
+                          <div className="bg-indigo-50 dark:bg-indigo-900/10 p-5 rounded-3xl border border-indigo-100 dark:border-indigo-900/20 space-y-4">
+                             <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest px-1 flex items-center gap-2">
+                                <Repeat size={14} /> {t('استراتيجية خلفية الموقع', 'Page Background Strategy')}
+                             </label>
+                             <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                   type="button"
+                                   onClick={() => updateConfig('pageBgStrategy', 'solid')}
+                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy !== 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}
+                                >
+                                   <Pipette size={18} />
+                                   <span className="text-[9px] font-black uppercase">{t('لون ثابت', 'Solid')}</span>
+                                </button>
+                                <button 
+                                   type="button"
+                                   onClick={() => updateConfig('pageBgStrategy', 'mirror-header')}
+                                   className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.pageBgStrategy === 'mirror-header' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white dark:bg-gray-900 text-gray-400'}`}
+                                >
+                                   <Layers size={18} />
+                                   <span className="text-[9px] font-black uppercase">{isRtl ? 'مطابقة ألوان الترويسة' : 'Mirror Header Colors'}</span>
+                                </button>
+                             </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <ColorPicker 
+                                label={t('لون أرضية البطاقة', 'Card Base Bg')} 
+                                value={template.config.cardBgColor || ''} 
+                                onChange={(v: string) => updateConfig('cardBgColor', v)} 
+                              />
+                              {template.config.pageBgStrategy !== 'mirror-header' && (
+                                <ColorPicker 
+                                  label={t('لون خلفية الصفحة', 'Page Bg Color')} 
+                                  value={template.config.pageBgColor || ''} 
+                                  onChange={(v: string) => updateConfig('pageBgColor', v)} 
+                                />
+                              )}
+                          </div>
+
+                          <RangeControl 
+                             label={isRtl ? 'أقصى عرض للبطاقة (سطح المكتب)' : 'Card Max Width (Desktop)'} 
+                             min={300} max={1200} 
+                             value={template.config.cardMaxWidth ?? 500} 
+                             onChange={(v: number) => updateConfig('cardMaxWidth', v)} 
+                             icon={ArrowLeftRight} 
+                          />
+                       </div>
+                    </div>
+                  </div>
+               </div>
+            )}
+
+          </div>
+        </div>
+
+        <div className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth">
+           <div className="flex flex-col items-center w-full">
+              <div className="mb-6 w-full flex items-center justify-between px-4">
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span></div>
+                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                   <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Smartphone size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Tablet size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Monitor size={18}/></button>
+                </div>
+              </div>
+              
+              <div 
+                   onMouseMove={handlePreviewMouseMove}
+                   onMouseLeave={() => setMouseYPercentage(0)}
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 isolate cursor-ns-resize ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
+                   style={{ 
+                     isolation: 'isolate', 
+                     transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
+                     width: previewDevice === 'desktop' ? '850px' : undefined,
+                     height: previewDevice === 'desktop' ? '1200px' : undefined,
+                     minHeight: previewDevice === 'desktop' ? '1200px' : undefined,
+                     backgroundColor: previewPageBg
+                   }}>
+                
+                {/* Drag Overlays - تظهر فقط في وضع التحريك الحر */}
+                {isDragMode && (
+                   <div className="absolute inset-0 z-[100] pointer-events-none">
+                      {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
+                      {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode', 'floatingAsset'].map(elId => {
+                         const element = document.querySelector(`[data-element-id="${elId}"]`);
+                         if (!element) return null;
+                         const rect = element.getBoundingClientRect();
+                         const parentRect = element.closest('.no-scrollbar')?.getBoundingClientRect();
+                         if (!parentRect) return null;
+                         
+                         return (
+                            <div 
+                              key={elId}
+                              onMouseDown={(e) => handleDragStart(e, elId)}
+                              className={`absolute pointer-events-auto cursor-move border-2 border-dashed transition-colors ${activeDragElement === elId ? 'bg-blue-500/20 border-blue-500' : 'bg-amber-500/10 border-amber-500/50 hover:bg-amber-500/20 hover:border-amber-500'}`}
+                              style={{
+                                top: (rect.top - parentRect.top) / previewScale,
+                                left: (rect.left - parentRect.left) / previewScale,
+                                width: rect.width / previewScale,
+                                height: rect.height / previewScale,
+                                zIndex: activeDragElement === elId ? 101 : 100
+                              }}
+                            >
+                               <div className="absolute -top-6 left-0 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-t-lg uppercase">
+                                  {elId}
+                               </div>
+                            </div>
+                         );
+                      })}
+                   </div>
+                )}
+
+                <div className="no-scrollbar h-full scroll-smooth relative z-0" style={{ borderRadius: '2.6rem', clipPath: 'inset(0 round 2.6rem)' }}>
+                   <div 
+                     className="w-full transition-transform duration-500 ease-out origin-top"
+                     style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
+                   >
+                     {isFullHeaderPreview && (
+                        <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
+                          <div className="absolute inset-0 z-0">
+                            {template.config.defaultThemeType === 'image' && template.config.defaultBackgroundImage && (
+                              <img src={template.config.defaultThemeType === 'image' ? template.config.defaultBackgroundImage : undefined} className="w-full h-full object-cover" alt="Full Header" />
+                            )}
+                            {template.config.defaultThemeType === 'gradient' && (
+                              <div className="w-full h-full" style={{ background: template.config.defaultThemeGradient }} />
+                            )}
+                            {template.config.defaultThemeType === 'color' && (
+                              <div className="w-full h-full" style={{ backgroundColor: template.config.defaultThemeColor }} />
+                            )}
+                          </div>
+                        </div>
+                     )}
+                     
+                     <div 
+                       style={{ 
+                          maxWidth: previewDevice === 'desktop' ? `${template.config.cardMaxWidth || 500}px` : '100%',
+                          marginRight: 'auto',
+                          marginLeft: 'auto',
+                          paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
+                          position: 'relative',
+                          zIndex: 10
+                       }}
+                     >
+                       <CardPreview 
+                         data={{ 
+                           ...sampleCardData, 
+                           name: template.config.defaultName || sampleCardData.name,
+                           title: template.config.defaultTitle || sampleCardData.title,
+                           company: template.config.defaultCompany || sampleCardData.company,
+                           bio: (isRtl ? template.config.defaultBioAr : template.config.defaultBioEn) || sampleCardData.bio,
+                           profileImage: template.config.defaultProfileImage || sampleCardData.profileImage || '',
+                           isDark: template.config.defaultIsDark,
+                           showOccasion: template.config.showOccasionByDefault,
+                           occasionTitleAr: template.config.occasionTitleAr,
+                           occasionTitleEn: template.config.occasionTitleEn,
+                           occasionDate: template.config.occasionDate,
+                           occasionPrimaryColor: template.config.occasionPrimaryColor,
+                           occasionBgColor: template.config.occasionBgColor,
+                           occasionGlassy: template.config.occasionGlassy,
+                           occasionOffsetY: template.config.occasionOffsetY,
+                           occasionOffsetX: template.config.occasionOffsetX,
+                           showBodyFeature: template.config.showBodyFeatureByDefault,
+                           showQrCode: template.config.showQrCodeByDefault,
+                           showStars: template.config.showStarsByDefault,
+                           isVerified: template.config.isVerifiedByDefault,
+                           hasGoldenFrame: template.config.hasGoldenFrameByDefault,
+                           themeType: template.config.defaultThemeType, 
+                           themeColor: template.config.defaultThemeColor, 
+                           themeGradient: template.config.defaultThemeGradient,
+                           backgroundImage: template.config.defaultBackgroundImage,
+                           specialLinks: currentSpecialLinks,
+                           showSpecialLinks: template.config.showSpecialLinksByDefault,
+                           showSocialLinks: template.config.showSocialLinksByDefault,
+                           showMembership: template.config.showMembershipByDefault,
+                           membershipTitleAr: template.config.membershipTitleAr,
+                           membershipTitleEn: template.config.membershipTitleEn,
+                           membershipStartDate: template.config.membershipStartDate,
+                           membershipExpiryDate: template.config.membershipExpiryDate,
+                           membershipGlassy: template.config.membershipGlassy,
+                           membershipOffsetY: template.config.membershipOffsetY,
+                           membershipOffsetX: template.config.membershipOffsetX,
+                           membershipBgColor: template.config.membershipBgColor,
+                           membershipBorderColor: template.config.membershipBorderColor,
+                           membershipTextColor: template.config.membershipTextColor,
+                           membershipAccentColor: template.config.membershipAccentColor,
+                           showLocation: template.config.showLocationByDefault,
+                           location: isRtl ? 'عنوان الموقع الجغرافي الافتراضي' : 'Default Location Address',
+                           locationUrl: 'https://maps.google.com',
+                           locationOffsetX: template.config.locationOffsetX,
+                           locationOffsetY: template.config.locationOffsetY,
+                           linksShowText: template.config.linksShowText,
+                           linksShowBg: template.config.linksShowBg,
+                           emails: sampleCardData.emails,
+                           websites: sampleCardData.websites,
+                           bioBorderRadius: template.config.bioBorderRadius,
+                           bioBorderWidth: template.config.bioBorderWidth,
+                           bioBorderColor: template.config.bioBorderColor,
+                           bioPaddingV: template.config.bioPaddingV,
+                           bioPaddingH: template.config.bioPaddingH,
+                           bioGlassy: template.config.bioGlassy,
+                           bioOpacity: template.config.bioOpacity,
+                           bioMaxWidth: template.config.bioMaxWidth,
+                           bioTextAlign: template.config.bioTextAlign,
+                           cardBodyColor: template.config.cardBodyColor,
+                           cardBodyBackgroundImage: template.config.cardBodyBackgroundImage,
+                           cardBodyThemeType: template.config.cardBodyThemeType,
+                           cardBgColor: template.config.cardBgColor,
+                           linksSectionPaddingV: template.config.linksSectionPaddingV,
+                           avatarOffsetX: template.config.avatarOffsetX,
+                           avatarOffsetY: template.config.avatarOffsetY,
+                           nameOffsetX: template.config.nameOffsetX,
+                           nameOffsetY: template.config.nameOffsetY,
+                           titleOffsetX: template.config.titleOffsetX,
+                           titleOffsetY: template.config.titleOffsetY,
+                           bioOffsetX: template.config.bioOffsetX,
+                           bioOffsetY: template.config.bioOffsetY,
+                           bodyFeatureOffsetX: template.config.bodyFeatureOffsetX,
+                           bodyFeatureOffsetY: template.config.bodyFeatureOffsetY,
+                           linksSectionOffsetX: template.config.linksSectionOffsetX,
+                           linksSectionOffsetY: template.config.linksSectionOffsetY,
+                           contactButtonsOffsetX: template.config.contactButtonsOffsetX,
+                           contactButtonsOffsetY: template.config.contactButtonsOffsetY,
+                           socialLinksOffsetX: template.config.socialLinksOffsetX,
+                           socialLinksOffsetY: template.config.socialLinksOffsetY,
+                           qrOffsetX: template.config.qrOffsetX,
+                           qrOffsetY: template.config.qrOffsetY,
+                           specialLinksOffsetX: template.config.specialLinksOffsetX,
+                           specialLinksOffsetY: template.config.specialLinksOffsetY,
+                           bodyOffsetX: template.config.bodyOffsetX,
+                           bodyOffsetY: template.config.bodyOffsetY,
+                           floatingAssetOffsetX: template.config.floatingAssetOffsetX,
+                           floatingAssetOffsetY: template.config.floatingAssetOffsetY,
+                           floatingAssetSize: template.config.floatingAssetSize,
+                           floatingAssetUrl: template.config.floatingAssetUrl,
+                           showFloatingAsset: template.config.showFloatingAssetByDefault
+                         } as any} 
+                         lang={lang} 
+                         customConfig={template.config} 
+                         hideSaveButton={true} 
+                         isFullFrame={isFullHeaderPreview}
+                         hideHeader={isFullHeaderPreview}
+                         bodyOffsetYOverride={previewBodyOffsetY}
+                       />
+                     </div>
+                   </div>
+                </div>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {showSaveModal && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col lg:flex-row h-[90vh] lg:h-auto animate-zoom-in">
+              
+              <div className="w-full lg:w-[400px] bg-indigo-50/30 dark:bg-black/20 p-8 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col space-y-6">
+                 <div className="

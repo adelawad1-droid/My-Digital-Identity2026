@@ -64,8 +64,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [socialInput, setSocialInput] = useState({ platformId: SOCIAL_PLATFORMS[0].id, url: '' });
   const [showModeInfo, setShowModeInfo] = useState(true);
 
+  // Mouse Follow Preview Scroll States
   const [mouseYPercentage, setMouseYPercentage] = useState(0);
-  const [sidebarMouseYPercentage, setSidebarMouseYPercentage] = useState(0);
+  const [mouseYPercentageMobile, setMouseYPercentageMobile] = useState(0);
 
   useEffect(() => {
     getSiteSettings().then(settings => {
@@ -186,20 +187,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const currentTemplate = templates.find(t => t.id === formData.templateId);
 
-  const handlePreviewMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
-    setMouseYPercentage(percentage);
-  };
-
-  const handleSidebarPreviewMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
-    setSidebarMouseYPercentage(percentage);
-  };
-
   const VisibilityToggle = ({ field, label }: { field: keyof CardData, label: string }) => {
     const isVisible = formData[field] !== false;
     return (
@@ -293,9 +280,19 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     ? (formData.mobileBodyOffsetY ?? 0) 
     : 0;
 
-  const previewDesktopPullUp = (previewDevice === 'desktop')
-    ? (currentTemplate?.config.desktopBodyOffsetY ?? 0)
-    : 0;
+  const handleMouseMoveSidebar = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+    setMouseYPercentage(percentage);
+  };
+
+  const handleMouseMoveMobile = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (relativeY / rect.height) * 100));
+    setMouseYPercentageMobile(percentage);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-[#050507] pb-40">
@@ -348,20 +345,20 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             </div>
             <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
                 <div 
-                  onMouseMove={handlePreviewMouseMove}
-                  onMouseLeave={() => setMouseYPercentage(0)}
-                  className="relative h-full max-h-[85vh] aspect-[9/19.5] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 overflow-hidden bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col cursor-ns-resize"
+                   onMouseMove={handleMouseMoveMobile}
+                   onMouseLeave={() => setMouseYPercentageMobile(0)}
+                   className="w-full max-w-[340px] h-full max-h-[85vh] rounded-[3.5rem] border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative cursor-ns-resize"
                 >
-                    <div 
-                      className="absolute inset-0 z-10 transition-transform duration-500 ease-out origin-top overflow-hidden"
-                      style={{ 
-                        transform: `translateY(-${mouseYPercentage * 0.85}%)`
-                      }}
-                    >
-                        <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
+                    <div className="w-full h-full overflow-hidden relative z-0" style={{ borderRadius: '2.6rem', clipPath: 'inset(0 round 2.6rem)' }}>
+                        <div 
+                          className="w-full transition-transform duration-500 ease-out origin-top"
+                          style={{ transform: `translateY(-${mouseYPercentageMobile * 0.7}%)` }}
+                        >
+                           <CardPreview data={formData} lang={lang} customConfig={currentTemplate?.config} hideSaveButton={true} isFullFrame={false} bodyOffsetYOverride={previewBodyOffsetY} />
+                        </div>
                     </div>
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-20 pointer-events-none"></div>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-50 pointer-events-none"></div>
                 </div>
             </div>
         </div>
@@ -603,7 +600,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                        <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-gray-800 shadow-sm">
                                           <div className="flex items-center gap-3">
                                              <Zap size={16} className={formData.useSocialBrandColors ? "text-emerald-600" : "text-gray-300"} />
-                                             <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('الألوان الأصلية للمنصات', 'Use Brand Colors')}</span>
+                                             <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{t('ألوان المنصات الأصلية', 'Use Brand Colors')}</span>
                                           </div>
                                           <button type="button" onClick={() => handleChange('useSocialBrandColors', !formData.useSocialBrandColors)} className={`w-12 h-6 rounded-full relative transition-all ${formData.useSocialBrandColors ? 'bg-emerald-600 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
                                              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.useSocialBrandColors ? 'right-7' : 'right-1') : (formData.useSocialBrandColors ? 'left-7' : 'left-1')}`} />
@@ -963,9 +960,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               </div>
               
               <div 
-                   onMouseMove={handleSidebarPreviewMouseMove}
-                   onMouseLeave={() => setSidebarMouseYPercentage(0)}
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black cursor-ns-resize isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
+                   onMouseMove={handleMouseMoveSidebar}
+                   onMouseLeave={() => setMouseYPercentage(0)}
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-2xl overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate cursor-ns-resize ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg,
@@ -977,49 +974,51 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[100] border border-white/5 shadow-inner"></div>
 
-                <div className="no-scrollbar h-full scroll-smooth relative z-0" 
+                <div className="no-scrollbar h-full overflow-hidden relative z-0" 
                      style={{ 
                        borderRadius: '2.6rem', 
-                       overflow: 'hidden',
                        clipPath: 'inset(0 round 2.6rem)' 
                      }}>
-                   {isFullHeaderPreview && (
-                      <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${currentTemplate?.config.headerHeight}px` }}>
-                        <div className="absolute inset-0 z-0">
-                          {formData.themeType === 'image' && formData.backgroundImage && (
-                            <img src={formData.backgroundImage} className="w-full h-full object-cover" alt="Full Header" />
-                          )}
-                          {formData.themeType === 'gradient' && (
-                            <div className="w-full h-full" style={{ background: formData.themeGradient }} />
-                          )}
-                          {formData.themeType === 'color' && (
-                            <div className="w-full h-full" style={{ backgroundColor: formData.themeColor }} />
-                          )}
-                        </div>
-                      </div>
-                   )}
-
                    <div 
-                     style={{ 
-                        maxWidth: previewDevice === 'desktop' ? `${currentTemplate?.config.cardMaxWidth || 500}px` : '100%',
-                        marginRight: 'auto',
-                        marginLeft: 'auto',
-                        paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
-                        position: 'relative',
-                        zIndex: 10,
-                        transition: 'transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                        transform: `translateY(-${sidebarMouseYPercentage * 0.85}%)`
-                     }}
+                     className="w-full transition-transform duration-500 ease-out origin-top"
+                     style={{ transform: `translateY(-${mouseYPercentage * 0.7}%)` }}
                    >
-                     <CardPreview 
-                       data={formData} 
-                       lang={lang} 
-                       customConfig={currentTemplate?.config} 
-                       hideSaveButton={true} 
-                       isFullFrame={isFullHeaderPreview}
-                       hideHeader={isFullHeaderPreview}
-                       bodyOffsetYOverride={previewBodyOffsetY}
-                     />
+                     {isFullHeaderPreview && (
+                        <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${currentTemplate?.config.headerHeight}px` }}>
+                          <div className="absolute inset-0 z-0">
+                            {formData.themeType === 'image' && formData.backgroundImage && (
+                              <img src={formData.backgroundImage} className="w-full h-full object-cover" alt="Full Header" />
+                            )}
+                            {formData.themeType === 'gradient' && (
+                              <div className="w-full h-full" style={{ background: formData.themeGradient }} />
+                            )}
+                            {formData.themeType === 'color' && (
+                              <div className="w-full h-full" style={{ backgroundColor: formData.themeColor }} />
+                            )}
+                          </div>
+                        </div>
+                     )}
+
+                     <div 
+                       style={{ 
+                          maxWidth: previewDevice === 'desktop' ? `${currentTemplate?.config.cardMaxWidth || 500}px` : '100%',
+                          marginRight: 'auto',
+                          marginLeft: 'auto',
+                          paddingTop: previewDevice === 'desktop' ? '100px' : '0px',
+                          position: 'relative',
+                          zIndex: 10
+                       }}
+                     >
+                       <CardPreview 
+                         data={formData} 
+                         lang={lang} 
+                         customConfig={currentTemplate?.config} 
+                         hideSaveButton={true} 
+                         isFullFrame={isFullHeaderPreview}
+                         hideHeader={isFullHeaderPreview}
+                         bodyOffsetYOverride={previewBodyOffsetY}
+                       />
+                     </div>
                    </div>
                 </div>
               </div>
