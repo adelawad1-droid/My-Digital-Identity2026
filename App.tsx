@@ -20,7 +20,7 @@ import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
-import { auth, getCardBySerial, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
+import { auth, getCardBySerial, getCardByDomain, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap, Globe, ChevronDown, LogOut, Settings } from 'lucide-react';
 
@@ -114,14 +114,33 @@ const AppContent: React.FC = () => {
     const initializeApp = async () => {
       if (initFlag.current) return;
       initFlag.current = true;
+
+      // 1. فحص الدومين المخصص أولاً
+      const hostname = window.location.hostname;
+      const mainDomains = ['nextid.my', 'www.nextid.my', 'nodes.nextid.my', 'localhost'];
+      
+      if (!mainDomains.includes(hostname)) {
+        const cardByDomain = await getCardByDomain(hostname);
+        if (cardByDomain) {
+          setPublicCard(cardByDomain as CardData);
+          setIsDarkMode(cardByDomain.isDark);
+          setIsInitializing(false);
+          return;
+        }
+      }
+
+      // 2. فحص معلمة u في الرابط
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
+      
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
       ]);
+      
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
+      
       if (slug) {
         try {
           const card = await getCardBySerial(slug);
@@ -129,6 +148,7 @@ const AppContent: React.FC = () => {
           else { setIsCardDeleted(true); }
         } catch (e) { setIsCardDeleted(true); }
       }
+
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {

@@ -9,7 +9,9 @@ import {
   Loader2, Zap, Settings, HelpCircle, Server,
   Lock, Smartphone, Monitor, Layout, Search,
   ChevronRight, ArrowLeftRight,
-  Clock, Shield, Wand2 as MagicIcon
+  Clock, Shield, Wand2 as MagicIcon,
+  CheckCircle, XCircle,
+  RefreshCcw, MessageCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +21,7 @@ interface CustomDomainProps {
 
 const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
   const isRtl = lang === 'ar';
-  const t = (key: string) => TRANSLATIONS[key]?.[lang] || TRANSLATIONS[key]?.['en'] || key;
+  const t = (key: string, en?: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : (en || key);
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,8 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(1);
 
+  const MASTER_NODE_URL = "nodes.nextid.my";
+
   useEffect(() => {
     if (auth.currentUser) {
       const uid = auth.currentUser.uid;
@@ -40,7 +44,15 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
       ]).then(([profile, cards]) => {
         setUserProfile(profile);
         setUserCards(cards);
-        if (cards.length > 0) setSelectedCardId(cards[0].id);
+        if (cards.length > 0) {
+           const cardWithDomain = cards.find(c => c.customDomain);
+           setSelectedCardId(cardWithDomain ? cardWithDomain.id : cards[0].id);
+           if (cardWithDomain?.customDomain) {
+             setDomainInput(cardWithDomain.customDomain);
+             if (cardWithDomain.domainStatus === 'active') setActiveStep(3);
+             else setActiveStep(2);
+           }
+        }
         setLoading(false);
       });
     }
@@ -56,6 +68,11 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
 
   const handleConnect = async () => {
     if (!domainInput || !selectedCardId) return;
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
+    if (!domainRegex.test(domainInput)) {
+       alert(isRtl ? "يرجى إدخال اسم دومين صحيح" : "Please enter a valid domain name");
+       return;
+    }
     setIsSaving(true);
     try {
       const card = userCards.find(c => c.id === selectedCardId);
@@ -63,16 +80,12 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
         const updatedCardData: CardData = { 
           ...card, 
           customDomain: domainInput,
-          domainStatus: 'pending' // تعيين الحالة قيد الانتظار ليراها الأدمن
+          domainStatus: 'pending' 
         };
-        // Fix for Error: Expected 1 arguments, but got 2.
-        // Calling saveCardToDB with a single object containing cardData and oldId properties.
         await saveCardToDB({ cardData: updatedCardData, oldId: selectedCardId });
-        alert(isRtl ? "تم إرسال طلب ربط الدومين بنجاح" : "Domain connection request sent successfully");
-        setActiveStep(3);
+        setActiveStep(2);
       }
     } catch (e) {
-      console.error("Error saving domain:", e);
       alert("Error saving domain");
     } finally {
       setIsSaving(false);
@@ -82,7 +95,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
       <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
-      <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">{t("جاري التحميل...", "Loading...")}</p>
+      <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">{t("Loading...")}</p>
     </div>
   );
 
@@ -105,10 +118,11 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
     );
   }
 
+  const hostValue = domainInput.includes('.') ? domainInput.split('.')[0] : '@';
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 animate-fade-in-up pb-40">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
         <div className="flex items-center gap-6">
            <div className="w-20 h-20 bg-blue-600 text-white rounded-[2.25rem] flex items-center justify-center shadow-2xl shadow-blue-500/20">
@@ -119,263 +133,182 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
               <p className="text-gray-400 text-sm font-bold max-w-xl">{t('customDomainDesc')}</p>
            </div>
         </div>
-        <div className="hidden lg:flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl border">
            {[1, 2, 3].map(step => (
-              <div key={step} className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${activeStep >= step ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}>
-                 {activeStep > step ? <CheckCircle2 size={16} /> : step}
+              <div key={step} className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black transition-all ${activeStep === step ? 'bg-blue-600 text-white shadow-lg' : activeStep > step ? 'bg-emerald-50 text-white' : 'text-gray-400'}`}>
+                 {activeStep > step ? <CheckCircle size={18} /> : step}
               </div>
            ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Main Connection Area */}
         <div className="lg:col-span-8 space-y-8">
            
-           {/* Step 1: Input Domain */}
-           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 1 ? 'opacity-50 grayscale scale-[0.98]' : 'scale-100'}`}>
+           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 1 ? 'opacity-40 grayscale pointer-events-none scale-[0.98]' : 'scale-100'}`}>
               <div className="flex items-center gap-4 mb-8">
                  <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl flex items-center justify-center">
                     <Smartphone size={24} />
                  </div>
-                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? '1. اختر البطاقة والدومين' : '1. Select Card & Domain'}</h3>
+                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? '1. تهيئة النطاق' : '1. Domain Initialization'}</h3>
               </div>
-
               <div className="space-y-6">
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{isRtl ? 'اختر البطاقة المراد ربطها' : 'Select Card to Link'}</label>
-                    <select 
-                      value={selectedCardId} 
-                      onChange={e => setSelectedCardId(e.target.value)}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100"
-                    >
-                       {userCards.map(card => <option key={card.id} value={card.id}>{card.name} ({card.id})</option>)}
-                    </select>
-                 </div>
-
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t('enterDomain')}</label>
-                    <div className="relative group">
-                       <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-                       <input 
-                         type="text" 
-                         value={domainInput}
-                         onChange={e => setDomainInput(e.target.value.toLowerCase().trim())}
-                         placeholder="cards.yourname.com"
-                         className="w-full pl-14 pr-6 py-5 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-black text-lg dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" 
-                       />
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{isRtl ? 'اختر البطاقة' : 'Select Card'}</label>
+                       <select value={selectedCardId} onChange={e => setSelectedCardId(e.target.value)} className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-bold text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100">
+                          {userCards.map(card => <option key={card.id} value={card.id}>{card.name} ({card.id})</option>)}
+                       </select>
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{isRtl ? 'الدومين الخاص بك' : 'Your Custom Domain'}</label>
+                       <div className="relative group">
+                          <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
+                          <input type="text" value={domainInput} onChange={e => setDomainInput(e.target.value.toLowerCase().trim())} placeholder="cards.yourname.com" className="w-full pl-14 pr-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 font-black text-sm dark:text-white outline-none focus:ring-4 focus:ring-blue-100 transition-all" />
+                       </div>
                     </div>
                  </div>
-
-                 {activeStep === 1 && (
-                    <button 
-                      onClick={() => domainInput && setActiveStep(2)}
-                      className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3"
-                    >
-                       {isRtl ? 'الخطوة التالية: إعدادات الـ DNS' : 'Next Step: DNS Settings'}
-                       <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />
-                    </button>
-                 )}
+                 <button onClick={handleConnect} disabled={isSaving || !domainInput} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+                    {isSaving ? <Loader2 size={20} className="animate-spin" /> : <ArrowRight size={20} className={isRtl ? 'rotate-180' : ''} />}
+                    {isRtl ? 'استمرار لإعدادات الـ DNS' : 'Continue to DNS Settings'}
+                 </button>
               </div>
            </div>
 
-           {/* Step 2: DNS Records */}
-           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 2 ? 'opacity-50 grayscale scale-[0.98]' : 'scale-100 ring-4 ring-blue-500/10'}`}>
+           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 2 ? 'opacity-40 grayscale pointer-events-none scale-[0.98]' : 'scale-100 ring-4 ring-blue-500/10'}`}>
               <div className="flex items-center justify-between mb-8">
                  <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl flex items-center justify-center">
                        <Server size={24} />
                     </div>
-                    <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? '2. تحديث سجلات الـ DNS' : '2. Update DNS Records'}</h3>
+                    <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? '2. إعدادات الـ DNS المطلوبة' : '2. Required DNS Records'}</h3>
                  </div>
-                 {activeStep === 2 && (
-                    <button onClick={() => setActiveStep(1)} className="text-[10px] font-black text-gray-400 uppercase hover:text-red-500 transition-colors">{isRtl ? 'تغيير الدومين' : 'Change Domain'}</button>
-                 )}
+                 <button onClick={() => setActiveStep(1)} className="text-[10px] font-black text-blue-600 uppercase hover:underline">{isRtl ? 'تعديل الدومين' : 'Edit Domain'}</button>
               </div>
-
               <div className="space-y-8">
-                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-3xl border border-amber-100 dark:border-amber-900/20 flex gap-4">
-                    <AlertTriangle className="text-amber-500 shrink-0" size={24} />
-                    <p className="text-xs font-bold text-amber-800 dark:text-amber-400 leading-relaxed">
+                 <div className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/20 flex gap-4">
+                    <Info className="text-blue-500 shrink-0" size={24} />
+                    <p className="text-xs font-bold text-blue-800 dark:text-blue-400 leading-relaxed">
                        {isRtl 
-                         ? 'يرجى التوجه إلى لوحة تحكم الدومين الخاص بك وإضافة السجل التالي لكي نستطيع ربط بطاقتك.' 
-                         : 'Please go to your domain control panel and add the following record so we can link your card.'}
+                         ? `توجه إلى لوحة تحكم الدومين الخاص بك (${domainInput.split('.').slice(-2).join('.')}) وأضف سجل CNAME جديد بالقيم التالية:` 
+                         : `Go to your domain control panel (${domainInput.split('.').slice(-2).join('.')}) and add a new CNAME record with these values:`}
                     </p>
                  </div>
-
                  <div className="overflow-hidden rounded-3xl border border-gray-100 dark:border-gray-800">
-                    <table className="w-full">
+                    <table className="w-full text-sm">
                        <thead className="bg-gray-50 dark:bg-gray-800 text-[10px] font-black uppercase text-gray-400 border-b">
                           <tr>
-                             <td className="px-6 py-4">{isRtl ? 'النوع' : 'Type'}</td>
-                             <td className="px-6 py-4">{isRtl ? 'المضيف' : 'Host'}</td>
-                             <td className="px-6 py-4">{isRtl ? 'القيمة' : 'Value'}</td>
+                             <td className="px-6 py-4">{isRtl ? 'النوع (Type)' : 'Type'}</td>
+                             <td className="px-6 py-4">{isRtl ? 'المضيف (Host)' : 'Host'}</td>
+                             <td className="px-6 py-4">{isRtl ? 'القيمة (Value)' : 'Value'}</td>
                              <td className="px-6 py-4"></td>
                           </tr>
                        </thead>
                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                          <tr>
-                             <td className="px-6 py-6 font-black text-blue-600">CNAME</td>
-                             <td className="px-6 py-6 font-bold dark:text-white">{domainInput.split('.')[0] || 'cards'}</td>
-                             <td className="px-6 py-6 font-mono text-xs dark:text-gray-300">nodes.nextid.my</td>
+                          <tr className="group">
+                             <td className="px-6 py-6 font-black text-indigo-600">CNAME</td>
+                             <td className="px-6 py-6 font-bold dark:text-white">
+                                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs font-mono">{hostValue}</span>
+                             </td>
+                             <td className="px-6 py-6 font-mono text-xs dark:text-gray-300">
+                                <div className="flex items-center gap-2">
+                                   <span className="text-blue-600 font-black">{MASTER_NODE_URL}</span>
+                                </div>
+                             </td>
                              <td className="px-6 py-6 text-right">
-                                <button 
-                                  onClick={() => handleCopy('nodes.nextid.my', 'dns-val')}
-                                  className={`p-2 rounded-xl transition-all ${copied === 'dns-val' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-indigo-600 hover:text-white'}`}
-                                >
-                                   {copied === 'dns-val' ? <CheckCircle2 size={16}/> : <Copy size={16}/>}
+                                <button onClick={() => handleCopy(MASTER_NODE_URL, 'dns-val')} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-black text-[10px] uppercase transition-all ${copied === 'dns-val' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-indigo-600 hover:text-white'}`}>
+                                   {copied === 'dns-val' ? <Check size={14}/> : <Copy size={14}/>} {copied === 'dns-val' ? t('تم النسخ') : t('نسخ القيمة')}
                                 </button>
                              </td>
                           </tr>
                        </tbody>
                     </table>
                  </div>
-
-                 {activeStep === 2 && (
-                    <button 
-                      onClick={handleConnect}
-                      disabled={isSaving}
-                      className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                       {isSaving ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-                       {isRtl ? 'لقد قمت بإضافة السجلات، تحقق الآن' : 'I added the records, verify now'}
-                    </button>
-                 )}
+                 <button onClick={() => setActiveStep(3)} className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3">
+                    <CheckCircle size={20} /> {isRtl ? 'لقد قمت بإضافة السجلات، بانتظار التفعيل' : 'Records added, awaiting activation'}
+                 </button>
               </div>
            </div>
 
-           {/* Step 3: Verification & SSL */}
-           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 3 ? 'opacity-50 grayscale scale-[0.98]' : 'scale-100 shadow-emerald-500/5'}`}>
-              <div className="flex items-center gap-4 mb-8">
-                 <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl flex items-center justify-center">
-                    <CheckCircle2 size={24} />
-                 </div>
-                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? '3. بانتظار التفعيل العالمي' : '3. Awaiting Propagation'}</h3>
-              </div>
-              
-              <div className="text-center py-10 space-y-6">
+           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 3 ? 'opacity-40 grayscale pointer-events-none scale-[0.98]' : 'scale-100'}`}>
+              <div className="text-center py-10 space-y-8">
                  <div className="relative inline-block">
-                    <Globe size={80} className="text-emerald-500 animate-pulse" />
-                    <div className="absolute top-0 right-0 w-6 h-6 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
-                       <Clock size={16} className="text-amber-500" />
+                    <div className="w-32 h-32 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center animate-pulse">
+                       <Globe size={64} className="text-emerald-500" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 bg-white dark:bg-gray-900 p-2 rounded-full shadow-lg border">
+                       <Clock size={24} className="text-amber-500" />
                     </div>
                  </div>
-                 <div className="space-y-2">
-                    <h4 className="text-2xl font-black dark:text-white">{isRtl ? 'الدومين قيد التحقق' : 'Domain in Verification'}</h4>
-                    <p className="text-gray-400 font-bold max-sm mx-auto leading-relaxed">
-                       {isRtl 
-                         ? 'تم استلام طلبك. نقوم الآن بالتحقق من سجلات الـ DNS وإصدار شهادة SSL أمنية لاسم النطاق الخاص بك.' 
-                         : 'Request received. We are verifying DNS records and issuing a secure SSL certificate for your domain.'}
-                    </p>
+                 <div className="space-y-3">
+                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'الدومين قيد التفعيل' : 'Activation in Progress'}</h3>
+                    <p className="text-gray-400 font-bold max-w-sm mx-auto leading-relaxed">{isRtl ? 'طلبك الآن قيد المراجعة الفنية. سيتم تفعيل الربط وإصدار شهادة الحماية خلال فترة قصيرة.' : 'Your request is under technical review. Connection and SSL will be active shortly.'}</p>
                  </div>
-                 <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl inline-flex items-center gap-3">
-                    <span className="text-[10px] font-black uppercase text-gray-400">{isRtl ? 'الحالة الحالية:' : 'Current Status:'}</span>
-                    <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-full">{t('domainPending')}</span>
+                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                    <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center gap-3 border">
+                       <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('domainPending')}</span>
+                    </div>
+                    <button onClick={() => window.location.reload()} className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all">
+                       <RefreshCcw size={20} />
+                    </button>
                  </div>
               </div>
            </div>
-
         </div>
 
-        {/* Right Sidebar: Best Practices & Tips */}
         <div className="lg:col-span-4 space-y-8">
-           
            <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in-right">
               <div className="flex items-center gap-3">
                  <MagicIcon className="text-blue-600" size={24} />
                  <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{t('bestPractices')}</h3>
               </div>
-
               <div className="space-y-6">
-                 <div className="flex gap-4 group">
-                    <div className="w-10 h-10 shrink-0 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
-                       <ArrowLeftRight size={18} />
-                    </div>
-                    <div>
-                       <h4 className="text-xs font-black dark:text-white uppercase mb-1">{isRtl ? 'استخدم دومين فرعي' : 'Use a Subdomain'}</h4>
-                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
-                          {isRtl 
-                            ? 'يفضل استخدام دومين مثل (card.domain.com) بدلاً من الدومين الرئيسي للحفاظ على عمل موقعك الأساسي بشكل منفصل.' 
-                            : 'Prefer using (card.domain.com) instead of the main domain to keep your core website working independently.'}
-                       </p>
-                    </div>
-                 </div>
-
-                 <div className="flex gap-4 group">
-                    <div className="w-10 h-10 shrink-0 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
-                       <Shield size={18} />
-                    </div>
-                    <div>
-                       <h4 className="text-xs font-black dark:text-white uppercase mb-1">{isRtl ? 'تفعيل الحماية (SSL)' : 'SSL Security'}</h4>
-                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
-                          {isRtl 
-                            ? 'نحن نوفر شهادة SSL مجانية وتلقائية. لا تحاول رفع شهادة خاصة بك من لوحة تحكم الدومين لتجنب التعارض.' 
-                            : 'We provide a free automatic SSL. Do not try to upload your own cert from domain panel to avoid conflicts.'}
-                       </p>
-                    </div>
-                 </div>
-
-                 <div className="flex gap-4 group">
-                    <div className="w-10 h-10 shrink-0 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
-                       <Zap size={18} />
-                    </div>
-                    <div>
-                       <h4 className="text-xs font-black dark:text-white uppercase mb-1">{isRtl ? 'قيمة الـ TTL' : 'TTL Value'}</h4>
-                       <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
-                          {isRtl 
-                            ? 'عند إضافة السجل، اختر أقل قيمة ممكنة للـ TTL (مثلاً 300 ثانية) لتسريع عملية الربط.' 
-                            : 'When adding the record, choose the lowest possible TTL value (e.g., 300s) to speed up connection.'}
-                       </p>
-                    </div>
-                 </div>
+                 {[
+                   { icon: ArrowLeftRight, title: isRtl ? 'استخدم دومين فرعي' : 'Subdomain is Better', desc: isRtl ? 'مثل card.yoursite.com للحفاظ على موقعك الرئيسي مستقلاً.' : 'Like card.yoursite.com to keep your main site independent.' },
+                   { icon: Shield, title: isRtl ? 'حماية SSL مجانية' : 'Free SSL Included', desc: isRtl ? 'نحن نوفر تشفيراً كاملاً للرابط الخاص بك فور تفعيله.' : 'Full encryption is provided automatically upon activation.' },
+                   { icon: Zap, title: isRtl ? 'سرعة التفعيل' : 'Fast Activation', desc: isRtl ? 'تأكد من ضبط الـ DNS بدقة ليعمل النظام آلياً.' : 'Ensure DNS is set correctly for automatic processing.' }
+                 ].map((item, i) => (
+                   <div key={i} className="flex gap-4 group">
+                      <div className="w-10 h-10 shrink-0 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
+                         <item.icon size={18} />
+                      </div>
+                      <div>
+                         <h4 className="text-xs font-black dark:text-white uppercase mb-1">{item.title}</h4>
+                         <p className="text-[10px] font-bold text-gray-400 leading-relaxed">{item.desc}</p>
+                      </div>
+                   </div>
+                 ))}
               </div>
-
               <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
-                 <div className="p-5 bg-blue-50 dark:bg-blue-900/10 rounded-[2rem] space-y-4">
-                    <div className="flex items-center gap-3">
-                       <HelpCircle className="text-blue-600" size={18} />
-                       <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">{isRtl ? 'هل تحتاج مساعدة؟' : 'Need Help?'}</span>
-                    </div>
-                    <p className="text-[9px] font-bold text-gray-400 leading-relaxed">
-                       {isRtl 
-                         ? 'إذا لم تكن خبيراً في إعدادات الـ DNS، يمكن لفريقنا القيام بذلك نيابة عنك. تواصل معنا عبر الدعم الفني.' 
-                         : 'If you are not an expert in DNS, our team can do it for you. Contact us via technical support.'}
-                    </p>
-                    <button 
-                      onClick={() => navigate(`/${lang}/custom-orders`)}
-                      className="w-full py-3 bg-white dark:bg-gray-800 text-blue-600 rounded-xl font-black text-[9px] uppercase shadow-sm border border-blue-100"
-                    >
-                       {isRtl ? 'طلب مساعدة تقنية' : 'Request Tech Support'}
-                    </button>
+                 <div className="p-5 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] space-y-4 text-center">
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{isRtl ? 'هل واجهت مشكلة؟' : 'Need help?'}</p>
+                    <a href={`https://wa.me/966560817601`} target="_blank" className="w-full py-3 bg-white dark:bg-gray-800 text-blue-600 rounded-xl font-black text-[9px] uppercase shadow-sm border border-blue-100 flex items-center justify-center gap-2">
+                       <MessageCircle size={14} /> {isRtl ? 'الدعم الفني المباشر' : 'Live Technical Support'}
+                    </a>
                  </div>
               </div>
            </div>
-
-           <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-8 rounded-[3rem] text-white shadow-xl space-y-6 relative overflow-hidden group">
+           <div className="bg-gradient-to-br from-slate-900 to-black p-8 rounded-[3rem] text-white shadow-xl space-y-6 relative overflow-hidden group">
               <div className="relative z-10 space-y-4">
-                 <h4 className="text-xl font-black leading-tight">{isRtl ? 'المظهر النهائي' : 'The End Result'}</h4>
-                 <p className="text-blue-100 text-[10px] font-bold leading-relaxed">
-                    {isRtl 
-                      ? 'عند الانتهاء، ستظهر بطاقتك مباشرة عند طلب الدومين الخاص بك في المتصفح مع قفل الحماية الأخضر.' 
-                      : 'When finished, your card will appear directly when requesting your domain in the browser with the green security lock.'}
-                 </p>
+                 <h4 className="text-xl font-black leading-tight">{isRtl ? 'المظهر النهائي' : 'Live Appearance'}</h4>
                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <Lock size={12} className="text-emerald-400" />
-                       <span className="text-[10px] font-mono opacity-80">https://cards.you.com</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                       <Lock size={12} className="text-emerald-400 shrink-0" />
+                       <span className="text-[10px] font-mono opacity-80 truncate">https://{domainInput || 'your-domain.com'}</span>
                     </div>
                     <ExternalLink size={12} className="opacity-40" />
                  </div>
+                 <p className="text-white/40 text-[9px] font-bold leading-relaxed">
+                    {isRtl ? "ستظهر بطاقتك بهذا الرابط مع قفل الحماية الأخضر" : "Your card will appear with this URL and the green lock."}
+                 </p>
               </div>
               <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 transition-transform">
                  <Monitor size={140} />
               </div>
            </div>
-
         </div>
       </div>
-
     </div>
   );
 };

@@ -68,8 +68,29 @@ const sanitizeData = (data: any) => {
   return clean;
 };
 
-// --- User Management ---
+// --- البحث عن بطاقة بالدومين المخصص ---
+export const getCardByDomain = async (domain: string) => {
+  try {
+    const q = query(
+      collection(db, "public_cards"),
+      where("customDomain", "==", domain.toLowerCase()),
+      where("domainStatus", "==", "active"),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const cardData = snap.docs[0].data();
+      // تحديث عداد المشاهدات
+      updateDoc(doc(db, "public_cards", snap.docs[0].id), { viewCount: increment(1) }).catch(() => {});
+      return cardData;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
 
+// --- User Management ---
 export const searchUsersByEmail = async (emailSearch: string) => {
   if (!auth.currentUser) return [];
   if (!emailSearch || emailSearch.length < 3) return [];
@@ -143,7 +164,6 @@ export const getAllUsersWithStats = async () => {
 };
 
 // --- Auth Helpers ---
-
 export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
   const isAr = lang === 'ar';
   switch (code) {
@@ -160,7 +180,6 @@ export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => 
 };
 
 // --- App Core ---
-
 export const getSiteSettings = async () => {
   try {
     const snap = await getDoc(doc(db, "settings", "global"));

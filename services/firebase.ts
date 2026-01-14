@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
@@ -233,6 +234,29 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
     });
   }
 }
+
+// --- البحث عن بطاقة بالدومين المخصص لخدمة الربط البرمجي ---
+// Fix: Added getCardByDomain export to services/firebase.ts to resolve App.tsx import error
+export const getCardByDomain = async (domain: string) => {
+  try {
+    const q = query(
+      collection(db, "public_cards"),
+      where("customDomain", "==", domain.toLowerCase()),
+      where("domainStatus", "==", "active"),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const cardData = snap.docs[0].data();
+      // تحديث عداد المشاهدات
+      updateDoc(doc(db, "public_cards", snap.docs[0].id), { viewCount: increment(1) }).catch(() => {});
+      return cardData;
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
 
 export const getCardBySerial = async (serialId: string) => {
   try {
