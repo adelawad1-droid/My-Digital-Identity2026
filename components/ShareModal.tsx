@@ -24,7 +24,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
 
-  // التعرف التلقائي على النظام (iOS / Android)
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   useEffect(() => {
@@ -71,40 +70,42 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      // إعطاء وقت كافٍ لتحميل الصور والخطوط
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 600));
       const captureTarget = document.getElementById('share-card-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
-      // تحسين خيارات الالتقاط لمنع القص وضمان الجودة
       // @ts-ignore
       const canvas = await window.html2canvas(captureTarget, {
         useCORS: true, 
         allowTaint: false,
-        scale: 2, // دقة عالية
+        scale: 2, 
         backgroundColor: data.isDark ? '#0a0a0c' : '#ffffff',
         logging: false,
         width: 400,
-        // إجبار الكاميرا على الالتقاط من أعلى العنصر وتجاهل تمرير الصفحة
+        // الحل الجذري: تصفير كل أنواع الإزاحة لضمان البدء من أعلى العنصر تماماً
+        x: 0,
+        y: 0,
         scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight
+        scrollY: 0,
+        onclone: (clonedDoc: Document) => {
+          // التأكد من أن العنصر المستنسخ في ذاكرة المكتبة ليس له أي هوامش
+          const el = clonedDoc.getElementById('share-card-capture-area');
+          if (el) el.style.marginTop = '0';
+        }
       });
 
-      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.90));
       
       if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'card.jpg', { type: 'image/jpeg' })] })) {
-        const file = new File([blob], `${data.id}.jpg`, { type: 'image/jpeg' });
+        const file = new File([blob], `identity-${data.id}.jpg`, { type: 'image/jpeg' });
         await navigator.share({
           files: [file],
           title: data.name,
           text: getProfessionalText()
         });
       } else {
-        // تحميل الصورة في حال عدم توفر مشاركة الملفات
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.href = canvas.toDataURL('image/jpeg', 0.90);
         link.download = `identity-${data.id}.jpg`;
         link.click();
       }
@@ -119,12 +120,11 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      {/* منطقة الالتقاط المخفية - تم تحسينها لتكون مرنة الطول */}
-      <div className="fixed top-0 left-0 -translate-x-[3000px] pointer-events-none" style={{ width: '400px' }}>
-          <div id="share-card-capture-area" className="bg-white dark:bg-black overflow-hidden flex flex-col" style={{ width: '400px', height: 'auto' }}>
-             <div className="pb-10"> {/* مسافة أمان سفلية */}
-               <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
-             </div>
+      
+      {/* منطقة الالتقاط - تم نقلها للأعلى تماماً وإضافة paddingTop كحماية */}
+      <div className="fixed top-0 left-0 -translate-x-[4000px] pointer-events-none" style={{ width: '400px' }}>
+          <div id="share-card-capture-area" className="bg-white dark:bg-black overflow-hidden flex flex-col" style={{ width: '400px', height: 'auto', paddingTop: '40px', paddingBottom: '40px' }}>
+              <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} />
           </div>
       </div>
 
