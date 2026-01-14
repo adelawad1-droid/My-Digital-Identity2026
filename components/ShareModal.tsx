@@ -71,8 +71,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      // إعطاء وقت كافٍ جداً لتحميل الصور والخطوط
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // إعطاء وقت كافٍ لتحميل الصور والخطوط
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       const captureTarget = document.getElementById('share-card-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
@@ -81,19 +81,21 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
       const canvas = await window.html2canvas(captureTarget, {
         useCORS: true, 
         allowTaint: false,
-        scale: 2, // دقة عالية جداً
+        scale: 2, // دقة عالية
         backgroundColor: data.isDark ? '#0a0a0c' : '#ffffff',
         logging: false,
-        // تجاهل الموقع النسبي لضمان عدم القطع
+        // تحسين الأبعاد لتناسب معاينة الواتساب (نسبة 3:4 أو 4:5)
+        width: 450,
+        height: 650, // ارتفاع ثابت يركز على الهوية والترويسة
+        windowWidth: 450,
+        windowHeight: 650,
         x: 0,
         y: 0,
         scrollX: 0,
-        scrollY: 0,
-        windowWidth: 450,
-        windowHeight: captureTarget.scrollHeight + 100 // الارتفاع الكلي الفعلي للبطاقة
+        scrollY: 0
       });
 
-      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.90));
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
       
       if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'card.jpg', { type: 'image/jpeg' })] })) {
         const file = new File([blob], `${data.id || 'card'}.jpg`, { type: 'image/jpeg' });
@@ -105,7 +107,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
       } else {
         // تحميل الصورة في حال عدم توفر مشاركة الملفات مباشرة
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/jpeg', 0.90);
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
         link.download = `identity-${data.id || 'card'}.jpg`;
         link.click();
       }
@@ -121,10 +123,15 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
       
-      {/* منطقة الالتقاط المخفية والمحسنة */}
+      {/* منطقة الالتقاط المخفية والمحسنة لتناسب الواتساب */}
       <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '450px', zIndex: -100 }}>
-          <div id="share-card-capture-area" className="bg-white dark:bg-black flex flex-col" style={{ width: '450px', height: 'auto', minHeight: '800px' }}>
-             <div className="w-full pb-20"> {/* مسافة أمان سفلية لمنع القطع من الأسفل */}
+          <div 
+            id="share-card-capture-area" 
+            className="bg-white dark:bg-black overflow-hidden" 
+            style={{ width: '450px', height: '650px' }}
+          >
+             <div className="w-full h-full scale-[1.0] origin-top">
+               {/* نمرر forCapture لتقليل المسافات الداخلية في المعاينة */}
                <CardPreview data={data} lang={lang} customConfig={customConfig} hideSaveButton={true} isFullFrame={true} forCapture={true} />
              </div>
           </div>

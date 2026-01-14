@@ -1,4 +1,3 @@
-
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -15,7 +14,7 @@ interface CardPreviewProps {
   isFullFrame?: boolean; 
   hideHeader?: boolean; 
   bodyOffsetYOverride?: number;
-  forCapture?: boolean; // خاصية جديدة لتحديد ما إذا كان العرض لغرض التقاط صورة
+  forCapture?: boolean; 
 }
 
 const MembershipBar = ({ 
@@ -164,7 +163,6 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   // دالة مساعدة لتحديد ما إذا كان يجب استخدام crossOrigin
   const getImgProps = (url: string) => {
     if (!url) return {};
-    // نستخدم anonymous فقط إذا كان الرابط خارجياً (http) وكنا في وضع الالتقاط
     const isExternal = url.startsWith('http');
     if (forCapture && isExternal) {
       return { src: url, crossOrigin: 'anonymous' as const };
@@ -351,11 +349,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
   const bodyContentStyles: React.CSSProperties = {
-    // تقليل الاعتماد على نوع الترويسة في "الهوامش" لضمان ثبات المعاينة
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? '40px' : (headerType.startsWith('side') ? '40px' : '-40px')),
     transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
     borderRadius: `${data.bodyBorderRadius ?? config.bodyBorderRadius ?? 48}px`,
     paddingTop: '24px',
+    paddingBottom: forCapture ? '0px' : '24px', // تقليل التعبئة السفلية عند الالتقاط
     position: 'relative',
     zIndex: 20,
     width: (needsSideMargins || hideHeader) ? 'calc(100% - 32px)' : '100%',
@@ -366,7 +364,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     textAlign: config.contentAlign || 'center',
     marginLeft: headerType === 'side-left' ? '28%' : (headerType === 'side-right' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
     marginRight: headerType === 'side-right' ? '28%' : (headerType === 'side-left' ? '2%' : ((needsSideMargins || hideHeader) ? 'auto' : '0')),
-    minHeight: '400px',
+    minHeight: forCapture ? '200px' : '400px', // ارتفاع أصغر عند التصوير
     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
     boxShadow: (needsSideMargins || hideHeader) ? '0 25px 50px -12px rgba(0, 0, 0, 0.15)' : 'none',
     fontFamily: 'inherit'
@@ -393,7 +391,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const featureBg = config.bodyFeatureBgColor || themeColor;
   const featureTextColor = config.bodyFeatureTextColor || '#ffffff';
   const isFeatureGlassy = config.bodyFeatureGlassy;
-  const featureHeight = config.bodyFeatureHeight || 45;
+  const featureContent_Height = config.bodyFeatureHeight || 45;
   const featureRadius = config.bodyFeatureBorderRadius ?? 16;
   const featureOffsetY = data.bodyFeatureOffsetY ?? config.bodyFeatureOffsetY ?? 0;
   const featureOffsetX = data.bodyFeatureOffsetX ?? config.bodyFeatureOffsetX ?? 0;
@@ -509,7 +507,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
 
   return (
     <div 
-      className={`w-full min-h-full flex flex-col transition-all duration-500 relative overflow-hidden isolate ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
+      className={`w-full ${forCapture ? 'h-full' : 'min-h-full'} flex flex-col transition-all duration-500 relative overflow-hidden isolate ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
       style={{ 
         backgroundColor: finalCardBaseGroundColor,
         clipPath: isFullFrame ? 'none' : 'inset(0 round 2.25rem)',
@@ -554,7 +552,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
         </div>
       )}
 
-      <div className="flex flex-col flex-1 px-4 sm:px-6" style={{ ...bodyContentStyles, fontFamily: 'inherit' }}>
+      <div className={`flex flex-col flex-1 ${forCapture ? 'px-4' : 'px-4 sm:px-6'}`} style={{ ...bodyContentStyles, fontFamily: 'inherit' }}>
         {showProfileImage && (
           <div className={`relative ${getAvatarRadiusClasses()} z-30 shrink-0 mx-auto transition-all`} 
                data-element-id="avatar"
@@ -621,7 +619,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  marginLeft: `-${featurePaddingX}px`,
                  marginRight: `-${featurePaddingX}px`,
                  borderRadius: `${featureRadius}px`,
-                 minHeight: `${featureHeight}px`,
+                 minHeight: `${featureContent_Height}px`,
                  backdropFilter: isFeatureGlassy ? 'blur(10px)' : 'none',
                  WebkitBackdropFilter: isFeatureGlassy ? 'blur(15px)' : 'none',
                  border: isFeatureGlassy ? `1px solid rgba(${hexToRgb(featureBg).string}, 0.3)` : 'none',
@@ -732,6 +730,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     <Phone size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('call')}</span>
                   </a>
                 )}
+                {/* Fix: Removed undefined 'showAvatar_Social' variable */}
                 {showWhatsapp && data.whatsapp && (
                   <a href={`https://wa.me/${data.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(whatsappBtnColor), fontFamily: 'inherit' }}>
                     <MessageCircle size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')}</span>
@@ -868,7 +867,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            {showSocialLinks && data.socialLinks?.length > 0 && (
              <div 
                data-element-id="socialLinks"
-               className="mx-auto py-6" 
+               className={`mx-auto ${forCapture ? 'py-4' : 'py-6'}`} 
                style={{ 
                  display: sCols > 0 ? 'grid' : 'flex',
                  flexWrap: sCols > 0 ? 'nowrap' : 'wrap',
@@ -900,7 +899,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showQrCode && (
-             <div data-element-id="qrCode" className="pt-12 flex flex-col items-center gap-3" style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)`, fontFamily: 'inherit' }}>
+             <div data-element-id="qrCode" className={`${forCapture ? 'pt-6' : 'pt-12'} flex flex-col items-center gap-3`} style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)`, fontFamily: 'inherit' }}>
                <div className="transition-all duration-700 overflow-hidden shadow-2xl p-1 bg-white" 
                     style={{ 
                       border: `${qrBorderWidth}px solid ${qrBorderColor}`, 
@@ -913,7 +912,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
         </div>
       </div>
-      <div className="h-24 shrink-0" />
+      {!forCapture && <div className="h-24 shrink-0" />}
     </div>
   );
 };
