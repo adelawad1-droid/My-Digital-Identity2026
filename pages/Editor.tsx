@@ -858,16 +858,48 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             )}
 
                             {activeTab === 'event' && (
-                              <div className="space-y-8 animate-fade-in">
-                                 <div className="bg-rose-50 dark:bg-rose-900/10 p-5 rounded-[1.5rem] flex items-center justify-between border border-rose-100 dark:border-rose-900/30">
-                                    <div className="flex items-center gap-3"><PartyPopper size={20} className="text-rose-600" /><p className="font-black dark:text-white text-xs uppercase">{t('عرض المناسبة والعد التنازلي', 'Event & Countdown')}</p></div>
-                                    <button type="button" onClick={() => handleChange('showOccasion', !formData.showOccasion)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showOccasion ? 'bg-rose-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showOccasion ? 'right-6' : 'right-0.5') : (formData.showOccasion ? 'left-6' : 'left-0.5')}`} /></button>
-                                 </div>
-                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2 md:col-span-2"><label className={labelClasses}>{t('عنوان المناسبة', 'Event Title')}</label><input type="text" value={formData.occasionTitleAr} onChange={e => handleChange('occasionTitleAr', e.target.value)} className={inputClasses} /></div>
-                                    <div className="space-y-2"><label className={labelClasses}>{t('تاريخ ووقت المناسبة', 'Date & Time')}</label><input type="datetime-local" value={formData.occasionDate} onChange={e => handleChange('occasionDate', e.target.value)} className={inputClasses} /></div>
-                                    <div className="space-y-2"><label className={labelClasses}>{t('لون عداد الوقت', 'Timer Color')}</label><ColorPickerUI label="" field="occasionPrimaryColor" icon={Timer} /></div>
-                                 </div>
+                              <div className="space-y-10 animate-fade-in">
+                                <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                                  <div className="flex items-center justify-between p-6 bg-rose-50 dark:bg-rose-900/10 rounded-[2rem] border border-rose-100 dark:border-rose-900/30">
+                                    <div className="flex items-center gap-4">
+                                      <div className="p-3 bg-white dark:bg-rose-900/30 rounded-2xl text-rose-600 shadow-sm">
+                                        <PartyPopper size={24} />
+                                      </div>
+                                      <div>
+                                        <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{t('showOccasion')}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'تفعيل وإدارة عداد المناسبة' : 'Manage event countdown timer'}</p>
+                                      </div>
+                                    </div>
+                                    <button type="button" onClick={() => handleChange('showOccasion', !formData.showOccasion)} className={`w-14 h-7 rounded-full relative transition-all ${formData.showOccasion ? 'bg-rose-600 shadow-lg' : 'bg-gray-300 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showOccasion ? 'right-8' : 'right-1') : (formData.showOccasion ? 'left-8' : 'left-1')}`} /></button>
+                                  </div>
+
+                                  <div className={`space-y-8 transition-all duration-500 ${formData.showOccasion ? 'opacity-100' : 'opacity-40 pointer-events-none scale-[0.98]'}`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      <div className="space-y-2 md:col-span-2"><label className={labelClasses}>{t('occasionTitleAr')}</label><input type="text" value={formData.occasionTitleAr || ''} onChange={e => handleChange('occasionTitleAr', e.target.value)} className={inputClasses} placeholder={isRtl ? 'عنوان المناسبة' : 'Event Title'} /></div>
+                                      <div className="space-y-2"><label className={labelClasses}>{t('accentColorTimer')}</label><ColorPickerUI label="" field="occasionPrimaryColor" icon={Timer} /></div>
+                                      <div className="space-y-2"><label className={labelClasses}>{t('occasionDate')}</label><input type="datetime-local" value={formData.occasionDate || ''} onChange={e => handleChange('occasionDate', e.target.value)} className={inputClasses} /></div>
+                                    </div>
+
+                                    <div className="pt-8 border-t dark:border-gray-800 space-y-6">
+                                       <div className="flex items-center gap-3 px-2">
+                                         <Wand2 className="text-rose-600" size={20} />
+                                         <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('advancedEditorTitle')}</h4>
+                                       </div>
+                                       
+                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div className="flex items-center justify-between p-4 bg-rose-50 dark:bg-rose-900/10 rounded-[1.5rem] border border-rose-100 dark:border-rose-900/30 shadow-sm">
+                                             <div className="flex items-center gap-3"><GlassWater size={18} className="text-rose-600" /><p className="font-black dark:text-white text-[10px] uppercase">{t('glassyEffect')}</p></div>
+                                             <button type="button" onClick={() => handleChange('occasionGlassy', !formData.occasionGlassy)} className={`w-12 h-6 rounded-full relative transition-all ${formData.occasionGlassy ? 'bg-rose-600 shadow-md' : 'bg-gray-300 dark:bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.occasionGlassy ? 'right-6' : 'right-0.5') : (formData.occasionGlassy ? 'left-6' : 'left-0.5')}`} /></button>
+                                          </div>
+                                       </div>
+
+                                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                          <ColorPickerUI label={isRtl ? 'خلفية المناسبة' : 'Event BG'} field="occasionBgColor" icon={Palette} />
+                                          <ColorPickerUI label={isRtl ? 'لون العنوان' : 'Title Color'} field="occasionTitleColor" icon={TypographyIcon} />
+                                       </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             )}
 
