@@ -177,7 +177,7 @@ const CustomRequest: React.FC<CustomRequestProps> = ({ lang }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           {/* Left: Form */}
-          <div className="lg:col-span-7 bg-white dark:bg-gray-900 rounded-[3rem] p-8 md:p-12 shadow-2xl border border-gray-100 dark:border-gray-800 animate-fade-in-up">
+          <div className="lg:col-span-7 bg-white dark:bg-gray-900 rounded-[3rem] p-8 md:p-12 shadow-0 border border-gray-100 dark:border-gray-800 animate-fade-in-up">
             <div className="flex items-center gap-4 mb-10">
                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm">
                   <MessageSquare size={24} />

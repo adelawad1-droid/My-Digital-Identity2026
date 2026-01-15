@@ -180,7 +180,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       
       {showCelebration && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-blue-600/90 backdrop-blur-xl animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-2xl space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-0 space-y-6 animate-zoom-in">
               <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                  <PartyPopper size={48} />
               </div>

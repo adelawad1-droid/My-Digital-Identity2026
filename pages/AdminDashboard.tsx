@@ -954,7 +954,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'categories' && (
            <div className="space-y-10 animate-fade-in">
-              <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl">
+              <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0">
                  <div className="flex items-center gap-4 mb-8">
                     <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><FolderEdit size={24}/></div>
                     <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{editingCategoryId ? t('تعديل قسم', 'Edit Category') : t('إضافة قسم جديد', 'New Category')}</h2>
@@ -1027,7 +1027,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <button 
                             onClick={() => setSettings({...settings, avatarStorageType: 'database'})}
-                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-2xl scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                           >
                              <Database size={32} className={settings.avatarStorageType === 'database' ? 'text-white' : 'group-hover:text-indigo-500'} />
                              <div>
@@ -1039,7 +1039,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                           </button>
                           <button 
                             onClick={() => setSettings({...settings, avatarStorageType: 'firebase'})}
-                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType !== 'database' ? 'bg-blue-600 border-blue-600 text-white shadow-2xl scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType !== 'database' ? 'bg-blue-600 border-blue-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                           >
                              <Cloud size={32} className={settings.avatarStorageType !== 'database' ? 'text-white' : 'group-hover:text-blue-500'} />
                              <div>
@@ -1064,7 +1064,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                              <button 
                                key={storage.id}
                                onClick={() => setSettings({...settings, mediaStorageType: storage.id as any})}
-                               className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.mediaStorageType === storage.id ? `bg-${storage.color}-600 border-${storage.color}-600 text-white shadow-2xl scale-[1.02]` : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                               className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.mediaStorageType === storage.id ? `bg-${storage.color}-600 border-${storage.color}-600 text-white shadow-0 scale-[1.02]` : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                              >
                                 <storage.icon size={24} />
                                 <div>

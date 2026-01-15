@@ -100,7 +100,7 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
                 {isRtl ? 'الأكثر طلباً' : 'Most Popular'}
               </div>
             )}
-            <div className={`relative flex-1 bg-white dark:bg-[#0a0a0c] p-8 md:p-10 rounded-[3.5rem] border ${plan.isPopular ? 'border-amber-500/50 shadow-amber-500/5 ring-4 ring-amber-500/5' : 'border-gray-100 dark:border-white/5'} shadow-2xl flex flex-col transition-all duration-500 hover:-translate-y-2`}>
+            <div className={`relative flex-1 bg-white dark:bg-[#0a0a0c] p-8 md:p-10 rounded-[3.5rem] border ${plan.isPopular ? 'border-amber-500/50 shadow-amber-500/5 ring-4 ring-amber-500/5' : 'border-gray-100 dark:border-white/5'} shadow-0 flex flex-col transition-all duration-500 hover:-translate-y-2`}>
               <div className="flex justify-between items-start mb-8">
                  <div>
                     <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? plan.nameAr : plan.nameEn}</h3>

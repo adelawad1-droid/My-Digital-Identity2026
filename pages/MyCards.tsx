@@ -160,7 +160,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
       
       {/* Premium Upgrade Banner for Basic Users */}
       {!isPremium && cards.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 md:p-10 text-white shadow-0 relative overflow-hidden group">
            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div className="space-y-4 max-w-2xl">
                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -285,7 +285,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
         {filteredCards.map((card) => {
           const mStats = getMembershipStats(card);
           return (
-            <div key={card.id} className="bg-white dark:bg-[#0f0f12] rounded-[3rem] shadow-sm border border-gray-100 dark:border-gray-800/50 flex flex-col overflow-hidden group hover:shadow-2xl hover:shadow-blue-500/5 transition-all duration-500">
+            <div key={card.id} className="bg-white dark:bg-[#0f0f12] rounded-[3rem] shadow-sm border border-gray-100 dark:border-gray-800/50 flex flex-col overflow-hidden group hover:shadow-0 hover:shadow-blue-500/5 transition-all duration-500">
               <div className="p-8 pb-4 flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -409,7 +409,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
       {/* Modal: إدارة العضوية السريعة */}
       {membershipEditingCard && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-[3.5rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-zoom-in">
               <div className="p-8 bg-blue-600 text-white flex justify-between items-center">
                  <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
@@ -525,7 +525,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
 
       {cardToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-sm md:max-w-md rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                  <AlertTriangle size={40} />
               </div>

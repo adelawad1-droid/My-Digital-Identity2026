@@ -12,7 +12,7 @@ import {
   User
 } from "firebase/auth";
 import { 
-  getFirestore,
+  initializeFirestore,
   doc, 
   setDoc, 
   getDoc, 
@@ -49,7 +49,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Using initializeFirestore with experimentalForceLongPolling to fix connectivity issues
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 export const ADMIN_EMAIL = "adelawad1@gmail.com";

@@ -197,7 +197,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
             {floatingIcons.map((item, idx) => (
                 <div 
                     key={idx}
-                    className={`absolute ${item.pos} z-10 animate-float p-5 md:p-7 rounded-[2rem] bg-white/40 dark:bg-gray-800/40 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-2xl transition-all duration-700 hover:scale-125 hover:z-30 cursor-default group hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] ${item.glow}`}
+                    className={`absolute ${item.pos} z-10 animate-float p-5 md:p-7 rounded-[2rem] bg-white/40 dark:bg-gray-800/40 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-0 transition-all duration-700 hover:scale-125 hover:z-30 cursor-default group hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] ${item.glow}`}
                     style={{ animationDelay: item.delay }}
                 >
                     <div className={`absolute inset-0 ${item.bg} opacity-20 group-hover:opacity-40 transition-opacity rounded-[inherit]`}></div>
@@ -230,7 +230,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {cardTypes.map((type, idx) => (
-              <div key={idx} className="group relative bg-white dark:bg-[#0d111b] p-8 rounded-[3rem] border border-slate-100 dark:border-white/10 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div key={idx} className="group relative bg-white dark:bg-[#0d111b] p-8 rounded-[3rem] border border-slate-100 dark:border-white/10 shadow-sm hover:shadow-0 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
                 <div className={`absolute top-0 right-0 p-10 opacity-5 group-hover:scale-150 transition-transform duration-1000 pointer-events-none`}>
                   <type.icon size={120} />
                 </div>
@@ -315,7 +315,7 @@ const Home: React.FC<HomeProps> = ({ lang, onStart }) => {
       {/* Support Section - Redesigned to be horizontal like the provided image */}
       <section className="relative z-10 py-16 px-6 overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white dark:bg-[#0d111b] rounded-[2.5rem] p-6 md:p-10 border border-orange-100 dark:border-white/5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 group transition-all duration-500 hover:shadow-orange-500/10">
+          <div className="bg-white dark:bg-[#0d111b] rounded-[2.5rem] p-6 md:p-10 border border-orange-100 dark:border-white/5 shadow-0 flex flex-col md:flex-row items-center justify-between gap-8 group transition-all duration-500 hover:shadow-orange-500/10">
              {/* Decorative Background */}
              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-50/30 to-transparent dark:from-orange-900/5 pointer-events-none"></div>
              

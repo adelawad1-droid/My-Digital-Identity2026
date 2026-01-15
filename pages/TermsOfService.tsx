@@ -22,7 +22,7 @@ const TermsOfService: React.FC<TermsOfServiceProps> = ({ lang }) => {
       </section>
 
       <div className="max-w-4xl mx-auto px-6 -mt-10 relative z-20">
-        <div className="bg-white dark:bg-[#0d111b] rounded-[3rem] p-8 md:p-12 shadow-2xl border border-gray-100 dark:border-white/5 space-y-12">
+        <div className="bg-white dark:bg-[#0d111b] rounded-[3rem] p-8 md:p-12 shadow-0 border border-gray-100 dark:border-white/5 space-y-12">
           
           <div className="space-y-6">
             <div className="flex items-center gap-4 text-blue-600">

@@ -131,7 +131,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                {isRtl ? 'عذراً، ميزة ربط الدومين الخاص متاحة فقط لمشتركي الباقات الاحترافية.' : 'Sorry, the Custom Domain feature is only available for Pro subscribers.'}
             </p>
          </div>
-         <button onClick={() => navigate(`/${lang}/pricing`)} className="px-12 py-5 bg-amber-500 text-white rounded-[1.5rem] font-black uppercase shadow-xl hover:scale-105 transition-all">
+         <button onClick={() => navigate(`/${lang}/pricing`)} className="px-12 py-5 bg-amber-500 text-white rounded-[1.5rem] font-black uppercase shadow-0 hover:scale-105 transition-all">
             {t('upgradeToCustomize')}
          </button>
       </div>
@@ -143,7 +143,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
         <div className="flex items-center gap-6">
-           <div className="w-20 h-20 bg-blue-600 text-white rounded-[2.25rem] flex items-center justify-center shadow-2xl shadow-blue-500/20">
+           <div className="w-20 h-20 bg-blue-600 text-white rounded-[2.25rem] flex items-center justify-center shadow-0 shadow-blue-500/20">
               <Globe size={36} />
            </div>
            <div>
@@ -163,7 +163,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-8">
            
-           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl transition-all duration-500 ${activeStep !== 1 ? 'opacity-40 grayscale pointer-events-none scale-[0.98]' : 'scale-100'}`}>
+           <div className={`bg-white dark:bg-gray-900 p-8 md:p-10 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 transition-all duration-500 ${activeStep !== 1 ? 'opacity-40 grayscale pointer-events-none scale-[0.98]' : 'scale-100'}`}>
               <div className="flex items-center gap-4 mb-8">
                  <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl flex items-center justify-center">
                     <Smartphone size={24} />

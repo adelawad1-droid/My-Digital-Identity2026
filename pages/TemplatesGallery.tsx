@@ -220,12 +220,12 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
         </div>
         
         {isPrivate ? (
-           <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-2xl animate-pulse">
+           <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-0 animate-pulse">
              <ShieldCheck size={12} fill="currentColor" />
              {isRtl ? 'تصميم حصري' : 'Exclusive'}
            </div>
         ) : tmpl.isFeatured && (
-          <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-2xl">
+          <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-0">
             <Star size={12} fill="currentColor" />
             {isRtl ? 'باقة برو' : 'Pro Template'}
           </div>
@@ -282,7 +282,7 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                e.stopPropagation();
                onSelect(tmpl.id);
              }}
-             className={`${disabled ? 'bg-red-600' : 'bg-blue-600'} text-white px-12 py-5 rounded-[1.5rem] font-black text-xs uppercase shadow-2xl flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
+             className={`${disabled ? 'bg-red-600' : 'bg-blue-600'} text-white px-12 py-5 rounded-[1.5rem] font-black text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
            >
              {disabled ? (isRtl ? 'ترقية الباقة (تم الوصول للحد)' : 'Upgrade (Limit Reached)') : (isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate'))}
              {disabled ? <Zap size={18} /> : <Plus size={18} />}

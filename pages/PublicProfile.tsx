@@ -156,7 +156,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
              bodyOffsetYOverride={cardBodyOffset} 
            />
            <div className="mt-12 text-center flex flex-col items-center gap-8 px-6">
-              <nav><a href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl font-black text-sm shadow-2xl hover:scale-105 transition-all border group">
+              <nav><a href="/" className="inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-2xl font-black text-sm shadow-0 hover:scale-105 transition-all border group">
                   <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white group-hover:rotate-12 transition-transform" style={{ backgroundColor: primary }}><Plus size={18} /></div>
                   {isRtl ? 'أنشئ بطاقتك الرقمية الآن' : 'Create Your Digital Card Now'}
               </a></nav>
