@@ -332,7 +332,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 md:px-6 space-y-10 animate-fade-in-up">
+    <div className="max-w-[1840px] mx-auto px-4 md:px-6 space-y-10 animate-fade-in-up">
       {activeTab !== 'builder' && (
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-10">
           <div>
