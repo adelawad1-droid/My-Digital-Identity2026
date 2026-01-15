@@ -800,7 +800,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    }}
                  >
                     <div className="text-center space-y-4" style={{ fontFamily: 'inherit' }}>
-                       <h3 className="text-sm font-black dark:text-white uppercase tracking-widest opacity-80" style={{ fontFamily: 'inherit' }}>
+                       <h3 
+                         className="text-sm font-black uppercase tracking-widest opacity-80" 
+                         style={{ 
+                           color: data.occasionTitleColor || config.occasionTitleColor || (isDark ? '#ffffff' : 'inherit'),
+                           fontFamily: 'inherit' 
+                         }}
+                       >
                           {isRtl ? (data.occasionTitleAr || config.occasionTitleAr || 'مناسبة قادمة') : (data.occasionTitleEn || config.occasionTitleEn || 'Upcoming Occasion')}
                        </h3>
                        <CountdownTimer 
