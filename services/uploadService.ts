@@ -42,10 +42,10 @@ export const uploadImageToCloud = async (
       const blob = await base64ToBlob(processedBase64);
       const timestamp = Date.now();
       const userId = auth.currentUser?.uid || 'public';
-      const fileName = `${type}_${timestamp}_${Math.random().toString(36).substring(7)}.jpg`;
+      const fileName = `${type}_${timestamp}_${Math.random().toString(36).substring(7)}.${file.type === 'image/png' ? 'png' : 'jpg'}`;
       const storageRef = ref(storage, `uploads/${userId}/${type}/${fileName}`);
       
-      const metadata = { contentType: 'image/jpeg' };
+      const metadata = { contentType: file.type === 'image/png' ? 'image/png' : 'image/jpeg' };
       const snapshot = await uploadBytes(storageRef, blob, metadata);
       return await getDownloadURL(snapshot.ref);
     } catch (error) {
@@ -61,7 +61,7 @@ export const uploadImageToCloud = async (
       try {
         const formData = new FormData();
         const blob = await base64ToBlob(processedBase64);
-        const fileName = file.name || (type + '.jpg');
+        const fileName = file.name || (type + '.' + (file.type === 'image/png' ? 'png' : 'jpg'));
         formData.append('file', blob, fileName); 
         formData.append('type', type);
 
@@ -137,7 +137,9 @@ async function processImageClientSide(file: File, type: 'avatar' | 'background' 
             ctx.drawImage(img, 0, 0, width, height);
           }
           
-          const base64String = canvas.toDataURL('image/jpeg', quality);
+          // Use image/png for transparency support if input is PNG
+          const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          const base64String = canvas.toDataURL(outputMime, quality);
           resolve(base64String);
         };
       };

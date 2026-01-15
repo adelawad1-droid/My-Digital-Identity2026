@@ -294,6 +294,9 @@ export interface TemplateConfig {
   fontFamily?: string;
 
   customCss?: string;
+
+  profileImageWhiteMode?: boolean;
+  profileImageRemoveBg?: boolean;
 }
 
 export interface CardData {
@@ -478,6 +481,9 @@ export interface CardData {
   customDomain?: string; 
   domainStatus?: 'pending' | 'active' | 'failed';
   domainVerifiedAt?: string;
+
+  profileImageWhiteMode?: boolean;
+  profileImageRemoveBg?: boolean;
 }
 
 export interface VisualStyle {

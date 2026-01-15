@@ -1,4 +1,3 @@
-
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -504,6 +503,22 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       .replace(/<svg/g, `<svg preserveAspectRatio="none" style="${transformStyle}"`);
   };
 
+  const getProfileImageStyle = (): React.CSSProperties => {
+    let filter = '';
+    const whiteMode = data.profileImageWhiteMode ?? config.profileImageWhiteMode;
+    const removeBg = data.profileImageRemoveBg ?? config.profileImageRemoveBg;
+
+    if (whiteMode) {
+      filter += ' brightness(0) invert(1)';
+    }
+    
+    const style: React.CSSProperties = {
+      filter: filter.trim() || undefined,
+      mixBlendMode: removeBg ? 'multiply' : undefined
+    };
+    return style;
+  };
+
   return (
     <div 
       className={`w-full ${forCapture ? 'h-full' : 'min-h-full'} flex flex-col transition-all duration-500 relative overflow-hidden isolate ${isFullFrame ? 'rounded-none' : 'rounded-[2.25rem]'} ${isDark ? 'text-white' : 'text-gray-900'} ${hasGoldenFrame ? 'ring-[10px] ring-yellow-500/30 ring-inset shadow-[0_0_50px_rgba(234,179,8,0.3)]' : ''}`}
@@ -577,7 +592,15 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
             )}
 
             <div className={`w-full h-full ${getAvatarRadiusClasses(true)} overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center`}>
-              {finalProfileImage ? <img {...getImgProps(finalProfileImage)} className="w-full h-full object-cover" /> : <Camera size={40} className="text-gray-200" />}
+              {finalProfileImage ? (
+                <img 
+                  {...getImgProps(finalProfileImage)} 
+                  className="w-full h-full object-cover" 
+                  style={getProfileImageStyle()}
+                />
+              ) : (
+                <Camera size={40} className="text-gray-200" />
+              )}
             </div>
           </div>
         )}

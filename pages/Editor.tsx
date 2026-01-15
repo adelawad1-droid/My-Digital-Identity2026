@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -11,7 +12,7 @@ import {
   QrCode, Share2, Trash2, LogIn, Shapes, Navigation2, ImagePlus, Check, Search, AlertTriangle, Zap,
   Briefcase, ShieldCheck, Crown, ShoppingCart, Globe2, Star, ChevronRight, ChevronLeft,
   Quote, PhoneCall, MonitorDot, ArrowLeftRight, Box, SlidersHorizontal, Grid, Maximize2, ExternalLink, Lock,
-  ChevronDown
+  ChevronDown, Eraser, Layers
 } from 'lucide-react';
 import CardPreview from '../components/CardPreview';
 import SocialIcon, { BRAND_COLORS } from '../components/SocialIcon';
@@ -495,8 +496,28 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    </div>
                                    <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50/50 dark:bg-gray-950 rounded-[2rem] border border-dashed border-gray-100 dark:border-gray-800">
                                       <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-0 border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
-                                         {formData.profileImage ? <img src={formData.profileImage} className="w-full h-full object-cover" /> : <UserIcon size={32} className="text-gray-200" />}
-                                         {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
+                                         {formData.profileImage ? (
+                                           <>
+                                             <img 
+                                               src={formData.profileImage} 
+                                               className="w-full h-full object-cover" 
+                                               style={{
+                                                  filter: (formData.profileImageWhiteMode ? 'brightness(0) invert(1)' : undefined),
+                                                  mixBlendMode: (formData.profileImageRemoveBg ? 'multiply' : undefined)
+                                               }}
+                                             />
+                                             <button 
+                                               type="button" 
+                                               onClick={() => handleChange('profileImage', '')}
+                                               className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg shadow-lg hover:scale-110 transition-all z-10"
+                                             >
+                                               <Trash2 size={12} />
+                                             </button>
+                                           </>
+                                         ) : (
+                                           <UserIcon size={32} className="text-gray-200" />
+                                         )}
+                                         {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20"><Loader2 className="animate-spin text-white" /></div>}
                                       </div>
                                       <div className="flex-1 space-y-4 w-full">
                                          <input type="file" ref={fileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploading(true); try { const url = await uploadImageToCloud(f, 'avatar'); if (url) handleChange('profileImage', url); } finally { setIsUploading(false); } }} className="hidden" accept="image/*" />
@@ -504,6 +525,24 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <div className="grid grid-cols-6 gap-2 overflow-x-auto no-scrollbar">
                                             {AVATAR_PRESETS.map((p, idx) => <button key={idx} onClick={() => handleChange('profileImage', p)} className="w-10 h-10 rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-600 transition-all shrink-0"><img src={p} className="w-full h-full object-cover" /></button>)}
                                          </div>
+                                         
+                                         {formData.profileImage && (
+                                           <div className="grid grid-cols-2 gap-2 animate-fade-in">
+                                              <button 
+                                                onClick={() => handleChange('profileImageWhiteMode', !formData.profileImageWhiteMode)}
+                                                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${formData.profileImageWhiteMode ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}
+                                              >
+                                                <Layers size={14}/> {isRtl ? 'تحويل للأبيض' : 'White Mode'}
+                                              </button>
+                                              <button 
+                                                onClick={() => handleChange('profileImageRemoveBg', !formData.profileImageRemoveBg)}
+                                                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${formData.profileImageRemoveBg ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}
+                                                title={isRtl ? 'مفيد لإخفاء المربعات البيضاء حول الشعارات' : 'Useful for hiding white boxes around logos'}
+                                              >
+                                                <Eraser size={14}/> {isRtl ? 'حذف الخلفية' : 'Remove BG'}
+                                              </button>
+                                           </div>
+                                         )}
                                       </div>
                                    </div>
                                 </div>
@@ -744,6 +783,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                 <div className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-gray-900 relative">
                                                    <img src={link.imageUrl} className="w-full h-full object-cover" alt="Item" />
                                                    {isUploadingSpecialImg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 size={16} className="animate-spin text-white" /></div>}
+                                                   <button 
+                                                     type="button" 
+                                                     onClick={() => removeSpecialLink(link.id)}
+                                                     className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+                                                   >
+                                                     <Trash2 size={12} />
+                                                   </button>
                                                 </div>
                                                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                    <div className="space-y-1">
@@ -755,7 +801,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                                       <input type="text" value={isRtl ? link.titleAr : link.titleEn} onChange={e => updateSpecialLink(link.id, isRtl ? 'titleAr' : 'titleEn', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-xs font-bold dark:text-white outline-none focus:ring-2 focus:ring-pink-500" placeholder={t('أدخل العنوان', 'Enter Title')} />
                                                    </div>
                                                 </div>
-                                                <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-500 hover:text-red-500 rounded-xl transition-all self-center"><Trash2 size={18} /></button>
+                                                <button onClick={() => removeSpecialLink(link.id)} className="p-3 text-gray-500 hover:text-red-500 rounded-xl transition-all self-center hidden md:block"><Trash2 size={18} /></button>
                                              </div>
                                           ))}
                                        </div>
@@ -843,10 +889,21 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          </div>
                                          <div className="pt-4 border-t dark:border-gray-800">
                                             <input type="file" ref={bgFileInputRef} onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setIsUploadingBg(true); try { const url = await uploadImageToCloud(f, 'background'); if (url) { handleChange('backgroundImage', url); handleChange('themeType', 'image'); } } finally { setIsUploadingBg(false); } }} className="hidden" accept="image/*" />
-                                            <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgFileInputRef.current?.click(); }} className="w-full py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
-                                               {isUploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
-                                               {t('رفع خلفية خاصة للبطاقة', 'Upload Custom Background')}
-                                            </button>
+                                            <div className="flex gap-2">
+                                              <button type="button" onClick={() => { if (!auth.currentUser) setShowAuthWarning(true); else bgFileInputRef.current?.click(); }} className="flex-1 py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 transition-all">
+                                                 {isUploadingBg ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
+                                                 {t('رفع خلفية خاصة للبطاقة', 'Upload Custom Background')}
+                                              </button>
+                                              {formData.backgroundImage && (
+                                                <button 
+                                                  type="button" 
+                                                  onClick={() => { handleChange('backgroundImage', ''); handleChange('themeType', 'color'); }}
+                                                  className="p-5 bg-red-50 text-red-500 rounded-3xl border border-red-100 hover:bg-red-500 hover:text-white transition-all"
+                                                >
+                                                  <Trash2 size={24} />
+                                                </button>
+                                              )}
+                                            </div>
                                          </div>
                                       </div>
                                     )}
@@ -922,8 +979,21 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                           <div className="space-y-6 animate-fade-in">
                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="w-full h-32 rounded-2xl bg-white dark:bg-gray-900 shadow-inner overflow-hidden flex items-center justify-center relative border border-gray-100 dark:border-gray-800">
-                                                   {formData.cardBodyBackgroundImage ? <img src={formData.cardBodyBackgroundImage} className="w-full h-full object-cover" /> : <ImageIcon size={32} className="text-gray-200" />}
-                                                   {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="animate-spin text-white" /></div>}
+                                                   {formData.cardBodyBackgroundImage ? (
+                                                      <>
+                                                        <img src={formData.cardBodyBackgroundImage} className="w-full h-full object-cover" />
+                                                        <button 
+                                                          type="button" 
+                                                          onClick={() => { handleChange('cardBodyBackgroundImage', ''); handleChange('cardBodyThemeType', 'color'); }}
+                                                          className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-lg shadow-lg hover:scale-110 transition-all z-10"
+                                                        >
+                                                          <Trash2 size={14} />
+                                                        </button>
+                                                      </>
+                                                   ) : (
+                                                      <ImageIcon size={32} className="text-gray-200" />
+                                                   )}
+                                                   {isUploadingBodyBg && <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20"><Loader2 className="animate-spin text-white" /></div>}
                                                 </div>
                                                 <div className="space-y-3">
                                                   <input type="file" ref={bodyBgFileInputRef} onChange={handleBodyBgUpload} className="hidden" accept="image/*" />
