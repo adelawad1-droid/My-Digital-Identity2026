@@ -42,7 +42,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1200));
       const captureTarget = document.getElementById('pro-share-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
@@ -50,16 +50,15 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
       const canvas = await window.html2canvas(captureTarget, {
         useCORS: true, 
         allowTaint: false,
-        scale: 3, 
+        scale: 2, 
         backgroundColor: "#000000",
         logging: false,
         width: 1080,
-        height: 1080,
+        height: 1350, 
         onclone: (clonedDoc) => {
           const el = clonedDoc.getElementById('pro-share-capture-area');
           if (el) {
             el.style.direction = isRtl ? 'rtl' : 'ltr';
-            // إجبار عدم وجود مسافات بين الحروف العربية
             const textElements = el.querySelectorAll('h2, h4, p, span');
             textElements.forEach((node: any) => {
               node.style.letterSpacing = '0px';
@@ -97,39 +96,35 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       
-      {/* منطقة الالتقاط المربعة 1080x1080 بالخلفية السوداء */}
-      <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '1080px', height: '1080px' }}>
+      {/* منطقة الالتقاط */}
+      <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '1080px', height: '1350px' }}>
           <div id="pro-share-capture-area" 
-               className="w-[1080px] h-[1080px] relative overflow-hidden bg-black flex items-center justify-center"
+               className="w-[1080px] h-[1350px] relative overflow-hidden bg-black flex items-center justify-center"
                style={{ direction: isRtl ? 'rtl' : 'ltr', ...fontStyle }}>
               
-              {/* تأثيرات ضوئية خافتة في الخلفية السوداء */}
-              <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.2 }}></div>
-              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[150px]" style={{ background: '#8b5cf6', opacity: 0.1 }}></div>
+              <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[50%] rounded-full blur-[200px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.15 }}></div>
+              <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] rounded-full blur-[180px]" style={{ background: '#8b5cf6', opacity: 0.1 }}></div>
 
-              {/* البطاقة المركزية */}
-              <div className="relative z-10 w-[860px] bg-white rounded-[5.5rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center p-16 space-y-12">
+              <div className="relative z-10 w-[820px] bg-white rounded-[5.5rem] shadow-[0_100px_180px_-40px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col items-center p-16 space-y-12">
                   
-                  {/* شعار علوي بسيط */}
-                  <div className="flex items-center gap-4 opacity-30">
-                     <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-black text-xs">ID</div>
-                     <span className="text-xl font-black uppercase tracking-[0.4em] text-black">NextID Official</span>
+                  <div className="flex items-center gap-4 opacity-25">
+                     <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white font-black text-sm">ID</div>
+                     <span className="text-2xl font-black uppercase tracking-[0.4em] text-black">NextID Official</span>
                   </div>
 
-                  {/* الصورة الشخصية والاسم */}
                   <div className="flex flex-col items-center text-center space-y-8 w-full">
-                     <div className="w-60 h-60 rounded-[4.5rem] border-[12px] border-gray-50 shadow-2xl overflow-hidden bg-white">
+                     <div className="w-64 h-64 rounded-[4.5rem] border-[14px] border-gray-50 shadow-2xl overflow-hidden bg-white">
                         {data.profileImage ? (
                           <img src={data.profileImage} className="w-full h-full object-cover" crossOrigin="anonymous" alt="" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-200">
-                             <UserPlus size={100} />
+                             <UserPlus size={120} />
                           </div>
                         )}
                      </div>
                      
                      <div className="space-y-4 px-10">
-                        <h2 className="text-7xl font-black text-black leading-[1.1]" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
+                        <h2 className="text-7xl font-black text-black leading-[1.1] mb-2" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
                           {data.name || (isRtl ? 'صاحب البطاقة' : 'Full Name')}
                         </h2>
                         <p className="text-3xl font-bold text-gray-500 uppercase tracking-wide" style={fontStyle}>
@@ -139,25 +134,24 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
                      </div>
                   </div>
 
-                  {/* منطقة الـ QR */}
-                  <div className="w-full flex items-center justify-between bg-gray-50 rounded-[4rem] p-12 border border-gray-100">
-                     <div className="space-y-4 text-start flex-1">
-                        <div className="flex items-center gap-3 text-blue-600">
-                           <CheckCircle size={28} />
-                           <span className="text-xl font-black uppercase tracking-widest" style={fontStyle}>{isRtl ? 'هوية رقمية موثقة' : 'Verified ID'}</span>
+                  <div className="w-full flex items-center justify-between bg-gray-50 rounded-[4.5rem] p-12 border border-gray-100">
+                     <div className="space-y-5 text-start flex-1">
+                        <div className="flex items-center gap-4 text-blue-600">
+                           <CheckCircle size={32} />
+                           <span className="text-2xl font-black uppercase tracking-widest" style={fontStyle}>{isRtl ? 'هوية رقمية موثقة' : 'Verified ID'}</span>
                         </div>
                         <h4 className="text-5xl font-black text-black leading-tight" style={fontStyle}>
                            {isRtl ? 'امسح الرمز للتواصل' : 'Scan to Connect'}
                         </h4>
                         <p className="text-2xl font-bold text-gray-400 font-mono">nextid.my/?u={data.id}</p>
                      </div>
-                     <div className="p-6 bg-white rounded-[3.5rem] shadow-xl border border-gray-50 shrink-0">
-                        <img src={qrImageUrl} className="w-48 h-48" alt="QR" crossOrigin="anonymous" />
+                     <div className="p-8 bg-white rounded-[3.5rem] shadow-2xl border border-gray-50 shrink-0">
+                        <img src={qrImageUrl} className="w-56 h-56" alt="QR" crossOrigin="anonymous" />
                      </div>
                   </div>
 
-                  <p className="text-xl font-bold text-gray-400" style={fontStyle}>
-                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرسمية' : 'Connect with me via my official identity'}
+                  <p className="text-2xl font-bold text-gray-400 italic" style={fontStyle}>
+                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرقمية الرسمية' : 'Connect with me via my official identity'}
                   </p>
               </div>
           </div>
@@ -200,14 +194,14 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             <button 
               onClick={handleImageShare}
               disabled={isCapturing}
-              className="w-full py-5 bg-emerald-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70 group"
+              className="w-full py-4 px-6 bg-emerald-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70 group"
             >
-              <span className="flex-1 text-center pr-4">
-                {isCapturing ? (isRtl ? 'جاري التوليد...' : 'Generating...') : (isRtl ? 'مشاركة كصورة (احترافية)' : 'Share as Pro Image')}
-              </span>
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                {isCapturing ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={20} />}
+              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                {isCapturing ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={18} />}
               </div>
+              <span className="flex-1 text-center">
+                {isCapturing ? (isRtl ? 'جاري التوليد...' : 'Generating...') : (isRtl ? 'مشاركة كصورة احترافية' : 'Share as Pro Image')}
+              </span>
             </button>
 
             <button 
@@ -224,10 +218,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
                     setTimeout(() => setCopied(false), 2000);
                  }
               }}
-              className="w-full py-4 bg-blue-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase flex items-center justify-center gap-3 shadow-lg shadow-blue-600/10 hover:brightness-110 active:scale-95 transition-all"
+              className="w-full py-4 px-6 bg-blue-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase flex items-center justify-center gap-4 shadow-lg shadow-blue-600/10 hover:brightness-110 active:scale-95 transition-all"
             >
-              <Send size={16} />
-              {isRtl ? 'إرسال الرابط مباشرة' : 'Send Link Directly'}
+              <Send size={16} className="shrink-0" />
+              <span className="flex-1 text-center">{isRtl ? 'إرسال الرابط مباشرة' : 'Send Link Directly'}</span>
             </button>
 
             <div className="grid grid-cols-2 gap-2 pt-2">
