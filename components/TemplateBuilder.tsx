@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -116,17 +117,17 @@ const ColorPicker = ({ label, value, onChange }: any) => (
   </div>
 );
 
-const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = "text-gray-500 dark:text-gray-400", activeBg = "bg-slate-100 dark:bg-blue-900/20" }: any) => (
+const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = "text-gray-500 dark:text-gray-400", activeBg = "bg-blue-600" }: any) => (
   <button 
     type="button" 
     onClick={() => setActiveTab(id)} 
-    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-blue-600 shadow-sm border border-blue-100 dark:border-blue-900/30` : `${colorClass} hover:bg-gray-100 dark:hover:bg-white/5`}`}
+    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-white shadow-md` : `${colorClass} hover:bg-gray-100 dark:hover:bg-white/5`}`}
   >
-    <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800'} transition-colors`}>
+    <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'} transition-colors`}>
       <Icon size={14} className={activeTab === id ? 'text-white' : 'text-gray-400'} />
     </div>
-    <span className={`text-[11px] font-black uppercase tracking-tight leading-tight text-start flex-1 ${activeTab === id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>{label}</span>
-    {activeTab === id && <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />}
+    <span className={`text-[11px] font-black uppercase tracking-tight leading-tight text-start flex-1 ${activeTab === id ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{label}</span>
+    {activeTab === id && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
   </button>
 );
 
@@ -259,7 +260,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       occasionOffsetX: 0,
       occasionPrimaryColor: '#3b82f6',
       occasionBgColor: '',
-      occasionTitleColor: '',
       occasionGlassy: false,
       showSpecialLinksByDefault: true,
       specialLinksCols: 2,
@@ -1069,7 +1069,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (رأسياً)' : 'Body Vertical Offset'} min={-2000} max={2000} value={template.config.bodyOffsetY ?? 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} />
+                           <RangeControl 
+                              label={isRtl ? 'إزاحة جسم البطاقة (رأسياً)' : 'Body Vertical Offset'} 
+                              min={-2000} max={2000} 
+                              value={template.config.mobileBodyOffsetY ?? 0} 
+                              onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
+                              icon={Move} 
+                              hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} 
+                           />
                         </div>
                      </div>
 
@@ -2344,7 +2351,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     <div className="space-y-2"><label className={labelTextClasses}>{t('وصف قصير (EN)', 'Short Desc (EN)')}</label><input type="text" value={template.descEn} onChange={e => updateTemplate('descEn', e.target.value)} className={inputClasses} /></div>
                  </div>
 
-                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:bg-amber-900/30 flex items-center justify-between">
+                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-white dark:bg-amber-900/30 rounded-2xl text-amber-500 shadow-sm"><Star size={24} /></div>
                        <div><h4 className="font-black dark:text-white text-sm uppercase">{t('قالب مميز (بريميوم)', 'Featured / Pro Template')}</h4><p className="text-[9px] font-bold text-gray-400 uppercase">{isRtl ? 'يتطلب باقة سنوية لاستخدامه' : 'Requires Yearly Plan to use'}</p></div>
