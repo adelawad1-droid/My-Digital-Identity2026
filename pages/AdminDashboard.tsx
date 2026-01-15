@@ -369,7 +369,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
            <p className="text-gray-500 dark:text-gray-400 font-bold max-w-md mx-auto leading-relaxed">
              لا تملك صلاحية الوصول إلى هذه البيانات. تأكد من أن بريدك الإلكتروني مسجل كمسؤول في قاعدة البيانات أو اتصل بالمطور الرئيسي.
            </p>
-           <button onClick={() => fetchData()} className="px-8 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">إعادة المحاولة</button>
+           <button onClick={() => fetchData()} className="px-8 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:brightness-110 transition-all">إعادة المحاولة</button>
         </div>
       )}
 
@@ -641,7 +641,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
         {activeTab === 'plans' && (
           <div className="w-full space-y-10 animate-fade-in">
-             <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl">
+             <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0">
                 <div className="flex items-center gap-4 mb-8">
                    <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg"><CardIcon size={24} /></div>
                    <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{editingPlanId ? t('تعديل باقة', 'Edit Plan') : t('إضافة باقة جديدة', 'New Pricing Plan')}</h2>
@@ -717,7 +717,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (planData.isPopular ? 'left-1' : 'left-5') : (planData.isPopular ? 'right-1' : 'right-5')}`} />
                          </button>
                       </div>
-                      <button type="submit" disabled={isPlanSubmitting} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+                      <button type="submit" disabled={isPlanSubmitting} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
                          {isPlanSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                          {editingPlanId ? t('تحديث الباقة', 'Update Plan') : t('حفظ الباقة', 'Save Plan')}
                       </button>
@@ -856,7 +856,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                   <div className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg"><Layout size={24} /></div>
                   <div><h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('إدارة القوالب', 'Templates Manager')}</h2><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('تحكم في القوالب المتاحة للمستخدمين عبر نظام الجدول', 'Manage available templates via table view')}</p></div>
                 </div>
-                <button onClick={() => setActiveTab('builder')} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center gap-3 hover:scale-105 transition-all"><Plus size={18} /> {t('إضافة قالب جديد', 'New Template')}</button>
+                <button onClick={() => setActiveTab('builder')} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 flex items-center gap-3 hover:scale-105 transition-all"><Plus size={18} /> {t('إضافة قالب جديد', 'New Template')}</button>
               </div>
 
               <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
@@ -963,7 +963,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     <div><label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label><input type="text" value={categoryData.nameAr} onChange={e => setCategoryData({...categoryData, nameAr: e.target.value})} className={inputClasses} /></div>
                     <div><label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label><input type="text" value={categoryData.nameEn} onChange={e => setCategoryData({...categoryData, nameEn: e.target.value})} className={inputClasses} /></div>
                     <div><label className={labelTextClasses}>{t('الترتيب', 'Order')}</label><input type="number" value={categoryData.order} onChange={e => setCategoryData({...categoryData, order: parseInt(e.target.value) || 0})} className={inputClasses} /></div>
-                    <button onClick={async () => { setIsCategorySubmitting(true); try { await saveTemplateCategory({...categoryData, id: editingCategoryId || undefined}); setCategoryData({id: '', nameAr: '', nameEn: '', order: categories.length + 1, isActive: true}); setEditingCategoryId(null); await fetchData(true); } finally { setIsCategorySubmitting(false); } }} disabled={isCategorySubmitting} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all">
+                    <button onClick={async () => { setIsCategorySubmitting(true); try { await saveTemplateCategory({...categoryData, id: editingCategoryId || undefined}); setCategoryData({id: '', nameAr: '', nameEn: '', order: categories.length + 1, isActive: true}); setEditingCategoryId(null); await fetchData(true); } finally { setIsCategorySubmitting(false); } }} disabled={isCategorySubmitting} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all">
                        {isCategorySubmitting ? <Loader2 className="animate-spin" size={18}/> : <Plus size={18}/>}
                        {editingCategoryId ? t('تحديث القسم', 'Update') : t('حفظ القسم', 'Save')}
                     </button>
@@ -1146,7 +1146,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القالب؟', 'Delete Template?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القالب؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure? This action cannot be undone.')}</p>
               <div className="flex flex-col gap-3">
-                 <button onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={async () => { await deleteTemplate(templateToDelete); setTemplateToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0">نعم، احذف</button>
                  <button onClick={() => setTemplateToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
@@ -1160,7 +1160,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف البطاقة؟', 'Delete Card?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذه البطاقة نهائياً؟', 'Are you sure you want to delete this card permanently?')}</p>
               <div className="flex flex-col gap-3">
-                 <button onClick={async () => { await deleteUserCard({ownerId: cardToDelete.ownerId, cardId: cardToDelete.id}); setCardToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={async () => { await deleteUserCard({ownerId: cardToDelete.ownerId, cardId: cardToDelete.id}); setCardToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0">نعم، احذف</button>
                  <button onClick={() => setCardToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
@@ -1174,7 +1174,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف الباقة؟', 'Delete Plan?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('سيؤدي هذا لحذف الباقة من الموقع نهائياً.', 'This will remove the plan from the site forever.')}</p>
               <div className="flex flex-col gap-3">
-                 <button onClick={confirmDeletePlan} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={confirmDeletePlan} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0">نعم، احذف</button>
                  <button onClick={() => setPlanToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
@@ -1188,7 +1188,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القسم؟', 'Delete Category?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القسم؟', 'Are you sure you want to delete this category?')}</p>
               <div className="flex flex-col gap-3">
-                 <button onClick={async () => { await deleteTemplateCategory(categoryToDelete); setCategoryToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، احذف</button>
+                 <button onClick={async () => { await deleteTemplateCategory(categoryToDelete); setCategoryToDelete(null); await fetchData(true); }} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0">نعم، احذف</button>
                  <button onClick={() => setCategoryToDelete(null)} className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">إلغاء</button>
               </div>
            </div>
@@ -1252,7 +1252,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                       } finally { setIsSavingSub(false); }
                    }}
                    disabled={isSavingSub}
-                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-xl flex items-center justify-center gap-3"
+                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-0 flex items-center justify-center gap-3"
                  >
                     {isSavingSub ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
                     {t('حفظ التعديلات', 'Save Changes')}

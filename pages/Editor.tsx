@@ -381,7 +381,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                     onClick={() => {
                       setActiveTab(tab.id);
                     }}
-                    className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                    className={`w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-0 shadow-blue-500/20' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                   >
                     <div className="flex items-center gap-3">
                        <tab.icon size={20} className={activeTab === tab.id ? 'text-white' : 'text-gray-500 group-hover:text-blue-500'} />
@@ -688,7 +688,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                  <div className="flex flex-col md:flex-row gap-3 items-end">
                                     <div className="flex-1 w-full space-y-2"><label className={labelClasses}>{t('المنصة', 'Platform')}</label><select value={socialInput.platformId} onChange={e => setSocialInput({...socialInput, platformId: e.target.value})} className={inputClasses}>{SOCIAL_PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
                                     <div className="flex-[2] w-full space-y-2"><label className={labelClasses}>{t('رابط الحساب', 'Profile URL')}</label><input type="text" value={socialInput.url} onChange={e => setSocialInput({...socialInput, url: e.target.value})} className={inputClasses} placeholder="https://..." /></div>
-                                    <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-black transition-all"><Plus size={24} /></button>
+                                    <button type="button" onClick={() => { if (!socialInput.url) return; const platform = SOCIAL_PLATFORMS.find(p => p.id === socialInput.platformId); setFormData(prev => ({ ...prev, socialLinks: [...(prev.socialLinks || []), { platform: platform!.name, url: socialInput.url, platformId: platform!.id }] })); setSocialInput({ ...socialInput, url: '' }); }} className="p-4 bg-blue-600 text-white rounded-2xl shadow-0 hover:bg-black transition-all"><Plus size={24} /></button>
                                  </div>
 
                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -944,7 +944,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
                                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                             {BACKGROUND_PRESETS.map((url, i) => (
-                                              <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
+                                              <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-0' : 'border-transparent opacity-60'}`}>
                                                  <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
                                               </button>
                                             ))}
@@ -1106,11 +1106,11 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                            {isRtl ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>} {t('السابق', 'Previous')}
                         </button>
                         {currentIndex < tabs.length - 1 ? (
-                          <button type="button" onClick={handleNext} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                          <button type="button" onClick={handleNext} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                              {t('التالي', 'Next')} {isRtl ? <ChevronLeft size={18}/> : <ChevronRight size={18}/>}
                           </button>
                         ) : (
-                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                              {t('حفظ ومشاركة', 'Save & Share')} <Check size={18}/>
                           </button>
                         )}

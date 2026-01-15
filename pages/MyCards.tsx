@@ -177,7 +177,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
               </div>
               <button 
                 onClick={() => navigate(`/${lang}/pricing`)}
-                className="shrink-0 px-10 py-5 bg-white text-blue-600 rounded-[1.5rem] font-black text-sm uppercase shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
+                className="shrink-0 px-10 py-5 bg-white text-blue-600 rounded-[1.5rem] font-black text-sm uppercase shadow-0 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
               >
                  {isRtl ? 'عرض الباقات والترقية' : 'View Plans & Upgrade'}
                  <ArrowUpRight size={18} />
@@ -506,7 +506,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                  <button 
                    onClick={saveMembershipUpdates}
                    disabled={isUpdatingMembership}
-                   className="flex-1 py-5 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                   className="flex-1 py-5 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase shadow-0 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                  >
                     {isUpdatingMembership ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                     {isRtl ? 'حفظ التغييرات' : 'Save Changes'}
@@ -536,7 +536,7 @@ const MyCards: React.FC<MyCardsProps> = ({ lang, cards, onAdd, onEdit, onDelete 
                  </p>
               </div>
               <div className="flex flex-col gap-3 pt-4 items-center">
-                 <button onClick={handleDeleteConfirm} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+                 <button onClick={handleDeleteConfirm} className="w-full max-w-[280px] py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:brightness-110 transition-all flex items-center justify-center gap-2">
                     <Trash2 size={18} /> {isRtl ? "نعم، حذف البطاقة" : "Yes, Delete Card"}
                  </button>
                  <button onClick={() => setCardToDelete(null)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
