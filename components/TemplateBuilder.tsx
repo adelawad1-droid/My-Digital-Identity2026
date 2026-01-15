@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -62,7 +61,7 @@ const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Ico
              {Icon && <Icon size={14} />}
            </div>
            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{label}</span>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
               {hint && <span className="text-[7px] text-gray-400 font-bold">{hint}</span>}
            </div>
         </div>
@@ -743,8 +742,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   useEffect(() => {
     const groups = [
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
-      { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab'] },
-      { id: 'group3', tabs: ['direct-links', 'contact-lab', 'social-lab', 'location', 'qrcode'] },
+      { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
+      { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
       { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
@@ -776,8 +775,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               <div className="flex flex-col gap-3 pt-4">
                  <button 
                    onClick={() => { setShowAuthWarning(false); setShowDirectAuth(true); }}
-                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-0
-                    hover:scale-105 transition-all flex items-center justify-center gap-2"
+                   className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
                  >
                     <LogIn size={18} />
                     {isRtl ? "تسجيل دخول" : "Login"}
@@ -831,7 +829,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              {isDragMode ? <Grab size={18} /> : <Move size={18} />}
              {isDragMode ? t('إيقاف التحريك الحر', 'Stop Drag Mode') : t('تفعيل التحريك الحر', 'Free Drag Mode')}
           </button>
-          <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-0 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
+          <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
         </div>
       </div>
 
@@ -881,6 +879,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                    <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -901,10 +900,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              </button>
              {openGroups['group3'] && (
                 <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-blue-50/10 dark:bg-blue-900/5 rounded-b-2xl">
-                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط الإيميل والموقع' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات مواقع التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
-                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
                    <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-blue-600" activeBg="bg-blue-600" />
                 </div>
              )}
@@ -1022,7 +1020,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'body-style' && (
                <div className="space-y-8 animate-fade-in">
                   <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                     <div className="flex items-center gap-3"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
+                     <div className="flex items-center gap-4"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
@@ -1059,7 +1057,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         </div>
 
                         <RangeControl 
-                           label={t('شفافية جسم البطاقة', 'Body Transparency')} 
+                           label={t('شفافية جسم البطاقة', 'Body Opacity')} 
                            min={0} max={100} unit="%" 
                            value={template.config.bodyOpacity ?? 100} 
                            onChange={(v: number) => updateConfig('bodyOpacity', v)} 
@@ -1070,7 +1068,14 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (الرأسي)' : 'Body Vertical Offset'} min={-2000} max={2000} value={template.config.bodyOffsetY ?? 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} />
+                           <RangeControl 
+                             label={isRtl ? 'إزاحة جسم البطاقة (رأسي)' : 'Body Vertical Offset'} 
+                             min={-2000} max={2000} 
+                             value={template.config.mobileBodyOffsetY ?? 0} 
+                             onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
+                             icon={Move} 
+                             hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} 
+                           />
                         </div>
                      </div>
 
@@ -1338,9 +1343,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <RangeControl label={t('حجم خط الاسم', 'Name Font Size')} min={16} max={56} value={template.config.nameSize} onChange={(v: number) => updateConfig('nameSize', v)} icon={TypographyIcon} />
-                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة الاسم (رأسياً)', 'Name Y Offset')} min={-2000} max={2000} value={template.config.nameOffsetY} onChange={(v: number) => updateConfig('nameOffsetY', v)} icon={Move} />
                            <RangeControl label={t('إزاحة الاسم (أفقياً)', 'Name X Offset')} min={-1000} max={1000} value={template.config.nameOffsetX || 0} onChange={(v: number) => updateConfig('nameOffsetX', v)} icon={ArrowLeftRight} />
-                           <RangeControl label={t('إزاحة المسمى (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={MousePointer2} />
+                           <RangeControl label={t('إزاحة المسمى (رأسياً)', 'Title Y Offset')} min={-2000} max={2000} value={template.config.titleOffsetY || 0} onChange={(v: number) => updateConfig('titleOffsetY', v)} icon={Move} />
                            <RangeControl label={t('إزاحة المسمى (أفقياً)', 'Title X Offset')} min={-1000} max={1000} value={template.config.titleOffsetX || 0} onChange={(v: number) => updateConfig('titleOffsetX', v)} icon={ArrowLeftRight} />
                         </div>
                      </div>
@@ -2096,8 +2101,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               </div>
               
               <div 
-                   onMouseMove={handlePreviewMouseMove}
-                   onMouseLeave={() => setMouseYPercentage(0)}
                    className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
@@ -2321,66 +2324,48 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  {selectedUser && (
                     <button 
                        onClick={() => { setSelectedUser(null); updateTemplate('restrictedUserId', ''); }}
-                       className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                       className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-red-100"
                     >
-                       <X size={14} /> {isRtl ? 'إلغاء التخصيص' : 'Clear Restriction'}
+                       <X size={14} /> {isRtl ? 'إزالة التخصيص' : 'Remove Restriction'}
                     </button>
                  )}
               </div>
 
-              <div className="flex-1 p-8 md:p-12 flex flex-col space-y-8 justify-center">
-                 <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'حفظ التصميم ونشره' : 'Publish Template'}</h3>
-                    <button type="button" onClick={() => setShowSaveModal(false)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X size={24}/></button>
-                 </div>
-                 
-                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2">
-                          <label className={labelTextClasses}>{t('الاسم (AR)', 'Name (AR)')}</label>
-                          <input type="text" value={template.nameAr} onChange={e => updateTemplate('nameAr', e.target.value)} className={inputClasses} />
-                       </div>
-                       <div className="space-y-2">
-                          <label className={labelTextClasses}>{t('الاسم (EN)', 'Name (EN)')}</label>
-                          <input type="text" value={template.nameEn} onChange={e => updateTemplate('nameEn', e.target.value)} className={inputClasses} />
-                       </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2">
-                          <label className={labelTextClasses}>{t('القسم (CATEGORY)', 'Template Category')}</label>
-                          <select 
-                             value={template.categoryId} 
-                             onChange={e => updateTemplate('categoryId', e.target.value)} 
-                             className={`${inputClasses} appearance-none cursor-pointer`}
-                          >
-                             <option value="">{t('اختر القسم...', 'Select Category...')}</option>
-                             {categories.map(cat => <option key={cat.id} value={cat.id}>{isRtl ? cat.nameAr : cat.nameEn}</option>)}
-                          </select>
-                       </div>
-                       <div className="space-y-2">
-                          <label className={labelTextClasses}>{t('ترتيب العرض', 'Display Order')}</label>
-                          <input type="number" value={template.order} onChange={e => updateTemplate('order', parseInt(e.target.value) || 0)} className={inputClasses} />
-                       </div>
-                    </div>
-
-                    <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-800/30 flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl ${template.isFeatured ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                             <Star size={20} fill={template.isFeatured ? "currentColor" : "none"} />
-                          </div>
-                          <div>
-                             <span className="text-xs font-black uppercase tracking-widest dark:text-white block">{t('تمييز القالب (تثبيت في المقدمة)', 'Feature Template (Stay on top)')}</span>
-                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'سيظهر القالب في بداية المعرض دائماً' : 'Template will always show at the gallery start'}</p>
-                          </div>
-                       </div>
-                       <button type="button" onClick={() => updateTemplate('isFeatured', !template.isFeatured)} className={`w-14 h-7 rounded-full relative transition-all ${template.isFeatured ? 'bg-amber-50 shadow-md' : 'bg-gray-200 dark:bg-gray-700'}`}>
-                          <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (template.isFeatured ? 'right-8' : 'right-1') : (template.isFeatured ? 'left-8' : 'left-1')}`} />
-                       </button>
+              <div className="flex-1 p-8 md:p-12 flex flex-col space-y-10 overflow-y-auto no-scrollbar">
+                 <div className="flex items-center justify-between">
+                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'بيانات القالب النهائية' : 'Final Template DNA'}</h3>
+                    <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                        <button type="button" onClick={() => updateTemplate('isActive', true)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${template.isActive ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>{t('نشط', 'Active')}</button>
+                        <button type="button" onClick={() => updateTemplate('isActive', false)} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${!template.isActive ? 'bg-red-600 text-white' : 'text-gray-400'}`}>{t('معطل', 'Draft')}</button>
                     </div>
                  </div>
 
-                 <button type="button" onClick={() => onSave(template)} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg uppercase shadow-0 hover:scale-[1.01] active:scale-95 transition-all">{isRtl ? 'تأكيد الحفظ والنشر' : 'Confirm & Publish'}</button>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2"><label className={labelTextClasses}>{t('اسم القالب (AR)', 'Template Name (AR)')}</label><input type="text" value={template.nameAr} onChange={e => updateTemplate('nameAr', e.target.value)} className={inputClasses} /></div>
+                    <div className="space-y-2"><label className={labelTextClasses}>{t('اسم القالب (EN)', 'Template Name (EN)')}</label><input type="text" value={template.nameEn} onChange={e => updateTemplate('nameEn', e.target.value)} className={inputClasses} /></div>
+                    <div className="space-y-2 md:col-span-2"><label className={labelTextClasses}>{t('القسم', 'Category')}</label><select value={template.categoryId} onChange={e => updateTemplate('categoryId', e.target.value)} className={inputClasses}>{categories.map(c => <option key={c.id} value={c.id}>{isRtl ? c.nameAr : c.nameEn}</option>)}</select></div>
+                    <div className="space-y-2"><label className={labelTextClasses}>{t('وصف قصير (AR)', 'Short Desc (AR)')}</label><input type="text" value={template.descAr} onChange={e => updateTemplate('descAr', e.target.value)} className={inputClasses} /></div>
+                    <div className="space-y-2"><label className={labelTextClasses}>{t('وصف قصير (EN)', 'Short Desc (EN)')}</label><input type="text" value={template.descEn} onChange={e => updateTemplate('descEn', e.target.value)} className={inputClasses} /></div>
+                 </div>
+
+                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-white dark:bg-amber-900/30 rounded-2xl text-amber-500 shadow-sm"><Star size={24} /></div>
+                       <div><h4 className="font-black dark:text-white text-sm uppercase">{t('قالب مميز (بريميوم)', 'Featured / Pro Template')}</h4><p className="text-[9px] font-bold text-gray-400 uppercase">{isRtl ? 'يتطلب باقة سنوية لاستخدامه' : 'Requires Yearly Plan to use'}</p></div>
+                    </div>
+                    <button type="button" onClick={() => updateTemplate('isFeatured', !template.isFeatured)} className={`w-14 h-7 rounded-full relative transition-all ${template.isFeatured ? 'bg-amber-500' : 'bg-gray-300 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (template.isFeatured ? 'right-8' : 'right-1') : (template.isFeatured ? 'left-8' : 'left-1')}`} /></button>
+                 </div>
+
+                 <div className="pt-6 border-t dark:border-gray-800 flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => onSave(template)} 
+                      disabled={loading}
+                      className="flex-1 py-5 bg-blue-600 text-white rounded-[1.8rem] font-black uppercase shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                    >
+                       {loading ? <Loader2 className="animate-spin" /> : <Save size={20} />} {t('حفظ التعديلات ونشر القالب', 'Save & Publish DNA')}
+                    </button>
+                    <button onClick={() => setShowSaveModal(false)} className="px-10 py-5 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-[1.8rem] font-black uppercase hover:bg-red-50 hover:text-red-500 transition-all">{t('إلغاء', 'Cancel')}</button>
+                 </div>
               </div>
            </div>
         </div>
@@ -2388,23 +2373,13 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
       {showResetConfirm && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden p-8 md:p-10 text-center space-y-6 animate-zoom-in">
-              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-4">
-                 <AlertTriangle size={40} />
-              </div>
-              <div className="space-y-2">
-                 <h3 className="text-xl font-black dark:text-white leading-relaxed">{isRtl ? "إعادة ضبط الإزاحات" : "Reset Offsets"}</h3>
-                 <p className="text-xs font-bold text-gray-400 leading-relaxed px-4">
-                    {isRtl ? "هل أنت متأكد من رغبتك في إعادة ضبط كافة إزاحات العناصر إلى الصفر؟" : "Are you sure you want to reset all element offsets to zero?"}
-                 </p>
-              </div>
-              <div className="flex flex-col gap-3 pt-4 items-center">
-                 <button onClick={handleActualReset} className="w-full max-w-[280px] py-4 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
-                    <RotateCcw size={18} /> {isRtl ? "نعم، إعادة ضبط" : "Yes, Reset All"}
-                 </button>
-                 <button onClick={() => setShowResetConfirm(false)} className="w-full max-w-[280px] py-4 bg-gray-50 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase hover:bg-gray-100 transition-all">
-                    {isRtl ? "تراجع" : "Cancel"}
-                 </button>
+           <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20 space-y-6">
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto"><RotateCcw size={40} /></div>
+              <h3 className="text-2xl font-black dark:text-white uppercase">{isRtl ? 'إعادة التصفير؟' : 'Reset Everything?'}</h3>
+              <p className="text-sm font-bold text-gray-500">{isRtl ? 'سيتم مسح كافة إعدادات الإزاحة والتموضع والعودة للقيم الافتراضية.' : 'All displacement and positioning settings will be wiped back to zero.'}</p>
+              <div className="flex flex-col gap-3">
+                 <button onClick={handleActualReset} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl">نعم، أعد الضبط</button>
+                 <button onClick={() => setShowResetConfirm(false)} className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-[10px] uppercase">تراجع</button>
               </div>
            </div>
         </div>
