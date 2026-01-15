@@ -19,12 +19,9 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState('');
   const [isCapturing, setIsCapturing] = useState(false);
-  const [showShortcutGuide, setShowShortcutGuide] = useState(false);
   const [customConfig, setCustomConfig] = useState<TemplateConfig | undefined>(undefined);
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   useEffect(() => {
     setUrl(generateShareUrl(data));
@@ -36,14 +33,8 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
   const getProfessionalText = () => {
     const name = data.name || (lang === 'ar' ? 'صاحب البطاقة' : 'Card Owner');
-    const title = data.title ? `${data.title}` : '';
-    const company = data.company ? ` | ${data.company}` : '';
-    const bioInfo = title || company ? `\n(${title}${company})` : '';
-
-    if (lang === 'ar') {
-      return `*${name}*${bioInfo}\n\nيسعدني تواصلك معي عبر بطاقتي الرقمية الرسمية. يمكنك حفظ بياناتي والوصول لروابطي المهنية مباشرة من هنا:\n${url}`;
-    }
-    return `*${name}*${bioInfo}\n\nI'm pleased to connect with you through my official digital ID. You can save my contact details and access my professional links here:\n${url}`;
+    if (lang === 'ar') return `*${name}*\nيسعدني تواصلك معي عبر بطاقتي الرقمية الرسمية:\n${url}`;
+    return `*${name}*\nI'm pleased to connect with you through my official digital ID:\n${url}`;
   };
 
   const handleImageShare = async () => {
@@ -51,9 +42,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      // وقت إضافي للتأكد من رندر الخطوط بشكل سليم
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const captureTarget = document.getElementById('pro-share-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
@@ -62,16 +51,21 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
         useCORS: true, 
         allowTaint: false,
         scale: 3, 
-        backgroundColor: "#ffffff",
+        backgroundColor: "#000000",
         logging: false,
         width: 1080,
         height: 1080,
-        windowWidth: 1080,
-        windowHeight: 1080,
         onclone: (clonedDoc) => {
-          // التأكد من أن النسخة المستنسخة للتصوير تحمل نفس اتجاه النص
           const el = clonedDoc.getElementById('pro-share-capture-area');
-          if (el) el.style.direction = isRtl ? 'rtl' : 'ltr';
+          if (el) {
+            el.style.direction = isRtl ? 'rtl' : 'ltr';
+            // إجبار عدم وجود مسافات بين الحروف العربية
+            const textElements = el.querySelectorAll('h2, h4, p, span');
+            textElements.forEach((node: any) => {
+              node.style.letterSpacing = '0px';
+              node.style.fontVariantLigatures = 'common-ligatures';
+            });
+          }
         }
       });
 
@@ -97,88 +91,79 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     }
   };
 
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2563eb&margin=1`;
-
-  // نستخدم خط "Cairo" بشكل صريح وبأوزان عريضة لتجنب مشاكل التصوير
-  const fontStyle = { fontFamily: "'Cairo', sans-serif" };
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=1`;
+  const fontStyle = { fontFamily: "'Cairo', sans-serif", letterSpacing: '0px' };
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       
-      {/* منطقة الالتقاط المخفية - تحسين الأبعاد والخطوط للعربية */}
+      {/* منطقة الالتقاط المربعة 1080x1080 بالخلفية السوداء */}
       <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '1080px', height: '1080px' }}>
           <div id="pro-share-capture-area" 
-               className="w-[1080px] h-[1080px] relative overflow-hidden bg-white flex items-center justify-center"
+               className="w-[1080px] h-[1080px] relative overflow-hidden bg-black flex items-center justify-center"
                style={{ direction: isRtl ? 'rtl' : 'ltr', ...fontStyle }}>
               
-              {/* خلفية فنية مع تدرج ناعم */}
-              <div className="absolute inset-0 z-0" style={{ 
-                background: data.themeType === 'gradient' ? data.themeGradient : (data.themeColor || '#2563eb'),
-                opacity: 0.08
-              }}></div>
-              <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full blur-[150px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.15 }}></div>
+              {/* تأثيرات ضوئية خافتة في الخلفية السوداء */}
+              <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[180px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.2 }}></div>
+              <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[150px]" style={{ background: '#8b5cf6', opacity: 0.1 }}></div>
 
-              {/* البطاقة الرئيسية داخل المربع */}
-              <div className="relative z-10 w-[880px] bg-white rounded-[5rem] shadow-[0_60px_120px_-30px_rgba(0,0,0,0.12)] border border-gray-50 overflow-hidden flex flex-col items-center p-16 space-y-12">
+              {/* البطاقة المركزية */}
+              <div className="relative z-10 w-[860px] bg-white rounded-[5.5rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center p-16 space-y-12">
                   
-                  {/* شعار النظام */}
+                  {/* شعار علوي بسيط */}
                   <div className="flex items-center gap-4 opacity-30">
-                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm">ID</div>
-                     <span className="text-2xl font-black uppercase tracking-[0.4em] text-gray-900" style={fontStyle}>NextID Official</span>
+                     <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-black text-xs">ID</div>
+                     <span className="text-xl font-black uppercase tracking-[0.4em] text-black">NextID Official</span>
                   </div>
 
-                  {/* بيانات الملف الشخصي */}
+                  {/* الصورة الشخصية والاسم */}
                   <div className="flex flex-col items-center text-center space-y-8 w-full">
-                     <div className="w-64 h-64 rounded-[4.5rem] border-[14px] border-gray-50 shadow-2xl overflow-hidden bg-white">
+                     <div className="w-60 h-60 rounded-[4.5rem] border-[12px] border-gray-50 shadow-2xl overflow-hidden bg-white">
                         {data.profileImage ? (
                           <img src={data.profileImage} className="w-full h-full object-cover" crossOrigin="anonymous" alt="" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
+                          <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-200">
                              <UserPlus size={100} />
                           </div>
                         )}
                      </div>
                      
                      <div className="space-y-4 px-10">
-                        {/* استخدام white-space: nowrap لمنع تقطع الاسم */}
-                        <h2 className="text-7xl font-black text-gray-900 leading-[1.2]" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
-                          {data.name || (isRtl ? 'صاحب البطاقة' : 'Your Name')}
+                        <h2 className="text-7xl font-black text-black leading-[1.1]" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
+                          {data.name || (isRtl ? 'صاحب البطاقة' : 'Full Name')}
                         </h2>
-                        <p className="text-3xl font-bold text-blue-600 uppercase tracking-wide opacity-90" style={fontStyle}>
-                           {data.title || 'Digital Professional'}
+                        <p className="text-3xl font-bold text-gray-500 uppercase tracking-wide" style={fontStyle}>
+                           {data.title || 'Digital Member'}
                            {data.company && ` • ${data.company}`}
                         </p>
                      </div>
                   </div>
 
-                  {/* منطقة الاتصال والـ QR */}
-                  <div className="w-full flex items-center justify-between bg-gray-50/80 rounded-[4.5rem] p-14 border border-gray-100">
-                     <div className="space-y-5 text-start flex-1">
-                        <div className="flex items-center gap-4 text-emerald-600">
-                           <CheckCircle size={32} />
-                           <span className="text-2xl font-black uppercase tracking-widest" style={fontStyle}>
-                             {isRtl ? 'هوية رقمية موثقة' : 'Verified Digital ID'}
-                           </span>
+                  {/* منطقة الـ QR */}
+                  <div className="w-full flex items-center justify-between bg-gray-50 rounded-[4rem] p-12 border border-gray-100">
+                     <div className="space-y-4 text-start flex-1">
+                        <div className="flex items-center gap-3 text-blue-600">
+                           <CheckCircle size={28} />
+                           <span className="text-xl font-black uppercase tracking-widest" style={fontStyle}>{isRtl ? 'هوية رقمية موثقة' : 'Verified ID'}</span>
                         </div>
-                        <h4 className="text-5xl font-black text-gray-800 leading-tight" style={fontStyle}>
+                        <h4 className="text-5xl font-black text-black leading-tight" style={fontStyle}>
                            {isRtl ? 'امسح الرمز للتواصل' : 'Scan to Connect'}
                         </h4>
                         <p className="text-2xl font-bold text-gray-400 font-mono">nextid.my/?u={data.id}</p>
                      </div>
-                     <div className="p-8 bg-white rounded-[3.5rem] shadow-2xl border border-gray-50 shrink-0">
-                        <img src={qrImageUrl} className="w-52 h-52" alt="QR" crossOrigin="anonymous" />
+                     <div className="p-6 bg-white rounded-[3.5rem] shadow-xl border border-gray-50 shrink-0">
+                        <img src={qrImageUrl} className="w-48 h-48" alt="QR" crossOrigin="anonymous" />
                      </div>
                   </div>
 
-                  {/* رسالة الترحيب السفلية */}
-                  <p className="text-2xl font-bold text-gray-400 italic" style={fontStyle}>
-                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرقمية الرسمية' : 'Pleased to connect via my official digital identity'}
+                  <p className="text-xl font-bold text-gray-400" style={fontStyle}>
+                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرسمية' : 'Connect with me via my official identity'}
                   </p>
               </div>
           </div>
       </div>
 
-      {/* واجهة المودال للمستخدم */}
+      {/* واجهة المودال */}
       <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden relative animate-zoom-in">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
