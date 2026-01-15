@@ -28,7 +28,9 @@ import {
   updateDoc,
   getAggregateFromServer,
   sum,
-  serverTimestamp
+  serverTimestamp,
+  startAt,
+  endAt
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { CardData, TemplateCategory, VisualStyle, PricingPlan } from "../types";
@@ -89,6 +91,7 @@ export const syncUserProfile = async (user: User) => {
       await setDoc(userRef, {
         ...userData,
         createdAt: userData.lastLogin,
+        displayName: user.displayName || user.email?.split('@')[0] || '',
         role: isCurrentAdmin ? 'admin' : 'user',
         planId: null,
         premiumUntil: null,
@@ -123,6 +126,14 @@ export const getUserProfile = async (uid: string) => {
     }
     return null;
   } catch (e) { return null; }
+};
+
+export const updateProfileInfo = async (uid: string, data: { displayName?: string }) => {
+  const userRef = doc(db, "users_registry", uid);
+  await updateDoc(userRef, {
+    ...sanitizeData(data),
+    updatedAt: serverTimestamp()
+  });
 };
 
 export const getAllUsersWithStats = async () => {
@@ -238,8 +249,6 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
   }
 }
 
-// --- البحث عن بطاقة بالدومين المخصص لخدمة الربط البرمجي ---
-// Fix: Added getCardByDomain export to services/firebase.ts to resolve App.tsx import error
 export const getCardByDomain = async (domain: string) => {
   try {
     const q = query(

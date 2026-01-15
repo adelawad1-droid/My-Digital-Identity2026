@@ -42,6 +42,7 @@ const AppContent: React.FC = () => {
   ) as Language;
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userCards, setUserCards] = useState<CardData[]>([]);
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
@@ -115,7 +116,6 @@ const AppContent: React.FC = () => {
       if (initFlag.current) return;
       initFlag.current = true;
 
-      // 1. فحص الدومين المخصص أولاً
       const hostname = window.location.hostname;
       const mainDomains = ['nextid.my', 'www.nextid.my', 'nodes.nextid.my', 'localhost'];
       
@@ -129,7 +129,6 @@ const AppContent: React.FC = () => {
         }
       }
 
-      // 2. فحص معلمة u في الرابط
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
       
@@ -155,6 +154,7 @@ const AppContent: React.FC = () => {
           try {
             await syncUserProfile(user); 
             const profile = await getUserProfile(user.uid);
+            setUserProfile(profile);
             setIsAdmin(profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           } catch (e) {
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
@@ -167,6 +167,7 @@ const AppContent: React.FC = () => {
           }
         } else {
           setIsAdmin(false);
+          setUserProfile(null);
         }
         setIsInitializing(false);
       });
@@ -208,6 +209,8 @@ const AppContent: React.FC = () => {
     const customTmpl = customTemplates.find(t => t.id === publicCard.templateId);
     return <PublicProfile data={publicCard} lang={lang} customConfig={customTmpl?.config} siteIcon={siteConfig.siteIcon} />;
   }
+
+  const userDisplayName = userProfile?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Member';
 
   const BottomNav = () => {
     if (!shouldShowBottomNav) return null;
@@ -263,6 +266,10 @@ const AppContent: React.FC = () => {
           <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X size={24} /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-2">
+           <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl mb-4 border dark:border-gray-700">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('مرحباً بك', 'Welcome')}</p>
+              <p className="text-sm font-black dark:text-white truncate">{userDisplayName}</p>
+           </div>
            <SidebarItem icon={HomeIcon} label={t('home')} onClick={() => navigateWithLang('/')} active={location.pathname.endsWith(`/${lang}`) || location.pathname.endsWith(`/${lang}/`)} />
            <SidebarItem icon={LayoutGrid} label={t('templates')} onClick={() => navigateWithLang('/templates')} active={location.pathname.includes('/templates')} />
            <SidebarItem icon={HelpCircle} label={t('howToStart')} onClick={() => navigateWithLang('/how-to-start')} active={location.pathname.includes('/how-to-start')} />
@@ -335,7 +342,7 @@ const AppContent: React.FC = () => {
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
                        <UserIcon size={18} />
                     </div>
-                    <span className="hidden md:block text-[11px] font-black uppercase tracking-tight truncate max-w-[120px]">{currentUser.email?.split('@')[0]}</span>
+                    <span className="hidden md:block text-[11px] font-black uppercase tracking-tight truncate max-w-[120px]">{userDisplayName}</span>
                     <ChevronDown size={16} className={`transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                  </button>
 
@@ -343,7 +350,7 @@ const AppContent: React.FC = () => {
                    <div className={`absolute top-full mt-2 ${isRtl ? 'left-0' : 'right-0'} w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-2xl z-[500] animate-zoom-in overflow-hidden p-2 space-y-1`}>
                       <div className="px-4 py-3 border-b dark:border-gray-800 mb-1">
                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{t('مرحباً بك', 'Welcome Back')}</p>
-                         <p className="text-xs font-bold dark:text-white mt-1 truncate">{currentUser.email}</p>
+                         <p className="text-xs font-bold dark:text-white mt-1 truncate">{userDisplayName}</p>
                       </div>
                       
                       {isAdmin && (

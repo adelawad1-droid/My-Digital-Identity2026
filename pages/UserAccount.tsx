@@ -1,15 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription } from '../services/firebase';
+import { auth, updateUserSecurity, getAuthErrorMessage, getUserProfile, getAllPricingPlans, updateUserSubscription, updateProfileInfo } from '../services/firebase';
 import { signOut, deleteUser } from 'firebase/auth';
 import { Language, PricingPlan } from '../types';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Added missing Save icon to the imports
 import { 
   User, Lock, Mail, ShieldCheck, Key, Loader2, Save,
   AlertTriangle, CheckCircle2, UserCircle, LogOut, Trash2, X,
   Crown, Star, Sparkles, Zap, ArrowUpRight, Calendar, Clock, Check, Shield,
-  ExternalLink, CreditCard, PartyPopper
+  ExternalLink, CreditCard, PartyPopper, UserPen
 } from 'lucide-react';
 
 interface UserAccountProps {
@@ -31,6 +30,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   
   const [securityData, setSecurityData] = useState({
+    displayName: '',
     currentPassword: '',
     newEmail: user?.email || '',
     newPassword: '',
@@ -39,15 +39,12 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
 
   const t = (ar: string, en: string) => isRtl ? ar : en;
 
-  // منطق التحقق من الدفع القادم من URL
   useEffect(() => {
-    // في HashRouter، المعاملات تكون جزءاً من الـ search داخل الـ location
     const queryParams = new URLSearchParams(location.search);
     const paymentStatus = queryParams.get('payment');
     const planIdFromUrl = queryParams.get('planId');
 
     if (paymentStatus === 'success' && user && userProfile) {
-      // التحقق من أن المستخدم لم يتم ترقيته بالفعل لتجنب التكرار
       if (userProfile.role !== 'premium' && userProfile.role !== 'admin') {
         handleAutoUpgrade(planIdFromUrl);
       }
@@ -58,18 +55,15 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
     if (!user) return;
     setLoading(true);
     try {
-      // جلب كافة الباقات للعثور على الباقة المشتراة
       const allPlans = await getAllPricingPlans();
       const targetPlan = allPlans.find(p => p.id === planId);
       
       const expiryDate = new Date();
-      // استخدام عدد الأشهر من الباقة، إذا لم يوجد نفترض سنة (12)
       const monthsToAdd = targetPlan?.durationMonths || 12;
       expiryDate.setMonth(expiryDate.getMonth() + monthsToAdd);
       
       const finalPlanId = planId || 'pro_yearly';
 
-      // تحديث قاعدة البيانات
       await updateUserSubscription(
         user.uid, 
         'premium', 
@@ -77,14 +71,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
         expiryDate.toISOString()
       );
       
-      // تحديث الواجهة
       if (targetPlan) setActivePlan(targetPlan);
       const updatedProfile = await getUserProfile(user.uid);
       setUserProfile(updatedProfile);
       
       setShowCelebration(true);
-      
-      // إزالة معاملات الدفع من الرابط للحفاظ على نظافته
       navigate(`/${lang}/account`, { replace: true });
     } catch (e) {
       console.error("Upgrade Error:", e);
@@ -103,6 +94,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
             getAllPricingPlans()
           ]);
           setUserProfile(profile);
+          if (profile) {
+            setSecurityData(prev => ({
+              ...prev,
+              displayName: profile.displayName || user.displayName || '',
+              newEmail: profile.email || user.email || ''
+            }));
+          }
           if (profile?.planId) {
             const plan = plans.find(p => p.id === profile.planId);
             if (plan) setActivePlan(plan);
@@ -144,15 +142,35 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(null);
+    
     if (securityData.newPassword && securityData.newPassword !== securityData.confirmPassword) {
       setStatus({ type: 'error', message: t("الكلمات الجديدة غير متطابقة", "Passwords don't match") });
       return;
     }
+
+    if (!securityData.currentPassword) {
+      setStatus({ type: 'error', message: t("يرجى إدخال كلمة المرور الحالية لتأكيد التغييرات", "Please enter current password to confirm changes") });
+      return;
+    }
+
     setLoading(true);
     try {
+      // 1. تحديث بيانات الملف الشخصي في Firestore
+      if (user) {
+        await updateProfileInfo(user.uid, { 
+          displayName: securityData.displayName 
+        });
+      }
+
+      // 2. تحديث الأمان (البريد/كلمة السر) في Firebase Auth
       await updateUserSecurity(securityData.currentPassword, securityData.newEmail, securityData.newPassword || undefined);
+      
       setStatus({ type: 'success', message: t("تم تحديث البيانات بنجاح", "Updated successfully") });
       setSecurityData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      
+      // تحديث البروفايل محلياً
+      const updatedProfile = await getUserProfile(user!.uid);
+      setUserProfile(updatedProfile);
     } catch (error: any) {
       setStatus({ type: 'error', message: getAuthErrorMessage(error.code, isRtl ? 'ar' : 'en') });
     } finally {
@@ -161,7 +179,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
   };
 
   const inputClasses = "w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-sm font-bold dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all";
-  const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-widest px-1";
+  const labelClasses = "block text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1";
 
   if (fetchingProfile) {
     return (
@@ -180,7 +198,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
       
       {showCelebration && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 bg-blue-600/90 backdrop-blur-xl animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-0 space-y-6 animate-zoom-in">
+           <div className="bg-white dark:bg-gray-900 w-full max-md rounded-[3.5rem] p-10 text-center shadow-0 space-y-6 animate-zoom-in">
               <div className="w-24 h-24 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                  <PartyPopper size={48} />
               </div>
@@ -206,7 +224,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
               {userProfile?.role === 'admin' ? <ShieldCheck size={36} /> : isPremium ? <Crown size={36} /> : <UserCircle size={36} />}
            </div>
            <div>
-              <h1 className="text-3xl md:text-4xl font-black dark:text-white mb-1">{t('مركز الحساب', 'Account Center')}</h1>
+              <h1 className="text-3xl md:text-4xl font-black dark:text-white mb-1">{userProfile?.displayName || t('مركز الحساب', 'Account Center')}</h1>
               <div className="flex items-center gap-2">
                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${isPremium ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>{roleName}</span>
                  <span className="text-gray-400 text-xs font-bold">{user?.email}</span>
@@ -254,12 +272,12 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
            </div>
         </div>
 
-        {/* Security Form */}
+        {/* Security & Profile Form */}
         <div className="lg:col-span-8">
            <form onSubmit={handleUpdate} className="bg-white dark:bg-gray-900 p-8 md:p-12 rounded-[3.5rem] border border-gray-100 dark:border-gray-800 shadow-2xl space-y-10">
               <div className="flex items-center gap-4">
                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><Lock size={24} /></div>
-                 <h2 className="text-2xl font-black dark:text-white uppercase">{t('الأمان والبيانات', 'Security & Data')}</h2>
+                 <h2 className="text-2xl font-black dark:text-white uppercase">{t('الأمان والبيانات الشخصية', 'Security & Personal Data')}</h2>
               </div>
 
               {status && (
@@ -270,32 +288,54 @@ const UserAccount: React.FC<UserAccountProps> = ({ lang }) => {
               )}
 
               <div className="space-y-8">
-                 <div>
-                    <label className={labelClasses}>{t('كلمة المرور الحالية (للتأكيد)', 'Current Password')}</label>
-                    <div className="relative">
-                       <Key className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                       <input type="password" required value={securityData.currentPassword} onChange={e => setSecurityData({...securityData, currentPassword: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="••••••••" />
+                 {/* Display Name Section */}
+                 <div className="p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-700 space-y-4">
+                    <div className="flex items-center gap-2 text-blue-600">
+                       <UserCircle size={18} />
+                       <span className="text-[10px] font-black uppercase tracking-widest">{t('اسم صاحب الحساب', 'Account Holder Name')}</span>
+                    </div>
+                    <div>
+                       <label className={labelClasses}>{t('اسم العرض المفضل', 'Preferred Display Name')}</label>
+                       <div className="relative">
+                          <UserPen className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                          <input 
+                            type="text" 
+                            value={securityData.displayName} 
+                            onChange={e => setSecurityData({...securityData, displayName: e.target.value})} 
+                            className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} 
+                            placeholder={isRtl ? "أدخل اسمك الحقيقي ليظهر في حسابك" : "Enter your real name to show on profile"} 
+                          />
+                       </div>
                     </div>
                  </div>
 
-                 <div className="pt-8 border-t dark:border-gray-800 space-y-8">
+                 <div className="pt-4 space-y-8">
                     <div>
-                       <label className={labelClasses}>{t('البريد الجديد', 'New Email')}</label>
-                       <div className="relative">
-                          <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                          <input type="email" required value={securityData.newEmail} onChange={e => setSecurityData({...securityData, newEmail: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} />
-                       </div>
+                        <label className={labelClasses}>{t('كلمة المرور الحالية (مطلوبة لحفظ أي تغييرات)', 'Current Password (Required to save changes)')}</label>
+                        <div className="relative">
+                          <Key className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                          <input type="password" required value={securityData.currentPassword} onChange={e => setSecurityData({...securityData, currentPassword: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="••••••••" />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                       <div><label className={labelClasses}>{t('كلمة سر جديدة', 'New Password')}</label><input type="password" value={securityData.newPassword} onChange={e => setSecurityData({...securityData, newPassword: e.target.value})} className={inputClasses} placeholder="Min 6 chars" /></div>
-                       <div><label className={labelClasses}>{t('تأكيد الكلمة', 'Confirm')}</label><input type="password" value={securityData.confirmPassword} onChange={e => setSecurityData({...securityData, confirmPassword: e.target.value})} className={inputClasses} /></div>
+
+                    <div className="pt-8 border-t dark:border-gray-800 space-y-8">
+                        <div>
+                          <label className={labelClasses}>{t('البريد الإلكتروني', 'Email Address')}</label>
+                          <div className="relative">
+                              <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                              <input type="email" required value={securityData.newEmail} onChange={e => setSecurityData({...securityData, newEmail: e.target.value})} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div><label className={labelClasses}>{t('كلمة سر جديدة (اختياري)', 'New Password (Optional)')}</label><input type="password" value={securityData.newPassword} onChange={e => setSecurityData({...securityData, newPassword: e.target.value})} className={inputClasses} placeholder="Min 6 chars" /></div>
+                          <div><label className={labelClasses}>{t('تأكيد الكلمة', 'Confirm')}</label><input type="password" value={securityData.confirmPassword} onChange={e => setSecurityData({...securityData, confirmPassword: e.target.value})} className={inputClasses} /></div>
+                        </div>
                     </div>
                  </div>
               </div>
 
-              {/* Fixed: Added flex centering to make the icon stay with the text */}
               <button type="submit" disabled={loading} className="w-full py-6 bg-blue-600 text-white rounded-[2rem] font-black text-lg shadow-xl hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
-                {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} <span>{t('حفظ التغييرات', 'Save Changes')}</span>
+                {loading ? <Loader2 className="animate-spin" /> : <Save size={24} />} <span>{t('حفظ كافة التغييرات', 'Save All Changes')}</span>
               </button>
            </form>
         </div>
