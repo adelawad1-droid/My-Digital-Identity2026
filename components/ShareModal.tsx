@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Language, CardData, TemplateConfig, CustomTemplate } from '../types';
 import { generateShareUrl } from '../utils/share';
-import { Copy, Check, Download, X, Send, Hash, ImageIcon, Loader2, UserPlus, Smartphone, ArrowUpRight, Compass, MessageSquare, QrCode as QrIcon, Share2 as ShareIcon, CheckCircle } from 'lucide-react';
+import { Copy, Check, Download, X, Send, Hash, ImageIcon, Loader2, UserPlus, Smartphone, ArrowUpRight, Compass, MessageSquare, QrCode as QrIcon, Share2 as ShareIcon, CheckCircle, HelpCircle, Apple, Chrome, ChevronLeft, ChevronRight } from 'lucide-react';
 import CardPreview from './CardPreview';
 import { getAllTemplates } from '../services/firebase';
 import { downloadVCard } from '../utils/vcard';
@@ -19,6 +19,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState('');
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showShortcutGuide, setShowShortcutGuide] = useState(false);
   const [customConfig, setCustomConfig] = useState<TemplateConfig | undefined>(undefined);
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
@@ -172,82 +173,129 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             </button>
           </div>
 
-          <div className="flex flex-col items-center gap-6 mb-8">
-            <div className="relative group cursor-pointer" onClick={handleImageShare}>
-              <div className="absolute -inset-4 bg-blue-500/10 rounded-[3rem] blur-xl group-hover:bg-blue-500/20 transition-all"></div>
-              <div className="relative p-6 bg-white rounded-[2.5rem] shadow-inner border border-gray-100 dark:border-gray-800 flex flex-col items-center gap-3">
-                <img src={qrImageUrl} alt="QR" className="w-24 h-24" crossOrigin="anonymous" />
-                <div className="flex items-center gap-1.5 text-blue-600">
-                   <ImageIcon size={14} />
-                   <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'اضغط لتوليد الصورة' : 'Click to Generate Image'}</span>
+          {!showShortcutGuide ? (
+            <div className="space-y-6">
+              <div className="flex flex-col items-center gap-6">
+                <div className="relative group cursor-pointer" onClick={handleImageShare}>
+                  <div className="absolute -inset-4 bg-blue-500/10 rounded-[3rem] blur-xl group-hover:bg-blue-500/20 transition-all"></div>
+                  <div className="relative p-6 bg-white rounded-[2.5rem] shadow-inner border border-gray-100 dark:border-gray-800 flex flex-col items-center gap-3">
+                    <img src={qrImageUrl} alt="QR" className="w-24 h-24" crossOrigin="anonymous" />
+                    <div className="flex items-center gap-1.5 text-blue-600">
+                      <ImageIcon size={14} />
+                      <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'اضغط لتوليد الصورة' : 'Click to Generate Image'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="space-y-3">
-            {/* زر المشاركة كصورة (وتساب) - الأول */}
-            <button 
-              onClick={handleImageShare}
-              disabled={isCapturing}
-              className="w-full py-4 px-6 bg-emerald-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70 group"
-            >
-              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                {isCapturing ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={18} />}
-              </div>
-              <span className="flex-1 text-center">
-                {isCapturing ? (isRtl ? 'جاري التوليد...' : 'Generating...') : (isRtl ? 'مشاركة كصورة احترافية' : 'Share as Pro Image')}
-              </span>
-            </button>
+              <div className="space-y-3">
+                <button 
+                  onClick={handleImageShare}
+                  disabled={isCapturing}
+                  className="w-full py-4 px-6 bg-emerald-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-emerald-600/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-70 group"
+                >
+                  <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                    {isCapturing ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={18} />}
+                  </div>
+                  <span className="flex-1 text-center">
+                    {isCapturing ? (isRtl ? 'جاري التوليد...' : 'Generating...') : (isRtl ? 'مشاركة كصورة احترافية' : 'Share as Pro Image')}
+                  </span>
+                </button>
 
-            {/* زر حفظ جهة الاتصال - بارز جداً تحت زر الصورة */}
-            <button 
-               onClick={() => downloadVCard(data)}
-               className="w-full py-5 px-6 bg-blue-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-blue-600/20 hover:brightness-110 active:scale-95 transition-all"
-            >
-              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
-                <UserPlus size={18} />
-              </div>
-              <span className="flex-1 text-center">
-                {isRtl ? 'حفظ جهة الاتصال' : 'Save Contact'}
-              </span>
-            </button>
+                <button 
+                   onClick={() => downloadVCard(data)}
+                   className="w-full py-5 px-6 bg-blue-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-blue-600/20 hover:brightness-110 active:scale-95 transition-all"
+                >
+                  <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                    <UserPlus size={18} />
+                  </div>
+                  <span className="flex-1 text-center">
+                    {isRtl ? 'حفظ جهة الاتصال' : 'Save Contact'}
+                  </span>
+                </button>
 
-            {/* خيارات الرابط في الأسفل - بسيطة وبصف واحد */}
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <button 
-                onClick={() => {
-                   if (navigator.share) {
-                      navigator.share({
-                        title: data.name,
-                        text: getProfessionalText(),
-                        url: url
-                      });
-                   } else {
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => {
+                      if (navigator.share) {
+                          navigator.share({
+                            title: data.name,
+                            text: getProfessionalText(),
+                            url: url
+                          });
+                      } else {
+                          navigator.clipboard.writeText(url);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                      }
+                    }}
+                    className="py-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-gray-100 transition-all"
+                  >
+                    <Send size={14} />
+                    {isRtl ? 'إرسال الرابط' : 'Send Link'}
+                  </button>
+
+                  <button 
+                    onClick={() => {
                       navigator.clipboard.writeText(url);
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
-                   }
-                }}
-                className="py-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-gray-100 transition-all border border-transparent"
-              >
-                <Send size={14} />
-                {isRtl ? 'إرسال الرابط' : 'Send Link'}
-              </button>
+                    }}
+                    className={`py-4 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 transition-all border ${copied ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-transparent'}`}
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? (isRtl ? 'تم النسخ' : 'Copied!') : (isRtl ? 'نسخ الرابط' : 'Copy Link')}
+                  </button>
+                </div>
+
+                <button 
+                   onClick={() => setShowShortcutGuide(true)}
+                   className="w-full py-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-indigo-100 transition-all"
+                >
+                  <Smartphone size={14} />
+                  {t('addShortcut')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="animate-fade-in space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                 <button onClick={() => setShowShortcutGuide(false)} className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-500">
+                    {isRtl ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>}
+                 </button>
+                 <h4 className="text-sm font-black dark:text-white uppercase tracking-tighter">{t('shortcutGuideTitle')}</h4>
+              </div>
+
+              <div className="space-y-4">
+                 <div className="p-5 bg-blue-50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-900/30 space-y-3">
+                    <div className="flex items-center gap-2 text-blue-600">
+                       <Apple size={18} />
+                       <span className="text-[11px] font-black uppercase">iPhone (Safari)</span>
+                    </div>
+                    <p className="text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed">
+                       {t('iosGuide')}
+                    </p>
+                 </div>
+
+                 <div className="p-5 bg-emerald-50 dark:bg-emerald-900/10 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 space-y-3">
+                    <div className="flex items-center gap-2 text-emerald-600">
+                       <Chrome size={18} />
+                       <span className="text-[11px] font-black uppercase">Android (Chrome)</span>
+                    </div>
+                    <p className="text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed">
+                       {t('androidGuide')}
+                    </p>
+                 </div>
+              </div>
 
               <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(url);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className={`py-4 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 transition-all border ${copied ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-transparent'}`}
+                 onClick={() => setShowShortcutGuide(false)}
+                 className="w-full py-4 bg-gray-900 text-white dark:bg-white dark:text-black rounded-2xl font-black text-[11px] uppercase shadow-lg"
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? (isRtl ? 'تم النسخ' : 'Copied!') : (isRtl ? 'نسخ الرابط' : 'Copy Link')}
+                 {isRtl ? 'حسناً، فهمت' : 'OK, Got it'}
               </button>
             </div>
-          </div>
+          )}
 
           <p className="text-[9px] font-bold text-gray-400 text-center mt-8 uppercase tracking-[0.2em] opacity-60">
              {isRtl ? 'تصميم البطاقة محمي بنظام NextID' : 'Design protected by NextID system'}
