@@ -51,7 +51,9 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
     setIsCapturing(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // وقت إضافي للتأكد من رندر الخطوط بشكل سليم
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const captureTarget = document.getElementById('pro-share-capture-area');
       if (!captureTarget) throw new Error("Capture target not found");
 
@@ -60,15 +62,20 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
         useCORS: true, 
         allowTaint: false,
         scale: 3, 
-        backgroundColor: null,
+        backgroundColor: "#ffffff",
         logging: false,
         width: 1080,
         height: 1080,
         windowWidth: 1080,
-        windowHeight: 1080
+        windowHeight: 1080,
+        onclone: (clonedDoc) => {
+          // التأكد من أن النسخة المستنسخة للتصوير تحمل نفس اتجاه النص
+          const el = clonedDoc.getElementById('pro-share-capture-area');
+          if (el) el.style.direction = isRtl ? 'rtl' : 'ltr';
+        }
       });
 
-      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
       
       if (blob && navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'card.jpg', { type: 'image/jpeg' })] })) {
         const file = new File([blob], `${data.id || 'card'}.jpg`, { type: 'image/jpeg' });
@@ -79,7 +86,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
         });
       } else {
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.href = canvas.toDataURL('image/jpeg', 1.0);
         link.download = `digital-id-${data.id}.jpg`;
         link.click();
       }
@@ -92,66 +99,86 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2563eb&margin=1`;
 
+  // نستخدم خط "Cairo" بشكل صريح وبأوزان عريضة لتجنب مشاكل التصوير
+  const fontStyle = { fontFamily: "'Cairo', sans-serif" };
+
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       
-      {/* المنطقة المخفية لتوليد البوستر الاحترافي */}
+      {/* منطقة الالتقاط المخفية - تحسين الأبعاد والخطوط للعربية */}
       <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '1080px', height: '1080px' }}>
-          <div id="pro-share-capture-area" className="w-[1080px] h-[1080px] relative overflow-hidden bg-white flex items-center justify-center font-sans">
+          <div id="pro-share-capture-area" 
+               className="w-[1080px] h-[1080px] relative overflow-hidden bg-white flex items-center justify-center"
+               style={{ direction: isRtl ? 'rtl' : 'ltr', ...fontStyle }}>
+              
+              {/* خلفية فنية مع تدرج ناعم */}
               <div className="absolute inset-0 z-0" style={{ 
                 background: data.themeType === 'gradient' ? data.themeGradient : (data.themeColor || '#2563eb'),
-                opacity: 0.1
+                opacity: 0.08
               }}></div>
-              <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full blur-[150px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.2 }}></div>
-              <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[120px]" style={{ background: '#8b5cf6', opacity: 0.15 }}></div>
+              <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full blur-[150px]" style={{ background: data.themeColor || '#2563eb', opacity: 0.15 }}></div>
 
-              <div className="relative z-10 w-[850px] bg-white rounded-[5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden flex flex-col items-center p-16 space-y-12">
-                  <div className="flex items-center gap-4 opacity-40">
-                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs">ID</div>
-                     <span className="text-xl font-black uppercase tracking-[0.3em] text-gray-900">NextID Official</span>
+              {/* البطاقة الرئيسية داخل المربع */}
+              <div className="relative z-10 w-[880px] bg-white rounded-[5rem] shadow-[0_60px_120px_-30px_rgba(0,0,0,0.12)] border border-gray-50 overflow-hidden flex flex-col items-center p-16 space-y-12">
+                  
+                  {/* شعار النظام */}
+                  <div className="flex items-center gap-4 opacity-30">
+                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm">ID</div>
+                     <span className="text-2xl font-black uppercase tracking-[0.4em] text-gray-900" style={fontStyle}>NextID Official</span>
                   </div>
 
-                  <div className="flex flex-col items-center text-center space-y-8">
-                     <div className="w-56 h-56 rounded-[4rem] border-[12px] border-gray-50 shadow-2xl overflow-hidden bg-white">
+                  {/* بيانات الملف الشخصي */}
+                  <div className="flex flex-col items-center text-center space-y-8 w-full">
+                     <div className="w-64 h-64 rounded-[4.5rem] border-[14px] border-gray-50 shadow-2xl overflow-hidden bg-white">
                         {data.profileImage ? (
                           <img src={data.profileImage} className="w-full h-full object-cover" crossOrigin="anonymous" alt="" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
-                             <UserPlus size={80} />
+                             <UserPlus size={100} />
                           </div>
                         )}
                      </div>
-                     <div className="space-y-4">
-                        <h2 className="text-6xl font-black text-gray-900 tracking-tight">{data.name || 'Your Name'}</h2>
-                        <p className="text-3xl font-bold text-blue-600 uppercase tracking-widest opacity-80">
+                     
+                     <div className="space-y-4 px-10">
+                        {/* استخدام white-space: nowrap لمنع تقطع الاسم */}
+                        <h2 className="text-7xl font-black text-gray-900 leading-[1.2]" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
+                          {data.name || (isRtl ? 'صاحب البطاقة' : 'Your Name')}
+                        </h2>
+                        <p className="text-3xl font-bold text-blue-600 uppercase tracking-wide opacity-90" style={fontStyle}>
                            {data.title || 'Digital Professional'}
                            {data.company && ` • ${data.company}`}
                         </p>
                      </div>
                   </div>
 
-                  <div className="w-full flex items-center justify-between bg-gray-50/50 rounded-[4rem] p-12 border border-gray-100">
-                     <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-emerald-600">
-                           <CheckCircle size={24} />
-                           <span className="text-xl font-black uppercase tracking-widest">{isRtl ? 'هوية رقمية موثقة' : 'Verified Digital ID'}</span>
+                  {/* منطقة الاتصال والـ QR */}
+                  <div className="w-full flex items-center justify-between bg-gray-50/80 rounded-[4.5rem] p-14 border border-gray-100">
+                     <div className="space-y-5 text-start flex-1">
+                        <div className="flex items-center gap-4 text-emerald-600">
+                           <CheckCircle size={32} />
+                           <span className="text-2xl font-black uppercase tracking-widest" style={fontStyle}>
+                             {isRtl ? 'هوية رقمية موثقة' : 'Verified Digital ID'}
+                           </span>
                         </div>
-                        <h4 className="text-4xl font-black text-gray-800 leading-tight">
+                        <h4 className="text-5xl font-black text-gray-800 leading-tight" style={fontStyle}>
                            {isRtl ? 'امسح الرمز للتواصل' : 'Scan to Connect'}
                         </h4>
-                        <p className="text-xl font-bold text-gray-400">nextid.my/?u={data.id}</p>
+                        <p className="text-2xl font-bold text-gray-400 font-mono">nextid.my/?u={data.id}</p>
                      </div>
-                     <div className="p-6 bg-white rounded-[3rem] shadow-xl border border-gray-100">
-                        <img src={qrImageUrl} className="w-48 h-48" alt="QR" crossOrigin="anonymous" />
+                     <div className="p-8 bg-white rounded-[3.5rem] shadow-2xl border border-gray-50 shrink-0">
+                        <img src={qrImageUrl} className="w-52 h-52" alt="QR" crossOrigin="anonymous" />
                      </div>
                   </div>
-                  <p className="text-xl font-bold text-gray-400 italic">
-                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرقمية الرسمية' : 'I am pleased to connect with you via my official digital identity'}
+
+                  {/* رسالة الترحيب السفلية */}
+                  <p className="text-2xl font-bold text-gray-400 italic" style={fontStyle}>
+                    {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرقمية الرسمية' : 'Pleased to connect via my official digital identity'}
                   </p>
               </div>
           </div>
       </div>
 
+      {/* واجهة المودال للمستخدم */}
       <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden relative animate-zoom-in">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
@@ -185,7 +212,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
           </div>
 
           <div className="space-y-3">
-            {/* الزر المحدث ليطابق الصورة المرفقة تماماً */}
             <button 
               onClick={handleImageShare}
               disabled={isCapturing}
