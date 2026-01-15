@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -238,8 +237,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
     : (currentTemplate?.config.pageBgColor || (formData.isDark ? '#050507' : '#f8fafc'));
 
-  const handleSpecialLinkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleSpecialLinkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     setIsUploadingSpecialImg(true);
     try {
@@ -259,8 +258,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     }
   };
 
-  const handleBodyBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleBodyBgUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     setIsUploadingBodyBg(true);
     try {
@@ -613,7 +612,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    <div className="space-y-3">
                                       <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
                                       <div className="relative">
-                                         <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                         <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
                                          <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="+966 5..." />
                                       </div>
                                     </div>
@@ -811,18 +810,49 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             )}
 
                             {activeTab === 'membership' && (
-                              <div className="space-y-8 animate-fade-in">
-                                <div className="space-y-6">
-                                   <div className="bg-indigo-50 dark:bg-indigo-900/10 p-5 rounded-[1.5rem] flex items-center justify-between border border-indigo-100 dark:border-indigo-900/30">
-                                      <div className="flex items-center gap-3"><ShieldCheck size={20} className="text-indigo-600" /><p className="font-black dark:text-white text-xs uppercase">{t('تفعيل شريط العضوية', 'Enable Membership Bar')}</p></div>
-                                      <button type="button" onClick={() => handleChange('showMembership', !formData.showMembership)} className={`w-12 h-6 rounded-full relative transition-all ${formData.showMembership ? 'bg-indigo-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showMembership ? 'right-6' : 'right-0.5') : (formData.showMembership ? 'left-6' : 'left-0.5')}`} /></button>
-                                   </div>
-                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                      <div className="space-y-2"><label className={labelClasses}>{t('عنوان العضوية', 'Membership Title')}</label><input type="text" value={formData.membershipTitleAr} onChange={e => handleChange('membershipTitleAr', e.target.value)} className={inputClasses} /></div>
-                                      <div className="space-y-2"><label className={labelClasses}>{t('اللون المميز', 'Accent Color')}</label><ColorPickerUI label="" field="membershipAccentColor" icon={Zap} /></div>
-                                      <div className="space-y-2"><label className={labelClasses}>{t('تاريخ البدء', 'Start Date')}</label><input type="date" value={formData.membershipStartDate} onChange={e => handleChange('membershipStartDate', e.target.value)} className={inputClasses} /></div>
-                                      <div className="space-y-2"><label className={labelClasses}>{t('تاريخ الانتهاء', 'Expiry Date')}</label><input type="date" value={formData.membershipExpiryDate} onChange={e => handleChange('membershipExpiryDate', e.target.value)} className={inputClasses} /></div>
-                                   </div>
+                              <div className="space-y-10 animate-fade-in">
+                                <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                                  <div className="flex items-center justify-between p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30">
+                                    <div className="flex items-center gap-4">
+                                      <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-2xl text-indigo-600 shadow-sm">
+                                        <ShieldCheck size={24} />
+                                      </div>
+                                      <div>
+                                        <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{t('showMembership')}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isRtl ? 'تفعيل وإدارة شريط حالة الاشتراك' : 'Manage subscription status bar'}</p>
+                                      </div>
+                                    </div>
+                                    <button type="button" onClick={() => handleChange('showMembership', !formData.showMembership)} className={`w-14 h-7 rounded-full relative transition-all ${formData.showMembership ? 'bg-indigo-600 shadow-lg' : 'bg-gray-300 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.showMembership ? 'right-8' : 'right-1') : (formData.showMembership ? 'left-8' : 'left-1')}`} /></button>
+                                  </div>
+
+                                  <div className={`space-y-8 transition-all duration-500 ${formData.showMembership ? 'opacity-100' : 'opacity-40 pointer-events-none scale-[0.98]'}`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      <div className="space-y-2"><label className={labelClasses}>{t('membershipTitle')}</label><input type="text" value={formData.membershipTitleAr || ''} onChange={e => handleChange('membershipTitleAr', e.target.value)} className={inputClasses} placeholder={isRtl ? 'اسم العضوية' : 'Membership Title'} /></div>
+                                      <div className="space-y-2"><label className={labelClasses}>{t('accentColorTimer')}</label><ColorPickerUI label="" field="membershipAccentColor" icon={Zap} /></div>
+                                      <div className="space-y-2"><label className={labelClasses}>{t('startDate')}</label><input type="date" value={formData.membershipStartDate || ''} onChange={e => handleChange('membershipStartDate', e.target.value)} className={inputClasses} /></div>
+                                      <div className="space-y-2"><label className={labelClasses}>{t('expiryDate')}</label><input type="date" value={formData.membershipExpiryDate || ''} onChange={e => handleChange('membershipExpiryDate', e.target.value)} className={inputClasses} /></div>
+                                    </div>
+
+                                    <div className="pt-8 border-t dark:border-gray-800 space-y-6">
+                                       <div className="flex items-center gap-3 px-2">
+                                         <Wand2 className="text-indigo-600" size={20} />
+                                         <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('advancedEditorTitle')}</h4>
+                                       </div>
+                                       
+                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div className="flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-[1.5rem] border border-indigo-100 dark:border-indigo-900/30 shadow-sm">
+                                             <div className="flex items-center gap-3"><GlassWater size={18} className="text-indigo-600" /><p className="font-black dark:text-white text-[10px] uppercase">{t('glassyEffect')}</p></div>
+                                             <button type="button" onClick={() => handleChange('membershipGlassy', !formData.membershipGlassy)} className={`w-12 h-6 rounded-full relative transition-all ${formData.membershipGlassy ? 'bg-indigo-600 shadow-md' : 'bg-gray-300 dark:bg-gray-700'}`}><div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all ${isRtl ? (formData.membershipGlassy ? 'right-6' : 'right-0.5') : (formData.membershipGlassy ? 'left-6' : 'left-0.5')}`} /></button>
+                                          </div>
+                                       </div>
+
+                                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                          <ColorPickerUI label={isRtl ? 'خلفية البطاقة' : 'Card BG'} field="membershipBgColor" icon={Palette} />
+                                          <ColorPickerUI label={isRtl ? 'لون الحدود' : 'Border Color'} field="membershipBorderColor" icon={Maximize2} />
+                                          <ColorPickerUI label={isRtl ? 'لون النصوص' : 'Text Color'} field="membershipTextColor" icon={TypographyIcon} />
+                                       </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             )}
