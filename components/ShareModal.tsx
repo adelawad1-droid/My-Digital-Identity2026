@@ -96,7 +96,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       
-      {/* منطقة الالتقاط */}
+      {/* منطقة الالتقاط المخفية */}
       <div className="fixed top-0 left-0 -translate-x-[5000px] pointer-events-none" style={{ width: '1080px', height: '1350px' }}>
           <div id="pro-share-capture-area" 
                className="w-[1080px] h-[1350px] relative overflow-hidden bg-black flex items-center justify-center"
@@ -106,12 +106,10 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
               <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[40%] rounded-full blur-[180px]" style={{ background: '#8b5cf6', opacity: 0.1 }}></div>
 
               <div className="relative z-10 w-[820px] bg-white rounded-[5.5rem] shadow-[0_100px_180px_-40px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col items-center p-16 space-y-12">
-                  
                   <div className="flex items-center gap-4 opacity-25">
                      <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white font-black text-sm">ID</div>
                      <span className="text-2xl font-black uppercase tracking-[0.4em] text-black">NextID Official</span>
                   </div>
-
                   <div className="flex flex-col items-center text-center space-y-8 w-full">
                      <div className="w-64 h-64 rounded-[4.5rem] border-[14px] border-gray-50 shadow-2xl overflow-hidden bg-white">
                         {data.profileImage ? (
@@ -122,7 +120,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
                           </div>
                         )}
                      </div>
-                     
                      <div className="space-y-4 px-10">
                         <h2 className="text-7xl font-black text-black leading-[1.1] mb-2" style={{ ...fontStyle, whiteSpace: 'nowrap' }}>
                           {data.name || (isRtl ? 'صاحب البطاقة' : 'Full Name')}
@@ -133,7 +130,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
                         </p>
                      </div>
                   </div>
-
                   <div className="w-full flex items-center justify-between bg-gray-50 rounded-[4.5rem] p-12 border border-gray-100">
                      <div className="space-y-5 text-start flex-1">
                         <div className="flex items-center gap-4 text-blue-600">
@@ -149,7 +145,6 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
                         <img src={qrImageUrl} className="w-56 h-56" alt="QR" crossOrigin="anonymous" />
                      </div>
                   </div>
-
                   <p className="text-2xl font-bold text-gray-400 italic" style={fontStyle}>
                     {isRtl ? 'يسعدني تواصلك معي عبر هويتي الرقمية الرسمية' : 'Connect with me via my official identity'}
                   </p>
@@ -157,7 +152,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
           </div>
       </div>
 
-      {/* واجهة المودال */}
+      {/* واجهة المودال المحدثة */}
       <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden relative animate-zoom-in">
         <div className="p-8">
           <div className="flex justify-between items-start mb-6">
@@ -181,7 +176,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
             <div className="relative group cursor-pointer" onClick={handleImageShare}>
               <div className="absolute -inset-4 bg-blue-500/10 rounded-[3rem] blur-xl group-hover:bg-blue-500/20 transition-all"></div>
               <div className="relative p-6 bg-white rounded-[2.5rem] shadow-inner border border-gray-100 dark:border-gray-800 flex flex-col items-center gap-3">
-                <img src={qrImageUrl} alt="QR" className="w-28 h-28" crossOrigin="anonymous" />
+                <img src={qrImageUrl} alt="QR" className="w-24 h-24" crossOrigin="anonymous" />
                 <div className="flex items-center gap-1.5 text-blue-600">
                    <ImageIcon size={14} />
                    <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'اضغط لتوليد الصورة' : 'Click to Generate Image'}</span>
@@ -191,6 +186,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
           </div>
 
           <div className="space-y-3">
+            {/* زر المشاركة كصورة (وتساب) - الأول */}
             <button 
               onClick={handleImageShare}
               disabled={isCapturing}
@@ -204,48 +200,56 @@ const ShareModal: React.FC<ShareModalProps> = ({ data, lang, onClose, isNewSave 
               </span>
             </button>
 
+            {/* زر حفظ جهة الاتصال - بارز جداً تحت زر الصورة */}
             <button 
-              onClick={() => {
-                 if (navigator.share) {
-                    navigator.share({
-                      title: data.name,
-                      text: getProfessionalText(),
-                      url: url
-                    });
-                 } else {
-                    navigator.clipboard.writeText(url);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                 }
-              }}
-              className="w-full py-4 px-6 bg-blue-600 text-white rounded-[1.5rem] font-black text-[11px] uppercase flex items-center justify-center gap-4 shadow-lg shadow-blue-600/10 hover:brightness-110 active:scale-95 transition-all"
+               onClick={() => downloadVCard(data)}
+               className="w-full py-5 px-6 bg-blue-600 text-white rounded-full font-black text-xs uppercase flex items-center justify-center gap-4 shadow-xl shadow-blue-600/20 hover:brightness-110 active:scale-95 transition-all"
             >
-              <Send size={16} className="shrink-0" />
-              <span className="flex-1 text-center">{isRtl ? 'إرسال الرابط مباشرة' : 'Send Link Directly'}</span>
+              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center shrink-0">
+                <UserPlus size={18} />
+              </div>
+              <span className="flex-1 text-center">
+                {isRtl ? 'حفظ جهة الاتصال' : 'Save Contact'}
+              </span>
             </button>
 
+            {/* خيارات الرابط في الأسفل - بسيطة وبصف واحد */}
             <div className="grid grid-cols-2 gap-2 pt-2">
+              <button 
+                onClick={() => {
+                   if (navigator.share) {
+                      navigator.share({
+                        title: data.name,
+                        text: getProfessionalText(),
+                        url: url
+                      });
+                   } else {
+                      navigator.clipboard.writeText(url);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                   }
+                }}
+                className="py-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-gray-100 transition-all border border-transparent"
+              >
+                <Send size={14} />
+                {isRtl ? 'إرسال الرابط' : 'Send Link'}
+              </button>
+
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(url);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className={`py-4 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 transition-all border ${copied ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-white dark:bg-gray-900 text-gray-500 border-gray-100 dark:border-gray-700'}`}
+                className={`py-4 rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 transition-all border ${copied ? 'bg-emerald-50 border-emerald-500 text-emerald-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-transparent'}`}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? (isRtl ? 'تم النسخ' : 'Copied!') : (isRtl ? 'نسخ الرابط' : 'Copy Link')}
               </button>
-              <button 
-                 onClick={() => downloadVCard(data)}
-                 className="py-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-white rounded-[1.5rem] font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-gray-100 transition-all border border-transparent"
-              >
-                <UserPlus size={14} />
-                {t('saveContact')}
-              </button>
             </div>
           </div>
-          <p className="text-[9px] font-bold text-gray-400 text-center mt-6 uppercase tracking-[0.2em] opacity-60">
+
+          <p className="text-[9px] font-bold text-gray-400 text-center mt-8 uppercase tracking-[0.2em] opacity-60">
              {isRtl ? 'تصميم البطاقة محمي بنظام NextID' : 'Design protected by NextID system'}
           </p>
         </div>
