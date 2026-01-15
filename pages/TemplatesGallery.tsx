@@ -132,7 +132,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
       )}
 
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/10 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/20">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/20">
           {isPrivateMode ? <Crown size={12} className="text-amber-500" /> : <Palette size={12} />}
           {isPrivateMode ? (isRtl ? 'معرض التصاميم الخاصة بك' : 'Your Private Designs') : t('templates')}
         </div>
@@ -265,7 +265,13 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                   specialLinks: (tmpl.config.defaultSpecialLinks && tmpl.config.defaultSpecialLinks.length > 0) 
                                  ? tmpl.config.defaultSpecialLinks 
                                  : sampleData.specialLinks,
-                  showName: true, showTitle: true, showBio: true, showQrCode: true, showButtons: true, showSocialLinks: true
+                  // إزالة قيم الظهور القسرية والاعتماد على إعدادات القالب الافتراضية
+                  showName: tmpl.config.showNameByDefault, 
+                  showTitle: tmpl.config.showTitleByDefault, 
+                  showBio: tmpl.config.showBioByDefault, 
+                  showQrCode: tmpl.config.showQrCodeByDefault, 
+                  showButtons: tmpl.config.showButtonsByDefault, 
+                  showSocialLinks: tmpl.config.showSocialLinksByDefault
                 }} 
                 lang={lang} 
                 customConfig={tmpl.config}
