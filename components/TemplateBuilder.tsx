@@ -61,7 +61,7 @@ const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Ico
              {Icon && <Icon size={14} />}
            </div>
            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</span>
+              <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">{label}</span>
               {hint && <span className="text-[7px] text-gray-400 font-bold">{hint}</span>}
            </div>
         </div>
@@ -259,6 +259,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       occasionOffsetX: 0,
       occasionPrimaryColor: '#3b82f6',
       occasionBgColor: '',
+      occasionTitleColor: '',
       occasionGlassy: false,
       showSpecialLinksByDefault: true,
       specialLinksCols: 2,
@@ -1020,7 +1021,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'body-style' && (
                <div className="space-y-8 animate-fade-in">
                   <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                     <div className="flex items-center gap-4"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
+                     <div className="flex items-center gap-3"><Box className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تنسيق جسم البطاقة', 'Card Content Area Style')}</h4></div>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <ToggleSwitch label={t('تفعيل تأثير زجاجي شفاف (Glassmorphism)', 'Premium Glass Body')} value={template.config.bodyGlassy} onChange={(v: boolean) => updateConfig('bodyGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
@@ -1057,7 +1058,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         </div>
 
                         <RangeControl 
-                           label={t('شفافية جسم البطاقة', 'Body Opacity')} 
+                           label={t('شفافية جسم البطاقة', 'Body Transparency')} 
                            min={0} max={100} unit="%" 
                            value={template.config.bodyOpacity ?? 100} 
                            onChange={(v: number) => updateConfig('bodyOpacity', v)} 
@@ -1068,14 +1069,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                         <RangeControl label={t('انحناء الحواف العلوي', 'Border Radius')} min={0} max={120} value={template.config.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                         
                         <div className="md:col-span-2">
-                           <RangeControl 
-                             label={isRtl ? 'إزاحة جسم البطاقة (رأسي)' : 'Body Vertical Offset'} 
-                             min={-2000} max={2000} 
-                             value={template.config.mobileBodyOffsetY ?? 0} 
-                             onChange={(v: number) => updateConfig('mobileBodyOffsetY', v)} 
-                             icon={Move} 
-                             hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} 
-                           />
+                           <RangeControl label={isRtl ? 'إزاحة جسم البطاقة (رأسياً)' : 'Body Vertical Offset'} min={-2000} max={2000} value={template.config.bodyOffsetY ?? 0} onChange={(v: number) => updateConfig('bodyOffsetY', v)} icon={Move} hint={isRtl ? "يتحكم في تداخل المحتوى مع الترويسة" : "Controls content overlap with header"} />
                         </div>
                      </div>
 
@@ -1765,9 +1759,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
                           <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6">{isRtl ? 'ألوان قسم المناسبة' : 'Occasion Section Colors'}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                              <ColorPicker label={t('اللون المميز (المؤقت)', 'Accent Color (Timer)')} value={template.config.occasionPrimaryColor} onChange={(v: string) => updateConfig('occasionPrimaryColor', v)} />
                              <ColorPicker label={t('لون خلفية القسم', 'Section Background Color')} value={template.config.occasionBgColor} onChange={(v: string) => updateConfig('occasionBgColor', v)} />
+                             <ColorPicker label={t('لون عنوان المناسبة', 'Title Color')} value={template.config.occasionTitleColor} onChange={(v: string) => updateConfig('occasionTitleColor', v)} />
                           </div>
                        </div>
                     </div>
@@ -2188,6 +2183,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          occasionDate: template.config.occasionDate,
                          occasionPrimaryColor: template.config.occasionPrimaryColor,
                          occasionBgColor: template.config.occasionBgColor,
+                         occasionTitleColor: template.config.occasionTitleColor,
                          occasionGlassy: template.config.occasionGlassy,
                          occasionOffsetY: template.config.occasionOffsetY,
                          occasionOffsetX: template.config.occasionOffsetX,
@@ -2348,7 +2344,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     <div className="space-y-2"><label className={labelTextClasses}>{t('وصف قصير (EN)', 'Short Desc (EN)')}</label><input type="text" value={template.descEn} onChange={e => updateTemplate('descEn', e.target.value)} className={inputClasses} /></div>
                  </div>
 
-                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 flex items-center justify-between">
+                 <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:bg-amber-900/30 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-white dark:bg-amber-900/30 rounded-2xl text-amber-500 shadow-sm"><Star size={24} /></div>
                        <div><h4 className="font-black dark:text-white text-sm uppercase">{t('قالب مميز (بريميوم)', 'Featured / Pro Template')}</h4><p className="text-[9px] font-bold text-gray-400 uppercase">{isRtl ? 'يتطلب باقة سنوية لاستخدامه' : 'Requires Yearly Plan to use'}</p></div>
@@ -2373,7 +2369,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
       {showResetConfirm && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20 space-y-6">
+           <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20 space-y-6">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto"><RotateCcw size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white uppercase">{isRtl ? 'إعادة التصفير؟' : 'Reset Everything?'}</h3>
               <p className="text-sm font-bold text-gray-500">{isRtl ? 'سيتم مسح كافة إعدادات الإزاحة والتموضع والعودة للقيم الافتراضية.' : 'All displacement and positioning settings will be wiped back to zero.'}</p>
