@@ -12,7 +12,7 @@ import {
   Clock, Shield, Wand2 as MagicIcon,
   CheckCircle, XCircle,
   RefreshCcw, MessageCircle,
-  Network
+  Network, LockKeyhole
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,7 +34,6 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(1);
 
-  // الرابط الصحيح للـ CNAME كما هو مطلوب
   const MASTER_NODE_URL = "nodes.nextid.my";
 
   useEffect(() => {
@@ -71,7 +70,6 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
   const handleConnect = async () => {
     if (!domainInput || !selectedCardId) return;
 
-    // تنظيف الدومين
     let cleanedDomain = domainInput
       .toLowerCase()
       .trim()
@@ -105,6 +103,15 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
     }
   };
 
+  const getHostValue = () => {
+    if (!domainInput) return '@';
+    const parts = domainInput.split('.');
+    if (parts.length > 2) return parts[0]; 
+    return '@';
+  };
+
+  const hostValue = getHostValue();
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40">
       <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
@@ -130,17 +137,6 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
       </div>
     );
   }
-
-  const getHostValue = () => {
-    if (!domainInput) return '@';
-    const parts = domainInput.split('.');
-    if (parts.length > 2) {
-      return parts[0]; 
-    }
-    return '@';
-  };
-
-  const hostValue = getHostValue();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 animate-fade-in-up pb-40">
@@ -219,8 +215,8 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                        <Info className="text-blue-500 shrink-0" size={24} />
                        <p className="text-xs font-bold text-blue-800 dark:text-blue-400 leading-relaxed">
                           {isRtl 
-                            ? `يجب عليك إضافة سجل CNAME في لوحة تحكم نطاقك (DNS Settings) لربط بطاقتك بنظامنا بشكل صحيح:` 
-                            : `You must add a CNAME record in your domain control panel to link your card to our system correctly:`}
+                            ? `يجب عليك إضافة سجل CNAME في لوحة تحكم نطاقك لربط بطاقتك بنظامنا. شهادة الـ SSL ستصدر تلقائياً بعد الربط:` 
+                            : `You must add a CNAME record in your domain control panel. SSL certificate will be issued automatically after linking:`}
                        </p>
                     </div>
                  </div>
@@ -231,7 +227,7 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                           <tr>
                              <td className="px-6 py-4">{isRtl ? 'النوع (Type)' : 'Type'}</td>
                              <td className="px-6 py-4">{isRtl ? 'المضيف (Host)' : 'Host'}</td>
-                             <td className="px-6 py-4">{isRtl ? 'القيمة (Value / Points To)' : 'Value'}</td>
+                             <td className="px-6 py-4">{isRtl ? 'القيمة (Value)' : 'Value'}</td>
                              <td className="px-6 py-4"></td>
                           </tr>
                        </thead>
@@ -260,11 +256,6 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                     <button onClick={() => setActiveStep(3)} className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-3">
                        <CheckCircle size={20} /> {isRtl ? 'لقد أضفت سجل CNAME، اطلب التفعيل' : 'CNAME Added, Request Activation'}
                     </button>
-                    <p className="text-[9px] text-gray-400 font-bold text-center px-6">
-                       {isRtl 
-                         ? "* ملاحظة: قد يستغرق انتشار سجلات الـ DNS من 15 دقيقة إلى 24 ساعة حسب مزود النطاق الخاص بك." 
-                         : "* Note: DNS propagation can take anywhere from 15 minutes to 24 hours depending on your domain provider."}
-                    </p>
                  </div>
               </div>
            </div>
@@ -276,12 +267,12 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                        <Network size={64} className="text-emerald-500" />
                     </div>
                     <div className="absolute -top-2 -right-2 bg-white dark:bg-gray-900 p-2 rounded-full shadow-lg border">
-                       <Clock size={24} className="text-amber-500" />
+                       <ShieldCheck size={24} className="text-blue-500" />
                     </div>
                  </div>
                  <div className="space-y-3">
-                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'التحقق من الاتصال' : 'Connection Verification'}</h3>
-                    <p className="text-gray-400 font-bold max-w-sm mx-auto leading-relaxed">{isRtl ? 'طلبك قيد المراجعة الفنية الآن. سيقوم النظام بربط الدومين وإصدار شهادة الـ SSL تلقائياً بمجرد رصد السجل.' : 'Your request is under technical review. Our system will link the domain and issue an SSL certificate automatically.'}</p>
+                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'تفعيل الحماية والربط' : 'Activating Security & Link'}</h3>
+                    <p className="text-gray-400 font-bold max-w-sm mx-auto leading-relaxed">{isRtl ? 'بمجرد رصد سجل CNAME، سيقوم خادمنا بإصدار شهادة SSL مشفرة وتفعيل الرابط تلقائياً.' : 'Once CNAME is detected, our server will issue an encrypted SSL certificate and activate the link automatically.'}</p>
                  </div>
                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                     <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center gap-3 border">
@@ -297,21 +288,38 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
         </div>
 
         <div className="lg:col-span-4 space-y-8">
+           {/* SSL Security Info Box */}
+           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[3rem] text-white shadow-xl space-y-6 relative overflow-hidden group">
+              <div className="relative z-10 space-y-4">
+                 <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                    <LockKeyhole size={24} className="text-white" />
+                 </div>
+                 <h4 className="text-xl font-black leading-tight">{isRtl ? 'حماية HTTPS مجانية' : 'Free HTTPS Protection'}</h4>
+                 <p className="text-blue-100 text-[11px] font-bold leading-relaxed">
+                    {isRtl 
+                      ? 'لا تقلق بشأن الأمان. خوادمنا تدعم إصدار شهادات SSL تلقائية لكل دومين خاص يتم ربطه، مما يضمن ظهور قفل الحماية الأخضر لعملائك.' 
+                      : 'Security is on us. Our servers automatically issue SSL certificates for every custom domain linked, ensuring the green lock appears for your clients.'}
+                 </p>
+                 <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest bg-black/20 p-2 rounded-xl w-fit">
+                    <ShieldCheck size={14} className="text-emerald-400" />
+                    {isRtl ? 'تشفير AES-256 مفعل' : 'AES-256 Encryption Active'}
+                 </div>
+              </div>
+              <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                 <Shield size={180} />
+              </div>
+           </div>
+
            <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-8 animate-fade-in-right">
               <div className="flex items-center gap-3">
                  <MagicIcon className="text-blue-600" size={24} />
-                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'لماذا nodes.nextid.my؟' : 'Why nodes.nextid.my?'}</h3>
+                 <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'أهمية الربط' : 'Linking Benefits'}</h3>
               </div>
-              <p className="text-xs font-bold text-gray-400 leading-relaxed">
-                 {isRtl 
-                   ? 'هذا هو خادم التوجيه المركزي الخاص بنا. استخدامه يضمن استقرار بطاقتك وتحديثها لحظياً عند أي تعديل.' 
-                   : 'This is our central routing server. Using it ensures your card is stable and updates instantly whenever you make changes.'}
-              </p>
-              <div className="space-y-6 pt-4">
+              <div className="space-y-6">
                  {[
-                   { icon: ArrowLeftRight, title: isRtl ? 'ربط مباشر' : 'Direct Link', desc: isRtl ? 'اتصال مشفر بين دومينك وسيرفراتنا.' : 'Encrypted connection between your domain and our servers.' },
-                   { icon: Shield, title: isRtl ? 'حماية SSL كاملة' : 'Full SSL Protection', desc: isRtl ? 'نوفر لك القفل الأخضر (HTTPS) مجاناً.' : 'We provide the green lock (HTTPS) for free.' },
-                   { icon: Zap, title: isRtl ? 'بدون تكاليف إضافية' : 'No Extra Costs', desc: isRtl ? 'ميزة الربط البرمجي مشمولة في باقتك.' : 'DNS routing is included in your pro plan.' }
+                   { icon: ArrowLeftRight, title: isRtl ? 'احترافية كاملة' : 'Full Professionalism', desc: isRtl ? 'يظهر دومينك الخاص بدلاً من رابط الموقع الأساسي.' : 'Your own domain appears instead of the main site link.' },
+                   { icon: Shield, title: isRtl ? 'حماية SSL متكاملة' : 'Integrated SSL', desc: isRtl ? 'تشفير كامل للبيانات فور تفعيل الربط.' : 'Full data encryption as soon as linking is active.' },
+                   { icon: Zap, title: isRtl ? 'سرعة الوصول' : 'Fast Access', desc: isRtl ? 'توجيه لحظي لبطاقتك عبر خوادمنا العالمية.' : 'Instant routing to your card via our global servers.' }
                  ].map((item, i) => (
                    <div key={i} className="flex gap-4 group">
                       <div className="w-10 h-10 shrink-0 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform">
@@ -325,31 +333,9 @@ const CustomDomain: React.FC<CustomDomainProps> = ({ lang }) => {
                  ))}
               </div>
               <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
-                 <div className="p-5 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] space-y-4 text-center">
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{isRtl ? 'هل تحتاج مساعدة في الـ DNS؟' : 'Need DNS Help?'}</p>
-                    <a href={`https://wa.me/966560817601`} target="_blank" className="w-full py-3 bg-white dark:bg-gray-800 text-blue-600 rounded-xl font-black text-[9px] uppercase shadow-sm border border-blue-100 flex items-center justify-center gap-2">
-                       <MessageCircle size={14} /> {isRtl ? 'الدعم الفني المباشر' : 'Live Technical Support'}
-                    </a>
-                 </div>
-              </div>
-           </div>
-
-           <div className="bg-gradient-to-br from-slate-900 to-black p-8 rounded-[3rem] text-white shadow-xl space-y-6 relative overflow-hidden group">
-              <div className="relative z-10 space-y-4">
-                 <h4 className="text-xl font-black leading-tight">{isRtl ? 'المظهر النهائي' : 'Live Appearance'}</h4>
-                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                       <Lock size={12} className="text-emerald-400 shrink-0" />
-                       <span className="text-[10px] font-mono opacity-80 truncate">https://{domainInput || 'your-domain.com'}</span>
-                    </div>
-                    <ExternalLink size={12} className="opacity-40" />
-                 </div>
-                 <p className="text-white/40 text-[9px] font-bold leading-relaxed">
-                    {isRtl ? "بعد التفعيل سيظهر رابط بطاقتك بهذا الشكل مع القفل الأخضر." : "After activation, your card URL will look like this with the green lock."}
-                 </p>
-              </div>
-              <div className="absolute -bottom-10 -right-10 opacity-10 group-hover:scale-110 transition-transform">
-                 <Monitor size={140} />
+                 <a href={`https://wa.me/966560817601`} target="_blank" className="w-full py-4 bg-gray-50 dark:bg-gray-800 text-blue-600 rounded-2xl font-black text-[10px] uppercase shadow-sm flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all">
+                    <MessageCircle size={16} /> {isRtl ? 'مساعدة في إعدادات الـ DNS' : 'Help with DNS Settings'}
+                 </a>
               </div>
            </div>
         </div>
