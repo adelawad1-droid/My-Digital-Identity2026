@@ -997,7 +997,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                            <button 
                             key={item.id} 
                             onClick={() => updateConfig('headerType', item.id)} 
-                            className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.headerType === item.id ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
+                            className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.headerType === item.id ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}
                            >
                              <item.icon size={20} /> 
                              <span className="text-[7px] font-black uppercase text-center leading-tight">{t(item.label, item.id)}</span>
@@ -1908,12 +1908,16 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'qrcode' && (
                <div className="space-y-8 animate-fade-in">
                   <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                     <div className="flex items-center gap-3"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
+                     <div className="flex items-center gap-4"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
                      <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} isRtl={isRtl} />
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
                      <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
                      <RangeControl label={t('إزاحة الباركود أفقياً', 'QR Horizontal Offset')} min={-1000} max={1000} value={template.config.qrOffsetX || 0} onChange={(v: number) => updateConfig('qrOffsetX', v)} icon={ArrowLeftRight} />
-                     <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-800">
+                        <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
+                        <ColorPicker label={t('لون خلفية الباركود', 'QR Background')} value={template.config.qrBgColor || 'transparent'} onChange={(v: string) => updateConfig('qrBgColor', v)} />
+                     </div>
                   </div>
                </div>
             )}
@@ -2298,7 +2302,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          floatingAssetOffsetY: template.config.floatingAssetOffsetY,
                          floatingAssetSize: template.config.floatingAssetSize,
                          floatingAssetUrl: template.config.floatingAssetUrl,
-                         showFloatingAsset: template.config.showFloatingAssetByDefault
+                         showFloatingAsset: template.config.showFloatingAssetByDefault,
+                         qrColor: template.config.qrColor,
+                         qrBgColor: template.config.qrBgColor
                        } as any} 
                        lang={lang} 
                        customConfig={template.config} 

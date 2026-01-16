@@ -158,6 +158,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const titleColor = data.titleColor || config.titleColor || '#2563eb';
   const linksColor = data.linksColor || config.linksColor || '#3b82f6';
   const socialIconsColor = data.socialIconsColor || config.socialIconsColor || linksColor;
+  
+  // Contact Button Colors
   const phoneBtnColor = data.contactPhoneColor || config.contactPhoneColor || '#2563eb';
   const phoneTextColor = data.contactPhoneTextColor || config.contactPhoneTextColor || '#ffffff';
   const whatsappBtnColor = data.contactWhatsappColor || config.contactWhatsappColor || '#10b981';
@@ -244,8 +246,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const showStars = data.showStars ?? config.showStarsByDefault;
   const hasGoldenFrame = data.hasGoldenFrame ?? config.hasGoldenFrameByDefault;
 
+  // QR Code Styling
   const qrColorVal = (data.qrColor || config.qrColor || themeColor || '#000000').replace('#', '');
-  const qrBgColor = data.qrBgColor || config.qrBgColor || (isDark ? '#111115' : '#ffffff');
+  const qrBgColorRaw = data.qrBgColor || config.qrBgColor || (isDark ? '#111115' : '#ffffff');
   const qrSize = data.qrSize || config.qrSize || 90;
   const qrBorderWidth = data.qrBorderWidth ?? config.qrBorderWidth ?? 0;
   const qrBorderColor = data.qrBorderColor || config.qrBorderColor || 'transparent';
@@ -253,8 +256,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const qrOffsetY = data.qrOffsetY ?? config.qrOffsetY ?? 0;
   const qrOffsetX = data.qrOffsetX ?? config.qrOffsetX ?? 0;
 
+  const qrFinalBgColor = qrBgColorRaw === 'transparent' ? (isDark ? '0f0f12' : 'ffffff') : qrBgColorRaw.replace('#', '');
   const cardUrl = generateShareUrl(data);
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cardUrl)}&bgcolor=${qrBgColor === 'transparent' ? (isDark ? '0f0f12' : 'ffffff') : qrBgColor.replace('#', '')}&color=${qrColorVal}&margin=0`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(cardUrl)}&bgcolor=${qrFinalBgColor}&color=${qrColorVal}&margin=0`;
 
   const isVisible = (dataField: boolean | undefined, configField: boolean | undefined) => {
     if (dataField !== undefined) return dataField;
@@ -473,7 +477,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const cbGlassy = config.contactButtonsGlassy;
   const cbVariant = config.contactButtonsVariant || 'buttons';
 
-  const getContactBtnStyle = (baseColor: string, textColorProp?: string): React.CSSProperties => {
+  const getContactBtnStyle = (baseColor: string, textColorOverride?: string): React.CSSProperties => {
     let finalRadius = `${cbRadius}px`;
     if (cbVariant === 'pills' || cbVariant === 'icons-circle') finalRadius = '999px';
     else if (cbVariant === 'icons-square') finalRadius = '16px';
@@ -486,7 +490,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       backdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       WebkitBackdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       border: cbGlassy ? `1px solid rgba(${hexToRgb(baseColor).string}, 0.3)` : 'none',
-      color: cbGlassy ? baseColor : (textColorProp || '#ffffff'),
+      color: cbGlassy ? baseColor : (textColorOverride || '#ffffff'),
       fontFamily: 'inherit',
       display: 'flex',
       alignItems: 'center',
@@ -936,6 +940,40 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
              </div>
            )}
 
+           {showSocialLinks && data.socialLinks?.length > 0 && (
+             <div 
+               data-element-id="socialLinks"
+               className={`mx-auto ${forCapture ? 'py-4' : 'py-6'}`} 
+               style={{ 
+                 display: sCols > 0 ? 'grid' : 'flex',
+                 flexWrap: sCols > 0 ? 'nowrap' : 'wrap',
+                 justifyContent: 'center',
+                 gridTemplateColumns: sCols > 0 ? `repeat(${sCols}, minmax(0, 1fr))` : 'none',
+                 transform: `translate(${data.socialLinksOffsetX ?? config.socialLinksOffsetX ?? 0}px, ${data.socialLinksOffsetY ?? config.socialLinksOffsetY ?? 0}px)`,
+                 gap: `${sGap}px`,
+                 width: 'fit-content',
+                 maxWidth: '100%',
+                 fontFamily: 'inherit'
+               }}
+             >
+               {data.socialLinks.map((link, idx) => (
+                 <a 
+                   key={idx} 
+                   href={link.url} 
+                   target="_blank" 
+                   className="hover:scale-110 active:scale-95 transition-transform"
+                   style={{ ...getSocialBtnStyles(link.platformId), fontFamily: 'inherit' }}
+                 >
+                   <SocialIcon 
+                    platformId={link.platformId} 
+                    size={sSize} 
+                    color={(useBrandColors && sVariant === 'filled') ? '#ffffff' : (BRAND_COLORS[link.platformId] && useBrandColors ? BRAND_COLORS[link.platformId] : sColor)} 
+                   />
+                 </a>
+               ))}
+             </div>
+           )}
+
            {showQrCode && (
               <div 
                 data-element-id="qrCode"
@@ -949,7 +987,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                 <div 
                    className="relative group p-4 inline-block transition-all duration-500 hover:scale-105"
                    style={{ 
-                      backgroundColor: qrBgColor,
+                      backgroundColor: data.qrBgColor || config.qrBgColor || 'transparent',
                       borderRadius: `${qrBorderRadius}px`,
                       border: qrBorderWidth > 0 ? `${qrBorderWidth}px solid ${qrBorderColor}` : 'none',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
@@ -962,6 +1000,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
         </div>
       </div>
+      {!forCapture && <div className="h-24 shrink-0" />}
     </div>
   );
 };
