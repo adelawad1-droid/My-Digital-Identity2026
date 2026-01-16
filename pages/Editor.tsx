@@ -255,12 +255,17 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
 
   const currentTemplate = templates.find(t => t.id === formData.templateId);
 
-  const VisibilityToggle = ({ field, label }: { field: keyof CardData, label: string }) => {
+  // تحديث Toggle الرؤية ليكون أيقونة صغيرة عند استخدامه داخل الحقول
+  const VisibilityIcon = ({ field }: { field: keyof CardData }) => {
     const isVisible = formData[field] !== false;
     return (
-      <button type="button" onClick={() => handleChange(field, !isVisible)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${isVisible ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 bg-gray-100 dark:bg-gray-800'}`}>
-        {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
-        <span className="text-[9px] font-black uppercase">{label || (isVisible ? t('إظهار', 'Show') : t('إخفاء', 'Hide'))}</span>
+      <button 
+        type="button" 
+        onClick={() => handleChange(field, !isVisible)} 
+        className={`p-2 rounded-lg transition-all ${isVisible ? 'text-blue-500 hover:bg-blue-50' : 'text-gray-300 hover:bg-gray-100'}`}
+        title={isVisible ? t('إخفاء', 'Hide') : t('إظهار', 'Show')}
+      >
+        {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
       </button>
     );
   };
@@ -298,7 +303,28 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   );
 
   const inputClasses = "w-full px-5 py-4 rounded-[1.5rem] border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-white outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/10 transition-all font-bold text-sm shadow-none";
-  const labelClasses = "block text-[10px] font-black text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-widest px-2";
+  const labelClasses = "hidden md:block text-[10px] font-black text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-widest px-2";
+
+  // حقل إدخال ذكي للجوال يخفي التسمية العلوية ويضع أيقونة العين في النهاية
+  const CompactInputField = ({ field, label, placeholder, type = "text", visibilityField }: { field: keyof CardData, label: string, placeholder: string, type?: string, visibilityField?: keyof CardData }) => (
+    <div className="space-y-1.5">
+      <label className={labelClasses}>{label}</label>
+      <div className="relative group">
+        <input 
+          type={type} 
+          value={formData[field] as string || ''} 
+          onChange={e => handleChange(field, e.target.value)} 
+          className={`${inputClasses} ${visibilityField ? (isRtl ? 'pl-12' : 'pr-12') : ''} placeholder:text-gray-400 placeholder:font-normal placeholder:text-xs`}
+          placeholder={isRtl ? label : placeholder} 
+        />
+        {visibilityField && (
+          <div className={`absolute top-1/2 -translate-y-1/2 ${isRtl ? 'left-3' : 'right-3'}`}>
+            <VisibilityIcon field={visibilityField} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   const previewPageBg = currentTemplate?.config.pageBgStrategy === 'mirror-header' 
     ? (formData.themeType === 'color' ? formData.themeColor : (formData.isDark ? '#050507' : '#f8fafc'))
@@ -355,7 +381,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       setShowAuthWarning(true);
       return;
     }
-    // التأكد من تزامن الحقول المفردة مع المصفوفات قبل الحفظ للبرمجة الخلفية
     const dataToSave = {
       ...formData,
       phone: formData.phones?.[0] || formData.phone || '',
@@ -474,7 +499,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 </div>
                 
                 <div className="p-6 md:p-10 flex-1">
-                  <div className="relative z-10 space-y-10">
+                  <div className="relative z-10 space-y-6 md:space-y-10">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                           <div className={`p-4 rounded-[1.2rem] bg-slate-50 dark:bg-gray-800 ${tabs[currentIndex].color} shadow-sm`}>
@@ -490,7 +515,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         </div>
                     </div>
 
-                    <div className="min-h-[450px]">
+                    <div className="min-h-[400px]">
                         {tabs[currentIndex].isPro && !isPremium ? (
                            <div className="flex flex-col items-center justify-center text-center py-20 space-y-8 animate-fade-in">
                               <div className="w-24 h-24 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-[2.5rem] flex items-center justify-center shadow-0 animate-bounce">
@@ -513,8 +538,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                         ) : (
                           <>
                             {activeTab === 'identity' && (
-                              <div className="space-y-8 animate-fade-in">
-                                <div className="space-y-3">
+                              <div className="space-y-6 md:space-y-8 animate-fade-in">
+                                <div className="space-y-2">
                                    <label className={labelClasses}>{t('رابط البطاقة المخصص (URL)', 'Personal URL Path')}</label>
                                    <div className={`flex flex-col sm:flex-row gap-2 ${isRtl ? 'sm:flex-row' : 'sm:flex-row'}`}>
                                       <div className={`flex-1 flex items-center bg-gray-50 dark:bg-gray-950 rounded-[1.5rem] border ${slugStatus === 'available' ? 'border-emerald-500' : slugStatus === 'taken' ? 'border-red-500' : 'border-gray-100 dark:border-gray-800'} px-5 py-4`} dir="ltr">
@@ -529,21 +554,24 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    {slugStatus === 'taken' && <p className="text-[9px] font-black text-red-500 px-4 uppercase">{t('الرابط محجوز مسبقاً', 'URL is already taken')}</p>}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                   <div className="space-y-2"><div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('الاسم الكامل', 'Full Name')}</label><VisibilityToggle field="showName" label="" /></div><input type="text" value={formData.name} onChange={e => handleChange('name', e.target.value)} className={inputClasses} placeholder={isRtl ? 'أحمد محمد' : 'John Doe'} /></div>
-                                   <div className="space-y-2"><div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('jobTitle')}</label><VisibilityToggle field="showTitle" label="" /></div><input type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={inputClasses} placeholder="Senior Software Engineer" /></div>
-                                   <div className="space-y-2 md:col-span-2">
-                                      <div className="flex justify-between px-2">
-                                        <label className={labelClasses + " !mb-0"}>{t('company')}</label>
-                                        <VisibilityToggle field="showCompany" label="" />
-                                      </div>
-                                      <input type="text" value={formData.company} onChange={e => handleChange('company', e.target.value)} className={inputClasses} placeholder={isRtl ? 'اسم الشركة' : 'Company Name'} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                   <CompactInputField field="name" label={t('الاسم الكامل', 'Full Name')} placeholder="John Doe" visibilityField="showName" />
+                                   <CompactInputField field="title" label={t('jobTitle')} placeholder="Senior Software Engineer" visibilityField="showTitle" />
+                                   <div className="md:col-span-2">
+                                      <CompactInputField field="company" label={t('company')} placeholder="Company Name" visibilityField="showCompany" />
                                    </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                   <div className="flex items-center justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('bio')}</label><VisibilityToggle field="showBio" label="" /></div>
-                                   <textarea rows={3} value={formData.bio} onChange={e => handleChange('bio', e.target.value)} className={inputClasses} placeholder="Write something inspiring about yourself..." />
+                                <div className="space-y-1.5">
+                                   <div className="flex items-center justify-between px-2">
+                                      <label className={labelClasses + " !mb-0"}>{t('bio')}</label>
+                                   </div>
+                                   <div className="relative">
+                                      <textarea rows={3} value={formData.bio} onChange={e => handleChange('bio', e.target.value)} className={`${inputClasses} ${isRtl ? 'pl-12' : 'pr-12'} placeholder:text-gray-400 placeholder:font-normal placeholder:text-xs min-h-[100px]`} placeholder={isRtl ? t('bio') : "Write something inspiring..."} />
+                                      <div className={`absolute top-4 ${isRtl ? 'left-3' : 'right-3'}`}>
+                                         <VisibilityIcon field="showBio" />
+                                      </div>
+                                   </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -559,12 +587,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    </select>
                                 </div>
 
-                                <div className="pt-6 border-t dark:border-gray-800 space-y-6">
+                                <div className="pt-4 border-t dark:border-gray-800 space-y-4">
                                    <div className="flex items-center justify-between px-2">
                                       <div className="flex items-center gap-3">
                                          <Camera className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('صورتك الشخصية', 'Profile Image')}</h3>
                                       </div>
-                                      <VisibilityToggle field="showProfileImage" label="" />
+                                      <button onClick={() => handleChange('showProfileImage', !formData.showProfileImage)} className="text-blue-500 font-black text-[10px] uppercase">
+                                         {formData.showProfileImage !== false ? t('إخفاء', 'Hide') : t('إظهار', 'Show')}
+                                      </button>
                                    </div>
                                    <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50/50 dark:bg-gray-950 rounded-[2rem] border border-dashed border-gray-100 dark:border-gray-800">
                                       <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-gray-900 shadow-0 border-4 border-white dark:border-gray-700 overflow-hidden flex items-center justify-center relative shrink-0">
@@ -622,102 +652,113 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                             )}
 
                             {activeTab === 'links' && (
-                              <div className="space-y-8 animate-fade-in">
-                                 <div className="space-y-4">
+                              <div className="space-y-6 md:space-y-8 animate-fade-in">
+                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between px-2">
                                       <div className="flex items-center gap-3">
                                         <label className={labelClasses + " !mb-0"}>{t('عناوين البريد الإلكتروني', 'Emails')}</label>
-                                        <VisibilityToggle field="showEmail" label="" />
+                                        <VisibilityIcon field="showEmail" />
                                       </div>
-                                      <button type="button" onClick={() => handleChange('emails', [...(formData.emails || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة بريد', 'Add Email')}</button>
+                                      <button type="button" onClick={() => handleChange('emails', [...(formData.emails || []), ''])} className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة بريد', 'Add Email')}</button>
                                     </div>
-                                    {(formData.emails || []).map((email, idx) => (
-                                       <div key={idx} className="flex gap-2">
-                                          <div className="relative flex-1">
-                                             <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
-                                             <input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="mail@example.com" />
-                                          </div>
-                                          <button type="button" onClick={() => { const l = [...(formData.emails || [])]; l.splice(idx, 1); handleChange('emails', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
-                                       </div>
-                                    ))}
+                                    <div className="grid grid-cols-1 gap-2">
+                                      {(formData.emails || []).map((email, idx) => (
+                                         <div key={idx} className="flex gap-2 animate-zoom-in">
+                                            <div className="relative flex-1">
+                                               <Mail className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                               <input type="email" value={email} onChange={e => { const l = [...(formData.emails || [])]; l[idx] = e.target.value; handleChange('emails', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} py-3 md:py-4`} placeholder="mail@example.com" />
+                                            </div>
+                                            <button type="button" onClick={() => { const l = [...(formData.emails || [])]; l.splice(idx, 1); handleChange('emails', l); }} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shrink-0"><X size={18}/></button>
+                                         </div>
+                                      ))}
+                                    </div>
                                  </div>
 
-                                 <div className="space-y-4 pt-6 border-t dark:border-gray-800">
+                                 <div className="space-y-3 pt-4 border-t dark:border-gray-800">
                                     <div className="flex items-center justify-between px-2">
                                       <div className="flex items-center gap-3">
                                         <label className={labelClasses + " !mb-0"}>{t('المواقع والروابط', 'Websites')}</label>
-                                        <VisibilityToggle field="showWebsite" label="" />
+                                        <VisibilityIcon field="showWebsite" />
                                       </div>
-                                      <button type="button" onClick={() => handleChange('websites', [...(formData.websites || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رابط', 'Add Link')}</button>
+                                      <button type="button" onClick={() => handleChange('websites', [...(formData.websites || []), ''])} className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رابط', 'Add Link')}</button>
                                     </div>
-                                    {(formData.websites || []).map((web, idx) => (
-                                       <div key={idx} className="flex gap-2">
-                                          <div className="relative flex-1">
-                                             <Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
-                                             <input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="www.yoursite.com" />
-                                          </div>
-                                          <button type="button" onClick={() => { const l = [...(formData.websites || [])]; l.splice(idx, 1); handleChange('websites', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
-                                       </div>
-                                    ))}
+                                    <div className="grid grid-cols-1 gap-2">
+                                      {(formData.websites || []).map((web, idx) => (
+                                         <div key={idx} className="flex gap-2 animate-zoom-in">
+                                            <div className="relative flex-1">
+                                               <Globe2 className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
+                                               <input type="text" value={web} onChange={e => { const l = [...(formData.websites || [])]; l[idx] = e.target.value; handleChange('websites', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} py-3 md:py-4`} placeholder="www.yoursite.com" />
+                                            </div>
+                                            <button type="button" onClick={() => { const l = [...(formData.websites || [])]; l.splice(idx, 1); handleChange('websites', l); }} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shrink-0"><X size={18}/></button>
+                                         </div>
+                                      ))}
+                                    </div>
                                  </div>
 
-                                 <div className="pt-6 border-t dark:border-gray-800 space-y-4">
-                                    <div className="flex items-center gap-3 px-2"><MapPin className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('locationSection')}</h3><VisibilityToggle field="showLocation" label="" /></div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                       <div className="space-y-1.5"><label className={labelClasses}>{t('العنوان التفصيلي', 'Address')}</label><input type="text" value={formData.location} onChange={e => handleChange('location', e.target.value)} className={inputClasses} placeholder={isRtl ? 'الرياض، السعودية' : 'Riyadh, SA'} /></div>
-                                       <div className="space-y-1.5"><label className={labelClasses}>{t('رابط قوقل ماب', 'Maps Link')}</label><input type="url" value={formData.locationUrl} onChange={e => handleChange('locationUrl', e.target.value)} className={inputClasses} placeholder="https://maps.google.com/..." /></div>
+                                 <div className="pt-4 border-t dark:border-gray-800 space-y-3">
+                                    <div className="flex items-center justify-between px-2">
+                                      <div className="flex items-center gap-3"><MapPin className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('locationSection')}</h3></div>
+                                      <VisibilityIcon field="showLocation" />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                       <CompactInputField field="location" label={t('العنوان التفصيلي', 'Address')} placeholder="Riyadh, SA" />
+                                       <CompactInputField field="locationUrl" label={t('رابط قوقل ماب', 'Maps Link')} placeholder="https://maps.google.com/..." />
                                     </div>
                                  </div>
                               </div>
                             )}
 
                             {activeTab === 'contact_numbers' && (
-                              <div className="space-y-8 animate-fade-in">
-                                <div className="p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-4">
-                                   <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-xl text-indigo-600 shadow-sm"><PhoneCall size={24}/></div>
+                              <div className="space-y-6 md:space-y-8 animate-fade-in">
+                                <div className="p-5 bg-indigo-50 dark:bg-indigo-900/10 rounded-[1.5rem] border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-4">
+                                   <div className="p-3 bg-white dark:bg-indigo-900/30 rounded-xl text-indigo-600 shadow-sm"><PhoneCall size={20}/></div>
                                    <div>
-                                      <h3 className="font-black dark:text-white uppercase tracking-tighter">{t('أرقام الاتصال والواتساب', 'Contact Numbers')}</h3>
-                                      <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
+                                      <h3 className="font-black dark:text-white uppercase tracking-tighter text-sm md:text-base">{t('أرقام الاتصال والواتساب', 'Contact Numbers')}</h3>
+                                      <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{t('تفعيل أزرار الاتصال السريع في البطاقة', 'Enable quick action buttons')}</p>
                                    </div>
                                 </div>
 
-                                <div className="space-y-8">
-                                   <div className="space-y-4">
+                                <div className="space-y-6">
+                                   <div className="space-y-3">
                                       <div className="flex items-center justify-between px-2">
                                         <div className="flex items-center gap-3">
                                           <label className={labelClasses + " !mb-0"}>{t('أرقام الهاتف', 'Phone Numbers')}</label>
-                                          <VisibilityToggle field="showPhone" label="" />
+                                          <VisibilityIcon field="showPhone" />
                                         </div>
-                                        <button type="button" onClick={() => handleChange('phones', [...(formData.phones || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رقم', 'Add Phone')}</button>
+                                        <button type="button" onClick={() => handleChange('phones', [...(formData.phones || []), ''])} className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رقم', 'Add Phone')}</button>
                                       </div>
-                                      {(formData.phones || []).map((p, idx) => (
-                                         <div key={idx} className="flex gap-2">
-                                            <div className="relative flex-1">
-                                               <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                               <input type="tel" value={p} onChange={e => { const l = [...(formData.phones || [])]; l[idx] = e.target.value; handleChange('phones', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="+966 5..." />
-                                            </div>
-                                            <button type="button" onClick={() => { const l = [...(formData.phones || [])]; l.splice(idx, 1); handleChange('phones', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
-                                         </div>
-                                      ))}
+                                      <div className="grid grid-cols-1 gap-2">
+                                        {(formData.phones || []).map((p, idx) => (
+                                           <div key={idx} className="flex gap-2 animate-zoom-in">
+                                              <div className="relative flex-1">
+                                                 <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                                 <input type="tel" value={p} onChange={e => { const l = [...(formData.phones || [])]; l[idx] = e.target.value; handleChange('phones', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} py-3 md:py-4`} placeholder="+966 5..." />
+                                              </div>
+                                              <button type="button" onClick={() => { const l = [...(formData.phones || [])]; l.splice(idx, 1); handleChange('phones', l); }} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shrink-0"><X size={18}/></button>
+                                           </div>
+                                        ))}
+                                      </div>
                                    </div>
 
-                                   <div className="space-y-4 pt-6 border-t dark:border-gray-800">
+                                   <div className="space-y-3 pt-4 border-t dark:border-gray-800">
                                       <div className="flex items-center justify-between px-2">
                                         <div className="flex items-center gap-3">
                                           <label className={labelClasses + " !mb-0"}>{t('أرقام الواتساب', 'WhatsApp Numbers')}</label>
-                                          <VisibilityToggle field="showWhatsapp" label="" />
+                                          <VisibilityIcon field="showWhatsapp" />
                                         </div>
-                                        <button type="button" onClick={() => handleChange('whatsapps', [...(formData.whatsapps || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة واتساب', 'Add WhatsApp')}</button>
+                                        <button type="button" onClick={() => handleChange('whatsapps', [...(formData.whatsapps || []), ''])} className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة واتساب', 'Add WhatsApp')}</button>
                                       </div>
-                                      {(formData.whatsapps || []).map((w, idx) => (
-                                         <div key={idx} className="flex gap-2">
-                                            <div className="relative flex-1">
-                                               <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                               <input type="tel" value={w} onChange={e => { const l = [...(formData.whatsapps || [])]; l[idx] = e.target.value; handleChange('whatsapps', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
-                                            </div>
-                                            <button type="button" onClick={() => { const l = [...(formData.whatsapps || [])]; l.splice(idx, 1); handleChange('whatsapps', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
-                                         </div>
-                                      ))}
+                                      <div className="grid grid-cols-1 gap-2">
+                                        {(formData.whatsapps || []).map((w, idx) => (
+                                           <div key={idx} className="flex gap-2 animate-zoom-in">
+                                              <div className="relative flex-1">
+                                                 <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                                 <input type="tel" value={w} onChange={e => { const l = [...(formData.whatsapps || [])]; l[idx] = e.target.value; handleChange('whatsapps', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'} py-3 md:py-4`} placeholder="9665..." />
+                                              </div>
+                                              <button type="button" onClick={() => { const l = [...(formData.whatsapps || [])]; l.splice(idx, 1); handleChange('whatsapps', l); }} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shrink-0"><X size={18}/></button>
+                                           </div>
+                                        ))}
+                                      </div>
                                    </div>
                                 </div>
                               </div>
@@ -801,7 +842,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <div className="p-3 bg-pink-50 dark:bg-pink-900/20 text-pink-600 rounded-2xl shadow-sm"><ImagePlus size={24} /></div>
                                          <h2 className="text-xl font-black dark:text-white uppercase tracking-widest">{t('specialLinks')}</h2>
                                       </div>
-                                      <VisibilityToggle field="showSpecialLinks" label="" />
+                                      <VisibilityIcon field="showSpecialLinks" />
                                     </div>
 
                                     <div className="space-y-6">
@@ -998,7 +1039,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     
                                     <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-black/20 p-2 rounded-[2rem]">
                                          {['color', 'gradient', 'image'].map(type => (
-                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
+                                           <button type="button" key={type} onClick={() => handleChange('themeType', type as ThemeType)} className={`py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 flex-1 ${formData.themeType === type ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}>
                                              {type === 'color' ? <Palette size={20}/> : type === 'gradient' ? <Sparkles size={20}/> : <ImageIcon size={20}/>}
                                              <span className="text-[10px] font-black uppercase tracking-widest">{t(type === 'color' ? 'لون ثابت' : type === 'gradient' ? 'تدرج' : 'صورة', type.toUpperCase())}</span>
                                            </button>
