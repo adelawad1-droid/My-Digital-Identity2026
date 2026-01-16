@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -11,7 +10,7 @@ import {
   Zap, AlignCenter, Circle, Box, Loader2, Type as TypographyIcon, 
   Ruler, Star, Hash, ArrowLeft, Palette, Sparkles, ImageIcon, 
   UploadCloud, Sun, Moon, Pipette, Settings, FileText, AlignLeft, 
-  AlignRight, LayoutTemplate, Info, Maximize2, UserCircle, Mail, 
+  AlignRight, LayoutTemplate, LayoutGrid, Info, Maximize2, UserCircle, Mail, 
   Phone, Globe, MessageCircle, Camera, Download, Tablet, Monitor, 
   Eye, QrCode, Wind, GlassWater, ChevronRight, ChevronLeft, 
   Waves, Square, Columns, Minus, ToggleLeft, ToggleRight, Calendar, MapPin, Timer, PartyPopper, Link as LinkIcon, FolderOpen, Plus, Tag, Settings2, SlidersHorizontal, Share2, FileCode, HardDrive, Database,
@@ -30,6 +29,10 @@ type BuilderTab =
   | 'direct-links' 
   | 'membership-lab' 
   | 'contact-lab' 
+  | 'special-links' 
+  | 'floating-asset-lab'
+  | 'occasion-lab'
+  | 'location' 
   | 'social-lab' 
   | 'qrcode' 
   | 'special-features' 
@@ -87,7 +90,7 @@ const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Ico
 };
 
 const ToggleSwitch = ({ label, value, onChange, icon: Icon, color = "bg-blue-600", isRtl }: any) => (
-  <div className="flex items-center justify-between p-6 bg-white dark:bg-[#121215] rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-sm transition-all hover:bg-gray-50/50">
+  <div className="flex items-center justify-between p-6 bg-white dark:bg-[#121215] rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:bg-gray-50/50">
     <div className="flex items-center gap-4">
       <div className={`p-3 rounded-2xl ${value ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
         {Icon && <Icon size={20} />}
@@ -220,6 +223,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       contactButtonsRadius: 16,
       contactButtonsPaddingV: 16,
       contactButtonsGlassy: false,
+      contactButtonsVariant: 'buttons',
       socialLinksOffsetY: 0,
       socialLinksOffsetX: 0,
       contentAlign: 'center',
@@ -594,28 +598,16 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
   const isFullHeaderPreview = template.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
 
-  // تصحيح: خيار "بطاقة في الوسط" يجب أن يستخدم دائماً إزاحة الجوال mobileBodyOffsetY (التداخل الداخلي)
+  // --- Dynamic Layout Values for Preview ---
+  const previewPageBg = template.config.pageBgStrategy === 'mirror-header' 
+    ? (template.config.defaultThemeType === 'color' ? template.config.defaultThemeColor : (template.config.defaultIsDark ? '#050507' : '#f8fafc'))
+    : (template.config.pageBgColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc'));
+
+  const previewDesktopPullUp = template.config.desktopBodyOffsetY ?? -60;
+  
   const previewBodyOffsetY = (previewDevice === 'mobile' || previewDevice === 'tablet' || template.config.desktopLayout !== 'full-width-header') 
     ? (template.config.mobileBodyOffsetY ?? 0) 
     : 0;
-
-  // desktopBodyOffsetY هو سحب البطاقة كاملاً للأعلى في سطح المكتب فقط
-  const previewDesktopPullUp = (previewDevice === 'desktop')
-    ? (template.config.desktopBodyOffsetY ?? 0)
-    : 0;
-
-  // استنتاج خلفية الصفحة للمعاينة
-  const getPreviewPageBg = () => {
-    if (template.config.pageBgStrategy === 'mirror-header') {
-      if (template.config.defaultThemeType === 'gradient') {
-        return template.config.defaultThemeGradient;
-      }
-      return template.config.defaultThemeColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc');
-    }
-    return template.config.pageBgColor || (template.config.defaultIsDark ? '#050507' : '#f8fafc');
-  };
-
-  const previewPageBg = getPreviewPageBg();
 
   // --- Drag Handling Logic ---
   const [activeDragElement, setActiveDragElement] = useState<string | null>(null);
@@ -1591,6 +1583,30 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <ToggleSwitch label={t('إظهار زر واتساب', 'Show WhatsApp')} value={template.config.showWhatsappByDefault} onChange={(v: boolean) => updateConfig('showWhatsappByDefault', v)} icon={MessageCircle} isRtl={isRtl} />
                        </div>
 
+                       {/* Variant Selector */}
+                       <div className="pt-6 border-t dark:border-gray-800 space-y-4">
+                          <label className={labelTextClasses}>{t('نمط عرض أزرار الاتصال', 'Contact Buttons Variant')}</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                             {[
+                                { id: 'buttons', label: 'كلاسيك', icon: LayoutGrid },
+                                { id: 'pills', label: 'دائري', icon: Circle },
+                                { id: 'icons-square', label: 'أيقونات مربعة', icon: Box },
+                                { id: 'icons-circle', label: 'أيقونات دائرية', icon: Circle },
+                                { id: 'full-width', label: 'عرض كامل', icon: Maximize2 }
+                             ].map(v => (
+                                <button 
+                                  key={v.id} 
+                                  type="button"
+                                  onClick={() => updateConfig('contactButtonsVariant', v.id)} 
+                                  className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.contactButtonsVariant === v.id || (!template.config.contactButtonsVariant && v.id === 'buttons') ? 'bg-blue-600 text-white border-blue-600 shadow-lg' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent hover:bg-gray-100'}`}
+                                >
+                                   <v.icon size={18} />
+                                   <span className="text-[7px] font-black uppercase text-center leading-tight">{t(v.label, v.id.toUpperCase())}</span>
+                                </button>
+                             ))}
+                          </div>
+                       </div>
+
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
                           <h4 className={labelTextClasses}>{t('ألوان أزرار الاتصال', 'Contact Buttons Colors')}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2149,7 +2165,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                       <div className="w-full overflow-hidden relative shrink-0" style={{ height: `${template.config.headerHeight}px` }}>
                         <div className="absolute inset-0 z-0">
                           {template.config.defaultThemeType === 'image' && template.config.defaultBackgroundImage && (
-                            <img src={template.config.defaultThemeType === 'image' ? template.config.defaultBackgroundImage : undefined} className="w-full h-full object-cover" alt="Full Header" />
+                            <img src={template.config.defaultBackgroundImage} className="w-full h-full object-cover" alt="Full Header" />
                           )}
                           {template.config.defaultThemeType === 'gradient' && (
                             <div className="w-full h-full" style={{ background: template.config.defaultThemeGradient }} />
@@ -2375,7 +2391,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       {showResetConfirm && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-[#121215] w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20 space-y-6">
-              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto"><RotateCcw size={40} /></div>
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><RotateCcw size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white uppercase">{isRtl ? 'إعادة التصفير؟' : 'Reset Everything?'}</h3>
               <p className="text-sm font-bold text-gray-500">{isRtl ? 'سيتم مسح كافة إعدادات الإزاحة والتموضع والعودة للقيم الافتراضية.' : 'All displacement and positioning settings will be wiped back to zero.'}</p>
               <div className="flex flex-col gap-3">

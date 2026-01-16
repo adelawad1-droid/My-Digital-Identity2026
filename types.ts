@@ -89,6 +89,7 @@ export interface TemplateConfig {
   websiteOffsetY: number;
   websiteOffsetX?: number;
   
+  contactButtonsVariant?: 'buttons' | 'pills' | 'icons-square' | 'icons-circle' | 'full-width';
   contactButtonsOffsetY: number;
   contactButtonsOffsetX?: number;
   contactButtonsGap?: number;
@@ -324,6 +325,8 @@ export interface CardData {
   specialLinks?: SpecialLinkItem[];
   emails?: string[];   
   websites?: string[]; 
+  phones?: string[];   
+  whatsapps?: string[];
   useSocialBrandColors?: boolean; 
   socialIconColumns?: number;
   ownerId?: string;
@@ -467,7 +470,6 @@ export interface CardData {
   titleOffsetY?: number;
   titleOffsetX?: number;
   bioOffsetY?: number;
-  // Fix typo from 'size' to 'number' on line 467
   bioOffsetX?: number;
   contactButtonsOffsetY?: number;
   contactButtonsOffsetX?: number;

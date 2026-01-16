@@ -28,9 +28,16 @@ export const downloadVCard = async (data: CardData) => {
   const cleanName = (data.name || '').trim();
   const cleanTitle = (data.title || '').trim();
   const cleanOrg = (data.company || '').trim();
-  const cleanPhone = (data.phone || '').replace(/\s/g, '');
   const cleanEmail = (data.email || '').trim();
   const cleanWeb = (data.website || '').trim();
+
+  // تجميع كافة أرقام الهواتف والواتساب
+  const allPhones = Array.from(new Set([
+    ...(data.phones || []),
+    ...(data.whatsapps || []),
+    data.phone,
+    data.whatsapp
+  ])).filter(p => p && p.trim() !== '');
 
   let vcard = [
     'BEGIN:VCARD',
@@ -39,23 +46,25 @@ export const downloadVCard = async (data: CardData) => {
     `N:;${cleanName};;;`,
     `TITLE:${cleanTitle}`,
     `ORG:${cleanOrg}`,
-    `TEL;TYPE=CELL:${cleanPhone}`,
     `EMAIL;TYPE=INTERNET:${cleanEmail}`,
     `URL:${cleanWeb}`,
     `ADR;TYPE=WORK:;;${data.location || ''};;;`,
     `NOTE:${data.bio || ''}`,
   ];
 
+  // إضافة كافة الأرقام المكتشفة
+  allPhones.forEach(p => {
+    vcard.push(`TEL;TYPE=CELL:${p.replace(/\s/g, '')}`);
+  });
+
   // التعامل مع الصورة الشخصية
   if (data.profileImage) {
     if (data.profileImage.startsWith('data:image/')) {
-      // إذا كانت الصورة قديمة (Base64)
       const base64Data = data.profileImage.split(',')[1];
       const mimeType = data.profileImage.split(';')[0].split(':')[1].toUpperCase();
       const type = mimeType.split('/')[1] || 'JPEG';
       vcard.push(`PHOTO;TYPE=${type};ENCODING=b:${base64Data}`);
     } else if (data.profileImage.startsWith('http')) {
-      // إذا كانت الصورة جديدة (رابط من Storage) - نقوم بتحويلها
       const base64Data = await imageUrlToBase64(data.profileImage);
       if (base64Data) {
         vcard.push(`PHOTO;TYPE=JPEG;ENCODING=b:${base64Data}`);

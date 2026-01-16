@@ -1,3 +1,4 @@
+
 import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
@@ -276,8 +277,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const showMembership = isVisible(data.showMembership, config.showMembershipByDefault);
   const showFloatingAsset = isVisible(data.showFloatingAsset, config.showFloatingAssetByDefault);
 
-  const hasContactButtons = (showPhone && data.phone) || 
-                           (showWhatsapp && data.whatsapp) || 
+  const finalPhones = data.phones && data.phones.length > 0 ? data.phones : (data.phone ? [data.phone] : []);
+  const finalWhatsapps = data.whatsapps && data.whatsapps.length > 0 ? data.whatsapps : (data.whatsapp ? [data.whatsapp] : []);
+
+  const hasContactButtons = (showPhone && finalPhones.length > 0) || 
+                           (showWhatsapp && finalWhatsapps.length > 0) || 
                            (!hideSaveButton && showButtons);
 
   const getHeaderStyles = (): React.CSSProperties => {
@@ -465,19 +469,39 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const cbGap = config.contactButtonsGap ?? 12;
   const cbPaddingV = config.contactButtonsPaddingV ?? 16;
   const cbGlassy = config.contactButtonsGlassy;
+  const cbVariant = config.contactButtonsVariant || 'buttons';
 
   const getContactBtnStyle = (baseColor: string): React.CSSProperties => {
+    let finalRadius = `${cbRadius}px`;
+    if (cbVariant === 'pills' || cbVariant === 'icons-circle') finalRadius = '999px';
+    else if (cbVariant === 'icons-square') finalRadius = '16px';
+
     const style: React.CSSProperties = {
       backgroundColor: cbGlassy ? `rgba(${hexToRgb(baseColor).string}, 0.15)` : baseColor,
-      borderRadius: `${cbRadius}px`,
+      borderRadius: finalRadius,
       paddingTop: `${cbPaddingV}px`,
       paddingBottom: `${cbPaddingV}px`,
       backdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       WebkitBackdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       border: cbGlassy ? `1px solid rgba(${hexToRgb(baseColor).string}, 0.3)` : 'none',
       color: cbGlassy ? baseColor : '#ffffff',
-      fontFamily: 'inherit'
+      fontFamily: 'inherit',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      transition: 'all 0.3s ease',
+      width: '100%'
     };
+
+    if (cbVariant.startsWith('icons')) {
+        style.aspectRatio = '1/1';
+        style.paddingLeft = '0';
+        style.paddingRight = '0';
+        style.width = 'fit-content';
+        style.minWidth = `${(cbPaddingV * 2) + 24}px`;
+    }
+
     return style;
   };
 
@@ -740,28 +764,48 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            {hasContactButtons && (
               <div 
                 data-element-id="contactButtons"
-                className="flex flex-row items-center justify-center w-full mt-6 px-2" 
+                className={`w-full mt-6 px-2 transition-all duration-500`} 
                 style={{ 
                   transform: `translate(${data.contactButtonsOffsetX ?? config.contactButtonsOffsetX ?? 0}px, ${data.contactButtonsOffsetY ?? config.contactButtonsOffsetY ?? 0}px)`,
-                  gap: `${cbGap}px`,
-                  fontFamily: 'inherit'
+                  fontFamily: 'inherit',
                 }}
               >
-                {showPhone && data.phone && (
-                  <a href={`tel:${data.phone}`} className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(phoneBtnColor), fontFamily: 'inherit' }}>
-                    <Phone size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('call')}</span>
-                  </a>
-                )}
-                {showWhatsapp && data.whatsapp && (
-                  <a href={`https://wa.me/${data.whatsapp}`} target="_blank" className="flex-1 flex items-center justify-center gap-2 px-3 text-white font-black text-[10px] shadow-lg hover:brightness-110 transition-all min-w-0" style={{ ...getContactBtnStyle(whatsappBtnColor), fontFamily: 'inherit' }}>
-                    <MessageCircle size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')}</span>
-                  </a>
-                )}
-                {!hideSaveButton && showButtons && (
-                  <button onClick={() => downloadVCard(data)} className="flex-1 py-4 flex items-center justify-center gap-3 px-3 rounded-2xl bg-gray-900 text-white font-black text-[10px] shadow-lg hover:bg-black transition-all min-w-0" style={{ fontFamily: 'inherit' }}>
-                    <UserPlus size={14} className="shrink-0" /> <span className="truncate" style={{ fontFamily: 'inherit' }}>{t('saveContact')}</span>
-                  </button>
-                )}
+                <div 
+                  className={`w-full ${cbVariant.startsWith('icons') ? 'flex flex-wrap items-center justify-center' : 'grid'} gap-[inherit]`}
+                  style={{
+                    gridTemplateColumns: (cbVariant === 'buttons' || cbVariant === 'pills') 
+                      ? 'repeat(2, 1fr)' 
+                      : (cbVariant === 'full-width' ? '1fr' : 'none'),
+                    gap: `${cbGap}px`
+                  }}
+                >
+                    {showPhone && finalPhones.map((phone, idx) => (
+                    <a key={`ph-${idx}`} href={`tel:${phone}`} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(phoneBtnColor)}>
+                        <Phone size={14} className="shrink-0" /> 
+                        {!cbVariant.startsWith('icons') && (
+                            <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('call')} {finalPhones.length > 1 ? idx + 1 : ''}</span>
+                        )}
+                    </a>
+                    ))}
+                    
+                    {showWhatsapp && finalWhatsapps.map((wa, idx) => (
+                    <a key={`wa-${idx}`} href={`https://wa.me/${wa}`} target="_blank" className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(whatsappBtnColor)}>
+                        <MessageCircle size={14} className="shrink-0" /> 
+                        {!cbVariant.startsWith('icons') && (
+                            <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')} {finalWhatsapps.length > 1 ? idx + 1 : ''}</span>
+                        )}
+                    </a>
+                    ))}
+
+                    {!hideSaveButton && showButtons && (
+                    <button onClick={() => downloadVCard(data)} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle('#111827')}>
+                        <UserPlus size={14} className="shrink-0" /> 
+                        {!cbVariant.startsWith('icons') && (
+                            <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('saveContact')}</span>
+                        )}
+                    </button>
+                    )}
+                </div>
               </div>
            )}
 

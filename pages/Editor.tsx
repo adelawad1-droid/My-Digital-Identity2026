@@ -108,11 +108,12 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     const templateMobileOffset = config?.mobileBodyOffsetY;
 
     if (initialData) {
-      // دمج قيم القالب الافتراضية مع البيانات المحملة لضمان ظهور البيانات الصحيحة في المحرر
       return { 
         ...initialData, 
         emails: initialData.emails || [], 
         websites: initialData.websites || [], 
+        phones: initialData.phones || (initialData.phone ? [initialData.phone] : []),
+        whatsapps: initialData.whatsapps || (initialData.whatsapp ? [initialData.whatsapp] : []),
         specialLinks: initialData.specialLinks || [], 
         socialIconColumns: initialData.socialIconColumns || 0,
         specialLinksCols: initialData.specialLinksCols || (config?.specialLinksCols || 2),
@@ -123,13 +124,10 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
            ? initialData.mobileBodyOffsetY
            : (templateMobileOffset ?? 0),
         
-        // قراءة البيانات النصية من القالب إذا لم تكن موجودة في بيانات العميل أو كانت فارغة
         name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || '')),
         title: initialData.title || templateTitle || '',
         company: initialData.company || templateCompany || '',
         bio: initialData.bio || templateBio || '',
-
-        // قراءة الألوان من القالب إذا لم تكن موجودة في بيانات العميل
         nameColor: initialData.nameColor || config?.nameColor,
         titleColor: initialData.titleColor || config?.titleColor,
         linksColor: initialData.linksColor || config?.linksColor,
@@ -141,8 +139,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         contactWhatsappColor: initialData.contactWhatsappColor || config?.contactWhatsappColor,
         socialIconsColor: initialData.socialIconsColor || config?.socialIconsColor,
         cardBodyColor: initialData.cardBodyColor || config?.cardBodyColor,
-
-        // قراءة خيارات الظهور (Visibility) من القالب إذا لم تكن محددة مسبقاً من العميل
         showName: initialData.showName !== undefined ? initialData.showName : config?.showNameByDefault,
         showTitle: initialData.showTitle !== undefined ? initialData.showTitle : config?.showTitleByDefault,
         showCompany: initialData.showCompany !== undefined ? initialData.showCompany : config?.showCompanyByDefault,
@@ -157,7 +153,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         showLocation: initialData.showLocation !== undefined ? initialData.showLocation : config?.showLocationByDefault,
         showMembership: initialData.showMembership !== undefined ? initialData.showMembership : config?.showMembershipByDefault,
         showOccasion: initialData.showOccasion !== undefined ? initialData.showOccasion : config?.showOccasionByDefault,
-
         bodyBorderRadius: initialData.bodyBorderRadius !== undefined ? initialData.bodyBorderRadius : config?.bodyBorderRadius,
         bodyOpacity: initialData.bodyOpacity !== undefined ? initialData.bodyOpacity : config?.bodyOpacity,
         bodyGlassy: initialData.bodyGlassy !== undefined ? initialData.bodyGlassy : config?.bodyGlassy,
@@ -175,6 +170,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          title: templateTitle || baseData.title,
          company: templateCompany || baseData.company,
          bio: templateBio || baseData.bio,
+         phones: baseData.phone ? [baseData.phone] : [],
+         whatsapps: baseData.whatsapp ? [baseData.whatsapp] : [],
          themeType: selectedTmpl.config.defaultThemeType || baseData.themeType,
          themeColor: selectedTmpl.config.defaultThemeColor || baseData.themeColor,
          themeGradient: selectedTmpl.config.defaultThemeGradient || baseData.themeGradient,
@@ -202,7 +199,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          socialIconsColor: config?.socialIconsColor,
          bodyOpacity: config?.bodyOpacity,
          bodyGlassy: config?.bodyGlassy,
-         // خيارات الظهور البدئية من القالب
          showName: config?.showNameByDefault,
          showTitle: config?.showTitleByDefault,
          showCompany: config?.showCompanyByDefault,
@@ -218,7 +214,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          showOccasion: config?.showOccasionByDefault
        } as CardData;
     }
-    return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0 }; 
+    return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0, phones: baseData.phone ? [baseData.phone] : [], whatsapps: baseData.whatsapp ? [baseData.whatsapp] : [] }; 
   });
 
   useEffect(() => {
@@ -359,7 +355,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       setShowAuthWarning(true);
       return;
     }
-    onSave(formData, originalIdRef.current || undefined);
+    // التأكد من تزامن الحقول المفردة مع المصفوفات قبل الحفظ للبرمجة الخلفية
+    const dataToSave = {
+      ...formData,
+      phone: formData.phones?.[0] || formData.phone || '',
+      whatsapp: formData.whatsapps?.[0] || formData.whatsapp || ''
+    };
+    onSave(dataToSave, originalIdRef.current || undefined);
   };
 
   const isFullHeaderPreview = currentTemplate?.config.desktopLayout === 'full-width-header' && previewDevice === 'desktop';
@@ -679,20 +681,43 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                   <div className="space-y-3">
-                                      <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الهاتف', 'Phone Number')}</label><VisibilityToggle field="showPhone" label="" /></div>
-                                      <div className="relative">
-                                         <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
-                                         <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="+966 5..." />
+                                <div className="space-y-8">
+                                   <div className="space-y-4">
+                                      <div className="flex items-center justify-between px-2">
+                                        <div className="flex items-center gap-3">
+                                          <label className={labelClasses + " !mb-0"}>{t('أرقام الهاتف', 'Phone Numbers')}</label>
+                                          <VisibilityToggle field="showPhone" label="" />
+                                        </div>
+                                        <button type="button" onClick={() => handleChange('phones', [...(formData.phones || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة رقم', 'Add Phone')}</button>
                                       </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                      <div className="flex justify-between px-2"><label className={labelClasses + " !mb-0"}>{t('رقم الواتساب', 'WhatsApp Number')}</label><VisibilityToggle field="showWhatsapp" label="" /></div>
-                                      <div className="relative">
-                                         <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-500`} size={16} />
-                                         <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
+                                      {(formData.phones || []).map((p, idx) => (
+                                         <div key={idx} className="flex gap-2">
+                                            <div className="relative flex-1">
+                                               <Phone className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                               <input type="tel" value={p} onChange={e => { const l = [...(formData.phones || [])]; l[idx] = e.target.value; handleChange('phones', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="+966 5..." />
+                                            </div>
+                                            <button type="button" onClick={() => { const l = [...(formData.phones || [])]; l.splice(idx, 1); handleChange('phones', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
+                                         </div>
+                                      ))}
+                                   </div>
+
+                                   <div className="space-y-4 pt-6 border-t dark:border-gray-800">
+                                      <div className="flex items-center justify-between px-2">
+                                        <div className="flex items-center gap-3">
+                                          <label className={labelClasses + " !mb-0"}>{t('أرقام الواتساب', 'WhatsApp Numbers')}</label>
+                                          <VisibilityToggle field="showWhatsapp" label="" />
+                                        </div>
+                                        <button type="button" onClick={() => handleChange('whatsapps', [...(formData.whatsapps || []), ''])} className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[9px] font-black uppercase"><Plus size={12}/> {t('إضافة واتساب', 'Add WhatsApp')}</button>
                                       </div>
+                                      {(formData.whatsapps || []).map((w, idx) => (
+                                         <div key={idx} className="flex gap-2">
+                                            <div className="relative flex-1">
+                                               <MessageCircle className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={16} />
+                                               <input type="tel" value={w} onChange={e => { const l = [...(formData.whatsapps || [])]; l[idx] = e.target.value; handleChange('whatsapps', l); }} className={`${inputClasses} ${isRtl ? 'pr-12' : 'pl-12'}`} placeholder="9665..." />
+                                            </div>
+                                            <button type="button" onClick={() => { const l = [...(formData.whatsapps || [])]; l.splice(idx, 1); handleChange('whatsapps', l); }} className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all"><X size={18}/></button>
+                                         </div>
+                                      ))}
                                    </div>
                                 </div>
                               </div>
@@ -1175,7 +1200,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                              {t('التالي', 'Next')} {isRtl ? <ChevronLeft size={18}/> : <ChevronRight size={18}/>}
                           </button>
                         ) : (
-                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                          <button type="button" onClick={handleSaveDirect} className="px-10 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase shadow-0 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
                              {t('حفظ ومشاركة', 'Save & Share')} <Check size={18}/>
                           </button>
                         )}
