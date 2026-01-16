@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -624,14 +625,6 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                       </div>
                                    </div>
                                 </div>
-
-                                <div className="pt-6 border-t dark:border-gray-800 space-y-6">
-                                   <h4 className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest px-2">{t('ألوان الأزرار', 'Button Colors')}</h4>
-                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <ColorPickerUI label={t('لون زر الاتصال', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
-                                      <ColorPickerUI label={t('لون زر واتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
-                                   </div>
-                                </div>
                               </div>
                             )}
 
@@ -996,6 +989,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <ColorPickerUI label={t('نصوص النبذة', 'Bio Text Color')} field="bioTextColor" icon={FileText} />
                                     <ColorPickerUI label={isRtl ? 'لون الباركود' : 'QR Code Color'} field="qrColor" icon={QrCode} />
                                     <ColorPickerUI label={isRtl ? 'خلفية الباركود' : 'QR Background'} field="qrBgColor" icon={Box} />
+                                    <ColorPickerUI label={t('لون زر الاتصال', 'Phone Button')} field="contactPhoneColor" icon={Phone} />
+                                    <ColorPickerUI label={t('لون زر واتساب', 'WhatsApp Button')} field="contactWhatsappColor" icon={MessageCircle} />
                                  </div>
                                  
                                  <div className="pt-6 border-t dark:border-gray-800 space-y-6">
