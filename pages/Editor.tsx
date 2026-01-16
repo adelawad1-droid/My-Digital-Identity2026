@@ -98,26 +98,43 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
   const [formData, setFormData] = useState<CardData>(() => {
     const targetTemplateId = initialData?.templateId || forcedTemplateId || templates[0]?.id || 'classic';
     const selectedTmpl = templates.find(t => t.id === targetTemplateId);
+    const config = selectedTmpl?.config;
     
-    const templateName = selectedTmpl?.config.defaultName;
-    const templateOffset = selectedTmpl?.config.bodyOffsetY;
-    const templateMobileOffset = selectedTmpl?.config.mobileBodyOffsetY;
+    const templateName = config?.defaultName;
+    const templateOffset = config?.bodyOffsetY;
+    const templateMobileOffset = config?.mobileBodyOffsetY;
 
     if (initialData) {
+      // دمج قيم القالب الافتراضية مع البيانات المحملة لضمان ظهور الألوان الصحيحة في المحرر
       return { 
         ...initialData, 
         emails: initialData.emails || [], 
         websites: initialData.websites || [], 
         specialLinks: initialData.specialLinks || [], 
         socialIconColumns: initialData.socialIconColumns || 0,
-        specialLinksCols: initialData.specialLinksCols || (selectedTmpl?.config.specialLinksCols || 2),
+        specialLinksCols: initialData.specialLinksCols || (config?.specialLinksCols || 2),
         bodyOffsetY: (initialData.bodyOffsetY !== undefined && initialData.bodyOffsetY !== 0) 
            ? initialData.bodyOffsetY 
            : (templateOffset ?? 0),
         mobileBodyOffsetY: (initialData.mobileBodyOffsetY !== undefined && initialData.mobileBodyOffsetY !== 0)
            ? initialData.mobileBodyOffsetY
            : (templateMobileOffset ?? 0),
-        name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || ''))
+        name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || '')),
+        // قراءة الألوان من القالب إذا لم تكن موجودة في بيانات العميل
+        nameColor: initialData.nameColor || config?.nameColor,
+        titleColor: initialData.titleColor || config?.titleColor,
+        linksColor: initialData.linksColor || config?.linksColor,
+        bioTextColor: initialData.bioTextColor || config?.bioTextColor,
+        bioBgColor: initialData.bioBgColor || config?.bioBgColor,
+        qrColor: initialData.qrColor || config?.qrColor,
+        qrBgColor: initialData.qrBgColor || config?.qrBgColor,
+        contactPhoneColor: initialData.contactPhoneColor || config?.contactPhoneColor,
+        contactWhatsappColor: initialData.contactWhatsappColor || config?.contactWhatsappColor,
+        socialIconsColor: initialData.socialIconsColor || config?.socialIconsColor,
+        cardBodyColor: initialData.cardBodyColor || config?.cardBodyColor,
+        bodyBorderRadius: initialData.bodyBorderRadius !== undefined ? initialData.bodyBorderRadius : config?.bodyBorderRadius,
+        bodyOpacity: initialData.bodyOpacity !== undefined ? initialData.bodyOpacity : config?.bodyOpacity,
+        bodyGlassy: initialData.bodyGlassy !== undefined ? initialData.bodyGlassy : config?.bodyGlassy,
       };
     }
 
@@ -145,7 +162,17 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          fontFamily: selectedTmpl.config.fontFamily || 'Cairo',
          socialIconColumns: selectedTmpl.config.socialIconColumns || 0,
          qrColor: selectedTmpl.config.qrColor || baseData.qrColor || '#000000',
-         qrBgColor: selectedTmpl.config.qrBgColor || baseData.qrBgColor || 'transparent'
+         qrBgColor: selectedTmpl.config.qrBgColor || baseData.qrBgColor || 'transparent',
+         nameColor: config?.nameColor,
+         titleColor: config?.titleColor,
+         linksColor: config?.linksColor,
+         bioTextColor: config?.bioTextColor,
+         bioBgColor: config?.bioBgColor,
+         contactPhoneColor: config?.contactPhoneColor,
+         contactWhatsappColor: config?.contactWhatsappColor,
+         socialIconsColor: config?.socialIconsColor,
+         bodyOpacity: config?.bodyOpacity,
+         bodyGlassy: config?.bodyGlassy
        } as CardData;
     }
     return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0 }; 
@@ -223,8 +250,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
       <div className="flex items-center gap-3">{Icon && <Icon size={16} className="text-indigo-600" />}<span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">{label}</span></div>
       <div className="flex items-center gap-3">
          <div className="relative w-8 h-8 rounded-xl overflow-hidden border shadow-sm">
-            <input type="color" value={(formData[field] as string) || '#3b82f6'} onChange={(v) => { handleChange(field, v.target.value); if (onAfterChange) onAfterChange(v.target.value); }} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
-            <div className="w-full h-full" style={{ backgroundColor: (formData[field] as string) || '#3b82f6' }} />
+            <input type="color" value={(formData[field] as string) || '#000000'} onChange={(v) => { handleChange(field, v.target.value); if (onAfterChange) onAfterChange(v.target.value); }} className="absolute inset-0 opacity-0 cursor-pointer scale-150" />
+            <div className="w-full h-full" style={{ backgroundColor: (formData[field] as string) || '#000000' }} />
          </div>
          <input type="text" value={((formData[field] as string) || '').toUpperCase()} onChange={(e) => { handleChange(field, e.target.value); if (onAfterChange) onAfterChange(e.target.value); }} className="bg-gray-50 dark:bg-gray-900 border-none rounded-xl px-2 py-1.5 text-[9px] font-black text-blue-600 w-16 uppercase text-center outline-none" placeholder="#HEX" />
       </div>
