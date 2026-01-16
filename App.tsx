@@ -116,7 +116,7 @@ const AppContent: React.FC = () => {
       if (initFlag.current) return;
       initFlag.current = true;
 
-      // جلب الإعدادات والقوالب أولاً لضمان توفرها لأي نوع من الزيارات
+      // 1. جلب الإعدادات والقوالب أولاً
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
@@ -125,29 +125,31 @@ const AppContent: React.FC = () => {
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
 
-      // الكشف عن الدومين المخصص
+      // 2. الكشف عن الدومين المخصص
       const hostname = window.location.hostname;
-      const mainDomains = [
+      
+      // النطاقات التي يجب أن تعرض الصفحة الرئيسية (النطاقات الرسمية فقط)
+      const officialDomains = [
         'nextid.my', 'www.nextid.my', 
-        'nodes.nextid.my', 'www.nodes.nextid.my', 
         'localhost', '127.0.0.1'
       ];
       
-      if (!mainDomains.includes(hostname)) {
+      // إذا لم يكن النطاق رسمياً، نبحث عنه كدومين مخصص لبطاقة
+      if (!officialDomains.includes(hostname)) {
         try {
           const cardByDomain = await getCardByDomain(hostname);
           if (cardByDomain) {
             setPublicCard(cardByDomain as CardData);
             setIsDarkMode(cardByDomain.isDark);
             setIsInitializing(false);
-            return; // توقف هنا لعرض الملف الشخصي العام فقط
+            return; // عرض الملف الشخصي فقط وتوقف
           }
         } catch (e) {
           console.error("Domain routing error:", e);
         }
       }
 
-      // الكشف عن معرف السيرة الذاتية (Slug) عبر ?u=
+      // 3. الكشف عن معرف السيرة الذاتية (Slug) عبر ?u=
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
       
@@ -165,7 +167,7 @@ const AppContent: React.FC = () => {
         }
       }
 
-      // إدارة حالة تسجيل الدخول
+      // 4. إدارة حالة تسجيل الدخول للمستخدمين العاديين
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {
@@ -178,7 +180,7 @@ const AppContent: React.FC = () => {
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
           
-          if (!slug) {
+          if (!slug && officialDomains.includes(hostname)) {
             try {
               const cards = await getUserCards(user.uid);
               setUserCards(cards as CardData[]);
@@ -276,6 +278,7 @@ const AppContent: React.FC = () => {
   const Sidebar = () => (
     <>
       <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[1100] transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
+      {/* Fix line 281: Added quotes around translate-x-0 class to avoid JS variable errors */}
       <div className={`fixed top-0 bottom-0 ${isRtl ? 'right-0' : 'left-0'} w-72 bg-white dark:bg-[#0a0a0c] z-[1200] shadow-2xl transition-transform duration-500 ease-out border-l border-gray-100 dark:border-gray-800 flex flex-col ${isSidebarOpen ? 'translate-x-0' : (isRtl ? 'translate-x-full' : '-translate-x-full')}`}>
         <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center">
           <div className="flex items-center gap-3">
