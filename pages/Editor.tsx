@@ -101,11 +101,14 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
     const config = selectedTmpl?.config;
     
     const templateName = config?.defaultName;
+    const templateTitle = config?.defaultTitle;
+    const templateCompany = config?.defaultCompany;
+    const templateBio = isRtl ? config?.defaultBioAr : config?.defaultBioEn;
     const templateOffset = config?.bodyOffsetY;
     const templateMobileOffset = config?.mobileBodyOffsetY;
 
     if (initialData) {
-      // دمج قيم القالب الافتراضية مع البيانات المحملة لضمان ظهور الألوان الصحيحة في المحرر
+      // دمج قيم القالب الافتراضية مع البيانات المحملة لضمان ظهور البيانات الصحيحة في المحرر
       return { 
         ...initialData, 
         emails: initialData.emails || [], 
@@ -119,7 +122,13 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         mobileBodyOffsetY: (initialData.mobileBodyOffsetY !== undefined && initialData.mobileBodyOffsetY !== 0)
            ? initialData.mobileBodyOffsetY
            : (templateMobileOffset ?? 0),
+        
+        // قراءة البيانات النصية من القالب إذا لم تكن موجودة في بيانات العميل أو كانت فارغة
         name: (initialData.name && initialData.name !== '---') ? initialData.name : (templateName || (SAMPLE_DATA[lang]?.name || '')),
+        title: initialData.title || templateTitle || '',
+        company: initialData.company || templateCompany || '',
+        bio: initialData.bio || templateBio || '',
+
         // قراءة الألوان من القالب إذا لم تكن موجودة في بيانات العميل
         nameColor: initialData.nameColor || config?.nameColor,
         titleColor: initialData.titleColor || config?.titleColor,
@@ -132,6 +141,23 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
         contactWhatsappColor: initialData.contactWhatsappColor || config?.contactWhatsappColor,
         socialIconsColor: initialData.socialIconsColor || config?.socialIconsColor,
         cardBodyColor: initialData.cardBodyColor || config?.cardBodyColor,
+
+        // قراءة خيارات الظهور (Visibility) من القالب إذا لم تكن محددة مسبقاً من العميل
+        showName: initialData.showName !== undefined ? initialData.showName : config?.showNameByDefault,
+        showTitle: initialData.showTitle !== undefined ? initialData.showTitle : config?.showTitleByDefault,
+        showCompany: initialData.showCompany !== undefined ? initialData.showCompany : config?.showCompanyByDefault,
+        showBio: initialData.showBio !== undefined ? initialData.showBio : config?.showBioByDefault,
+        showEmail: initialData.showEmail !== undefined ? initialData.showEmail : config?.showEmailByDefault,
+        showWebsite: initialData.showWebsite !== undefined ? initialData.showWebsite : config?.showWebsiteByDefault,
+        showPhone: initialData.showPhone !== undefined ? initialData.showPhone : config?.showPhoneByDefault,
+        showWhatsapp: initialData.showWhatsapp !== undefined ? initialData.showWhatsapp : config?.showWhatsappByDefault,
+        showSocialLinks: initialData.showSocialLinks !== undefined ? initialData.showSocialLinks : config?.showSocialLinksByDefault,
+        showQrCode: initialData.showQrCode !== undefined ? initialData.showQrCode : config?.showQrCodeByDefault,
+        showSpecialLinks: initialData.showSpecialLinks !== undefined ? initialData.showSpecialLinks : (config?.showSpecialLinksByDefault ?? true),
+        showLocation: initialData.showLocation !== undefined ? initialData.showLocation : config?.showLocationByDefault,
+        showMembership: initialData.showMembership !== undefined ? initialData.showMembership : config?.showMembershipByDefault,
+        showOccasion: initialData.showOccasion !== undefined ? initialData.showOccasion : config?.showOccasionByDefault,
+
         bodyBorderRadius: initialData.bodyBorderRadius !== undefined ? initialData.bodyBorderRadius : config?.bodyBorderRadius,
         bodyOpacity: initialData.bodyOpacity !== undefined ? initialData.bodyOpacity : config?.bodyOpacity,
         bodyGlassy: initialData.bodyGlassy !== undefined ? initialData.bodyGlassy : config?.bodyGlassy,
@@ -146,6 +172,9 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          ...baseData,
          templateId: targetTemplateId,
          name: templateName || baseData.name,
+         title: templateTitle || baseData.title,
+         company: templateCompany || baseData.company,
+         bio: templateBio || baseData.bio,
          themeType: selectedTmpl.config.defaultThemeType || baseData.themeType,
          themeColor: selectedTmpl.config.defaultThemeColor || baseData.themeColor,
          themeGradient: selectedTmpl.config.defaultThemeGradient || baseData.themeGradient,
@@ -172,7 +201,21 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
          contactWhatsappColor: config?.contactWhatsappColor,
          socialIconsColor: config?.socialIconsColor,
          bodyOpacity: config?.bodyOpacity,
-         bodyGlassy: config?.bodyGlassy
+         bodyGlassy: config?.bodyGlassy,
+         // خيارات الظهور البدئية من القالب
+         showName: config?.showNameByDefault,
+         showTitle: config?.showTitleByDefault,
+         showCompany: config?.showCompanyByDefault,
+         showBio: config?.showBioByDefault,
+         showEmail: config?.showEmailByDefault,
+         showWebsite: config?.showWebsiteByDefault,
+         showPhone: config?.showPhoneByDefault,
+         showWhatsapp: config?.showWhatsappByDefault,
+         showSocialLinks: config?.showSocialLinksByDefault,
+         showQrCode: config?.showQrCodeByDefault,
+         showLocation: config?.showLocationByDefault,
+         showMembership: config?.showMembershipByDefault,
+         showOccasion: config?.showOccasionByDefault
        } as CardData;
     }
     return { ...baseData, bodyOffsetY: 0, mobileBodyOffsetY: 0 }; 
@@ -964,7 +1007,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                          <label className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase">{t('خلفيات فنية افتراضية', 'Artistic Background Presets')}</label>
                                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                             {BACKGROUND_PRESETS.map((url, i) => (
-                                              <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-0' : 'border-transparent opacity-60'}`}>
+                                              <button type="button" key={i} onClick={() => { handleChange('backgroundImage', url); handleChange('themeType', 'image'); }} className={`h-24 rounded-2xl border-2 overflow-hidden transition-all ${formData.backgroundImage === url ? 'border-blue-600 scale-105 shadow-xl' : 'border-transparent opacity-60'}`}>
                                                  <img src={url} className="w-full h-full object-cover" alt={`Preset ${i}`} />
                                               </button>
                                             ))}
@@ -993,7 +1036,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                                     <ColorPickerUI label={t('لون السمة الأساسي', 'Base Theme Color')} field="themeColor" icon={Pipette} onAfterChange={() => handleChange('themeType', 'color')} />
                                     
                                     <div className="pt-4 border-t dark:border-gray-800 flex items-center justify-between">
-                                        <div className="flex items-center gap-3"><Moon className="text-gray-500" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
+                                        <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
                                         <button type="button" onClick={() => handleChange('isDark', !formData.isDark)} className={`w-14 h-7 rounded-full relative transition-all ${formData.isDark ? 'bg-blue-600 shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (formData.isDark ? 'right-8' : 'right-1') : (formData.isDark ? 'left-8' : 'left-1')}`} /></button>
                                     </div>
                                  </div>
@@ -1151,8 +1194,8 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
                 </div>
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
                    <button type="button" onClick={() => setPreviewDevice('mobile')} className={`p-2 rounded-lg transition-all ${previewDevice === 'mobile' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Smartphone size={16}/></button>
-                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Tablet size={16}/></button>
-                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-500'}`}><Monitor size={18}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('tablet')} className={`p-2 rounded-lg transition-all ${previewDevice === 'tablet' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Tablet size={16}/></button>
+                   <button type="button" onClick={() => setPreviewDevice('desktop')} className={`p-2 rounded-lg transition-all ${previewDevice === 'desktop' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' : 'text-gray-400'}`}><Monitor size={18}/></button>
                 </div>
               </div>
               
