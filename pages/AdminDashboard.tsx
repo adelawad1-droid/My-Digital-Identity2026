@@ -27,7 +27,7 @@ import {
   Lock, CheckCircle2, Image as ImageIcon, UploadCloud, X, Layout, User as UserIcon,
   Plus, Palette, ShieldAlert, Key, Star, Hash, AlertTriangle, Pin, PinOff, ArrowUpAZ,
   MoreVertical, ToggleLeft, ToggleRight, MousePointer2, TrendingUp, Filter, ListFilter, Activity, Type, FolderEdit, Check, FolderOpen, Tag, PlusCircle, Zap, HardDrive, Database, Link as LinkIcon, FolderSync, Server,
-  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud, MonitorDot, CheckCircle, XCircle
+  Info, BarChart, Copy, FileJson, Code, Mail, UserCheck, Calendar, Contact2, CreditCard, RefreshCw, Crown, Type as FontIcon, Shield, Activity as AnalyticsIcon, CreditCard as CardIcon, CreditCard as PaymentIcon, Webhook, ExternalLink, Activity as LiveIcon, Beaker as TestIcon, Link2, PhoneCall, Cloud, MonitorDot, CheckCircle, XCircle, Link as LinkIconLucide
 } from 'lucide-react';
 
 const ColorPicker = ({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) => (
@@ -67,6 +67,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const [cardToDelete, setCardToDelete] = useState<{id: string, ownerId: string} | null>(null);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const [subEditUser, setSubEditUser] = useState<any | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const [categoryData, setCategoryData] = useState({ id: '', nameAr: '', nameEn: '', order: 0, isActive: true });
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -183,7 +184,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const handleSavePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!planData.nameAr || !planData.nameEn) {
-      alert(isRtl ? "يرجى إدخال اسم الباقة" : "Please enter plan name");
+      alert(isRtl ? "يرجى إدخل اسم الباقة" : "Please enter plan name");
       return;
     }
     
@@ -253,6 +254,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
     } finally {
       setIsDuplicating(null);
     }
+  };
+
+  const handleCopyReturnUrl = (planId: string) => {
+    const returnUrl = `${window.location.origin}/#/${lang}/account?payment=success&planId=${planId}`;
+    navigator.clipboard.writeText(returnUrl);
+    setCopiedId(planId);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const [loading, setLoading] = useState(true);
@@ -581,9 +589,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                            className={inputClasses + " font-mono text-xs"} 
                            placeholder="https://buy.stripe.com/..." 
                          />
-                         <p className="text-[9px] font-bold text-gray-400 italic px-2">
-                           {isRtl ? "* سيتم توجيه المستخدم لهذا الرابط مباشرة عند الضغط على زر الاشتراك." : "* User will be redirected to this link when clicking subscribe."}
-                         </p>
+                         
+                         {editingPlanId && (
+                           <div className="pt-4 border-t border-blue-200/50 space-y-3 animate-fade-in">
+                              <div className="flex items-center gap-2">
+                                <ShieldCheck size={14} className="text-emerald-500" />
+                                <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{isRtl ? 'رابط العودة للترقية التلقائية (Success Return URL)' : 'Stripe Success Return URL'}</label>
+                              </div>
+                              <div className="flex gap-2">
+                                 <input 
+                                   type="text" 
+                                   readOnly 
+                                   value={`${window.location.origin}/#/${lang}/account?payment=success&planId=${editingPlanId}`} 
+                                   className="flex-1 bg-white/60 dark:bg-black/20 border-none rounded-xl px-4 py-3 font-mono text-[10px] text-gray-500 outline-none" 
+                                 />
+                                 <button 
+                                   type="button"
+                                   onClick={() => handleCopyReturnUrl(editingPlanId)}
+                                   className={`px-4 py-2 rounded-xl font-black text-[9px] uppercase transition-all flex items-center gap-2 ${copiedId === editingPlanId ? 'bg-emerald-500 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-blue-600 border border-blue-100 hover:bg-blue-600 hover:text-white shadow-sm'}`}
+                                 >
+                                    {copiedId === editingPlanId ? <Check size={12}/> : <Copy size={12}/>}
+                                    {copiedId === editingPlanId ? t('تم النسخ', 'Copied') : t('نسخ الرابط', 'Copy URL')}
+                                 </button>
+                              </div>
+                              <p className="text-[8px] font-bold text-gray-400 italic px-2">
+                                 {isRtl ? "* ضع هذا الرابط في إعدادات Stripe (قسم Confirmation Page) ليعرف النظام أنه تم الدفع ويرفع العضو آلياً." : "* Paste this in Stripe Payment Link settings (Confirmation Page) to trigger auto-upgrade."}
+                              </p>
+                           </div>
+                         )}
                       </div>
                    </div>
 
@@ -649,6 +682,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                </td>
                                <td className="px-10 py-6 text-center">
                                   <div className="flex justify-center gap-2">
+                                     <button 
+                                        onClick={() => handleCopyReturnUrl(plan.id)}
+                                        className={`p-3 rounded-xl transition-all shadow-sm ${copiedId === plan.id ? 'bg-emerald-500 text-white' : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white'}`}
+                                        title={isRtl ? 'نسخ رابط العودة (Stripe Return URL)' : 'Copy Stripe Return URL'}
+                                     >
+                                        {copiedId === plan.id ? <Check size={18}/> : <LinkIconLucide size={18}/>}
+                                     </button>
                                      <button onClick={() => { setEditingPlanId(plan.id); setPlanData(plan); }} className="p-3 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={18} /></button>
                                      <button onClick={() => setPlanToDelete(plan.id)} className="p-3 text-red-600 bg-red-50 rounded-xl hover:bg-red-600 hover:text-white transition-all"><Trash2 size={18} /></button>
                                   </div>
