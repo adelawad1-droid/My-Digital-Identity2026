@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -39,7 +38,7 @@ type BuilderTab =
   | 'special-features' 
   | 'desktop-lab';
 
-const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px", hint }: any) => {
+const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Icon, hint }: any) => {
   const [tempValue, setTempValue] = useState(value.toString());
 
   useEffect(() => {
@@ -342,9 +341,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       linksColor: '#3b82f6',
       socialIconsColor: '#3b82f6',
       contactPhoneColor: '#2563eb',
-      contactPhoneTextColor: '#ffffff',
       contactWhatsappColor: '#10b981',
-      contactWhatsappTextColor: '#ffffff',
       defaultThemeType: 'gradient',
       defaultThemeColor: '#2563eb',
       defaultThemeGradient: THEME_GRADIENTS[0],
@@ -900,7 +897,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 4: المحتوي الإضافي */}
+          {/* Group 4: المحتوى الإضافي */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
@@ -997,7 +994,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                            <button 
                             key={item.id} 
                             onClick={() => updateConfig('headerType', item.id)} 
-                            className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.headerType === item.id ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-transparent shadow-sm'}`}
+                            className={`py-4 px-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${template.config.headerType === item.id ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700'}`}
                            >
                              <item.icon size={20} /> 
                              <span className="text-[7px] font-black uppercase text-center leading-tight">{t(item.label, item.id)}</span>
@@ -1612,23 +1609,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
                           <h4 className={labelTextClasses}>{t('ألوان أزرار الاتصال', 'Contact Buttons Colors')}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50/50 dark:bg-white/[0.02] p-6 rounded-3xl border border-gray-100 dark:border-white/5">
-                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-blue-600">
-                                   <Phone size={14} />
-                                   <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'زر الاتصال' : 'Phone Button'}</span>
-                                </div>
-                                <ColorPicker label={t('لون الخلفية', 'Background Color')} value={template.config.contactPhoneColor || '#2563eb'} onChange={(v: string) => updateConfig('contactPhoneColor', v)} />
-                                <ColorPicker label={t('لون الكتابة والأيقونة', 'Text & Icon Color')} value={template.config.contactPhoneTextColor || '#ffffff'} onChange={(v: string) => updateConfig('contactPhoneTextColor', v)} />
-                             </div>
-                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-emerald-600">
-                                   <MessageCircle size={14} />
-                                   <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'زر واتساب' : 'WhatsApp Button'}</span>
-                                </div>
-                                <ColorPicker label={t('لون الخلفية', 'Background Color')} value={template.config.contactWhatsappColor || '#10b981'} onChange={(v: string) => updateConfig('contactWhatsappColor', v)} />
-                                <ColorPicker label={t('لون الكتابة والأيقونة', 'Text & Icon Color')} value={template.config.contactWhatsappTextColor || '#ffffff'} onChange={(v: string) => updateConfig('contactWhatsappTextColor', v)} />
-                             </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <ColorPicker label={t('لون زر الاتصال', 'Phone Button Color')} value={template.config.contactPhoneColor || '#2563eb'} onChange={(v: string) => updateConfig('contactPhoneColor', v)} />
+                             <ColorPicker label={t('لون زر واتساب', 'WhatsApp Button Color')} value={template.config.contactWhatsappColor || '#10b981'} onChange={(v: string) => updateConfig('contactWhatsappColor', v)} />
                           </div>
                        </div>
 
@@ -1908,16 +1891,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'qrcode' && (
                <div className="space-y-8 animate-fade-in">
                   <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
-                     <div className="flex items-center gap-4"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
+                     <div className="flex items-center gap-3"><QrCode className="text-blue-600" size={24} /><h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('تخصيص الباركود', 'QR Code Customization')}</h4></div>
                      <ToggleSwitch label={t('إظهار الباركود افتراضياً', 'Show QR by Default')} value={template.config.showQrCodeByDefault} onChange={(v: boolean) => updateConfig('showQrCodeByDefault', v)} icon={QrCode} isRtl={isRtl} />
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
                      <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
                      <RangeControl label={t('إزاحة الباركود أفقياً', 'QR Horizontal Offset')} min={-1000} max={1000} value={template.config.qrOffsetX || 0} onChange={(v: number) => updateConfig('qrOffsetX', v)} icon={ArrowLeftRight} />
-                     
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-800">
-                        <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
-                        <ColorPicker label={t('لون خلفية الباركود', 'QR Background')} value={template.config.qrBgColor || 'transparent'} onChange={(v: string) => updateConfig('qrBgColor', v)} />
-                     </div>
+                     <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
                   </div>
                </div>
             )}
@@ -2302,9 +2281,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                          floatingAssetOffsetY: template.config.floatingAssetOffsetY,
                          floatingAssetSize: template.config.floatingAssetSize,
                          floatingAssetUrl: template.config.floatingAssetUrl,
-                         showFloatingAsset: template.config.showFloatingAssetByDefault,
-                         qrColor: template.config.qrColor,
-                         qrBgColor: template.config.qrBgColor
+                         showFloatingAsset: template.config.showFloatingAssetByDefault
                        } as any} 
                        lang={lang} 
                        customConfig={template.config} 

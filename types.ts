@@ -272,9 +272,7 @@ export interface TemplateConfig {
   linksColor?: string;
   socialIconsColor?: string;
   contactPhoneColor?: string;
-  contactPhoneTextColor?: string;
   contactWhatsappColor?: string;
-  contactWhatsappTextColor?: string;
   
   defaultThemeType?: ThemeType;
   defaultThemeColor?: string;
@@ -433,9 +431,7 @@ export interface CardData {
   linksColor?: string;
   socialIconsColor?: string;
   contactPhoneColor?: string;
-  contactPhoneTextColor?: string;
   contactWhatsappColor?: string;
-  contactWhatsappTextColor?: string;
 
   bioBorderRadius?: number;
   bioBorderWidth?: number;
