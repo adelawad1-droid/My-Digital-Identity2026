@@ -116,22 +116,7 @@ const AppContent: React.FC = () => {
       if (initFlag.current) return;
       initFlag.current = true;
 
-      const hostname = window.location.hostname;
-      const mainDomains = ['nextid.my', 'www.nextid.my', 'nodes.nextid.my', 'localhost'];
-      
-      if (!mainDomains.includes(hostname)) {
-        const cardByDomain = await getCardByDomain(hostname);
-        if (cardByDomain) {
-          setPublicCard(cardByDomain as CardData);
-          setIsDarkMode(cardByDomain.isDark);
-          setIsInitializing(false);
-          return;
-        }
-      }
-
-      const searchParams = new URLSearchParams(window.location.search);
-      const slug = searchParams.get('u')?.trim().toLowerCase();
-      
+      // جلب الإعدادات والقوالب أولاً لضمان توفرها لأي نوع من الزيارات
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
@@ -139,15 +124,48 @@ const AppContent: React.FC = () => {
       
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
+
+      // الكشف عن الدومين المخصص
+      const hostname = window.location.hostname;
+      const mainDomains = [
+        'nextid.my', 'www.nextid.my', 
+        'nodes.nextid.my', 'www.nodes.nextid.my', 
+        'localhost', '127.0.0.1'
+      ];
+      
+      if (!mainDomains.includes(hostname)) {
+        try {
+          const cardByDomain = await getCardByDomain(hostname);
+          if (cardByDomain) {
+            setPublicCard(cardByDomain as CardData);
+            setIsDarkMode(cardByDomain.isDark);
+            setIsInitializing(false);
+            return; // توقف هنا لعرض الملف الشخصي العام فقط
+          }
+        } catch (e) {
+          console.error("Domain routing error:", e);
+        }
+      }
+
+      // الكشف عن معرف السيرة الذاتية (Slug) عبر ?u=
+      const searchParams = new URLSearchParams(window.location.search);
+      const slug = searchParams.get('u')?.trim().toLowerCase();
       
       if (slug) {
         try {
           const card = await getCardBySerial(slug);
-          if (card) { setPublicCard(card as CardData); setIsDarkMode(card.isDark); } 
-          else { setIsCardDeleted(true); }
-        } catch (e) { setIsCardDeleted(true); }
+          if (card) { 
+            setPublicCard(card as CardData); 
+            setIsDarkMode(card.isDark);
+          } else { 
+            setIsCardDeleted(true); 
+          }
+        } catch (e) { 
+          setIsCardDeleted(true); 
+        }
       }
 
+      // إدارة حالة تسجيل الدخول
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {
@@ -159,6 +177,7 @@ const AppContent: React.FC = () => {
           } catch (e) {
             setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
           }
+          
           if (!slug) {
             try {
               const cards = await getUserCards(user.uid);

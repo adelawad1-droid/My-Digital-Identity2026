@@ -249,14 +249,19 @@ export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, ol
   }
 }
 
-export const getCardByDomain = async (domain: string) => {
+export const getCardByDomain = async (hostname: string) => {
   try {
+    // تنظيف الهوست نيم من www. لضمان التطابق مع قاعدة البيانات
+    const cleanDomain = hostname.toLowerCase().replace(/^www\./i, '');
+    
+    // البحث عن الدومين في الحالتين (بـ www وبدونها) لضمان المرونة
     const q = query(
       collection(db, "public_cards"),
-      where("customDomain", "==", domain.toLowerCase()),
+      where("customDomain", "in", [cleanDomain, `www.${cleanDomain}`]),
       where("domainStatus", "==", "active"),
       limit(1)
     );
+    
     const snap = await getDocs(q);
     if (!snap.empty) {
       const cardData = snap.docs[0].data();
@@ -266,6 +271,7 @@ export const getCardByDomain = async (domain: string) => {
     }
     return null;
   } catch (error) {
+    console.error("Domain fetch error:", error);
     return null;
   }
 };
