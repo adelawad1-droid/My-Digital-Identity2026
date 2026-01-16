@@ -15,7 +15,6 @@ import CustomRequest from './pages/CustomRequest';
 import Pricing from './pages/Pricing';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy'; 
-import CustomDomain from './pages/CustomDomain'; 
 import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
@@ -127,23 +126,20 @@ const AppContent: React.FC = () => {
       const hostname = window.location.hostname;
       const officialDomains = ['nextid.my', 'www.nextid.my', 'localhost', '127.0.0.1'];
       
-      // 1. الكشف عن الدومين المخصص المرتبط بالحساب
+      // منطق الدومين المخصص (تم تجميده حالياً بناءً على رغبة المالك)
+      /*
       if (!officialDomains.includes(hostname)) {
         try {
           const ownerProfile = await getUserByDomain(hostname);
           if (ownerProfile) {
             const searchParams = new URLSearchParams(window.location.search);
             const slug = searchParams.get('u')?.trim().toLowerCase();
-            
             let card;
-            if (slug) {
-              card = await getCardBySerial(slug);
-            } else {
-              // إذا لم يوجد slug، ابحث عن أول بطاقة نشطة للمستخدم
+            if (slug) card = await getCardBySerial(slug);
+            else {
               const cards = await getUserCards(ownerProfile.uid);
               card = cards.find(c => c.isActive !== false);
             }
-            
             if (card && card.ownerId === ownerProfile.uid) {
               setPublicCard(card as CardData);
               setIsDarkMode(card.isDark);
@@ -153,8 +149,9 @@ const AppContent: React.FC = () => {
           }
         } catch (e) { console.error("Domain routing error:", e); }
       }
+      */
 
-      // 2. الكشف عن معرف السيرة الذاتية (Slug) عبر ?u= في الدومين الرسمي
+      // الكشف عن معرف السيرة الذاتية (Slug) عبر ?u= في الدومين الرسمي
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
       
@@ -298,7 +295,6 @@ const AppContent: React.FC = () => {
              <>
                <div className="pt-4 pb-2"><span className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-4">My Account</span></div>
                <SidebarItem icon={CreditCard} label={t('myCards')} onClick={() => navigateWithLang('/my-cards')} active={location.pathname.includes('/my-cards')} />
-               <SidebarItem icon={Globe} label={t('customDomain')} onClick={() => navigateWithLang('/custom-domain')} active={location.pathname.includes('/custom-domain')} />
                <SidebarItem icon={UserIcon} label={t('account')} onClick={() => navigateWithLang('/account')} active={location.pathname.includes('/account')} />
                {isAdmin && <SidebarItem icon={ShieldCheck} label={t('admin')} onClick={() => navigateWithLang('/admin')} active={location.pathname.includes('/admin')} color="text-amber-600" />}
              </>
@@ -379,11 +375,6 @@ const AppContent: React.FC = () => {
                         </button>
                       )}
 
-                      <button onClick={() => navigateWithLang('/custom-domain')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 transition-all group">
-                         <Globe size={18} className="group-hover:scale-110 transition-transform" />
-                         <span className="text-[11px] font-black uppercase tracking-tight">{t('customDomain')}</span>
-                      </button>
-
                       <button onClick={() => navigateWithLang('/account')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all group">
                          <Settings size={18} className="group-hover:scale-110 transition-transform" />
                          <span className="text-[11px] font-black uppercase tracking-tight">{t('account')}</span>
@@ -414,7 +405,6 @@ const AppContent: React.FC = () => {
           <Route path="/my-cards" element={currentUser ? <MyCards lang={lang} cards={userCards} onAdd={() => navigateWithLang('/templates')} onEdit={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDelete={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/editor" element={<Editor lang={lang} onSave={async (d, oldId) => { await saveCardToDB({cardData: d, oldId}); setSharingData(d); setShowShareModal(true); if (currentUser) { const updatedCards = await getUserCards(currentUser.uid); setUserCards(updatedCards as CardData[]); } }} templates={customTemplates} onCancel={() => navigateWithLang('/my-cards')} forcedTemplateId={selectedTemplateId || undefined} initialData={editingCard || undefined} />} />
           <Route path="/account" element={currentUser ? <UserAccount lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
-          <Route path="/custom-domain" element={currentUser ? <CustomDomain lang={lang} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/admin" element={isAdmin ? <AdminDashboard lang={lang} onEditCard={(c) => { setEditingCard(c); navigateWithLang('/editor'); }} onDeleteRequest={(id, uid) => deleteUserCard({ ownerId: uid, cardId: id }).then(() => window.location.reload())} /> : <Navigate to={`/${lang}/`} replace />} />
           <Route path="/terms" element={<TermsOfService lang={lang} />} />
           <Route path="/privacy" element={<PrivacyPolicy lang={lang} />} /> 

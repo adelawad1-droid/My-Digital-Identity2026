@@ -53,7 +53,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const isRtl = lang === 'ar';
   const logoInputRef = useRef<HTMLInputElement>(null);
   const iconInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'domains' | 'templates' | 'styles' | 'categories' | 'plans' | 'payment' | 'settings' | 'security' | 'builder'>('stats');
+  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'templates' | 'styles' | 'categories' | 'plans' | 'payment' | 'settings' | 'security' | 'builder'>('stats');
   const [stats, setStats] = useState<{ totalCards: number; activeCards: number; totalViews: number; recentCards: any[] } | null>(null);
   const [usersStats, setUsersStats] = useState<any[]>([]);
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
@@ -168,37 +168,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   };
 
   useEffect(() => { fetchData(); }, []);
-
-  const handleUpdateDomainStatus = async (card: CardData, status: 'active' | 'failed' | 'pending') => {
-    try {
-      const updatedCard = { ...card, domainStatus: status, domainVerifiedAt: status === 'active' ? new Date().toISOString() : undefined };
-      await saveCardToDB({ cardData: updatedCard, oldId: card.id });
-      await fetchData(true);
-      alert(isRtl ? "تم تحديث حالة الدومين" : "Domain status updated");
-    } catch (e) {
-      alert("Failed to update domain");
-    }
-  };
-
-  // وظيفة حذف الدومين المخصص من البطاقة
-  const handleDeleteDomain = async (card: CardData) => {
-    const confirmMsg = isRtl ? "هل أنت متأكد من حذف ارتباط الدومين المخصص لهذه البطاقة؟ سيتمكن المشترك من إضافة دومين جديد." : "Are you sure you want to delete the custom domain association? The user will be able to add a new domain.";
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      // إزالة حقول الدومين
-      const updatedCard = { ...card };
-      delete updatedCard.customDomain;
-      delete updatedCard.domainStatus;
-      delete updatedCard.domainVerifiedAt;
-      
-      await saveCardToDB({ cardData: updatedCard, oldId: card.id });
-      await fetchData(true);
-      alert(isRtl ? "تم حذف الدومين بنجاح" : "Domain deleted successfully");
-    } catch (e) {
-      alert("Error deleting domain");
-    }
-  };
 
   const confirmDeletePlan = async () => {
     if (!planToDelete) return;
@@ -350,7 +319,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
           <div className="flex bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto no-scrollbar">
             <TabButton id="stats" label={t('البطاقات', 'Cards')} icon={BarChart3} activeColor="bg-blue-600" />
             <TabButton id="users" label={t('المسجلين', 'Users')} icon={Users} activeColor="bg-purple-600" />
-            <TabButton id="domains" label={t('الدومينات', 'Domains')} icon={Globe} activeColor="bg-blue-500" />
             <TabButton id="plans" label={t('الباقات', 'Plans')} icon={CardIcon} activeColor="bg-indigo-600" />
             <TabButton id="payment" label={t('الدفع', 'Payments')} icon={PaymentIcon} activeColor="bg-emerald-600" />
             <TabButton id="templates" label={t('القوالب', 'Templates')} icon={Layout} activeColor="bg-rose-600" />
@@ -536,97 +504,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                         title={user.isActive !== false ? t('إيقاف الحساب', 'Disable User') : t('تنشيط الحساب', 'Enable User')}
                                      >
                                         <Power size={18}/>
-                                     </button>
-                                  </div>
-                               </td>
-                            </tr>
-                         ))}
-                      </tbody>
-                   </table>
-                </div>
-             </div>
-          </div>
-        )}
-
-        {activeTab === 'domains' && !permissionError && (
-          <div className="space-y-8 animate-fade-in">
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
-                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-600"><Globe size={24} /></div>
-                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إجمالي الدومينات', 'Total Domains')}</p><h4 className="text-2xl font-black dark:text-white">{(stats?.recentCards || []).filter(c => c.customDomain).length}</h4></div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
-                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 text-amber-600"><Clock size={24} /></div>
-                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('طلبات معلقة', 'Pending Requests')}</p><h4 className="text-2xl font-black dark:text-white">{(stats?.recentCards || []).filter(c => c.customDomain && (c.domainStatus === 'pending' || !c.domainStatus)).length}</h4></div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-5">
-                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600"><CheckCircle size={24} /></div>
-                   <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('دومينات نشطة', 'Active Domains')}</p><h4 className="text-2xl font-black dark:text-white">{(stats?.recentCards || []).filter(c => c.domainStatus === 'active').length}</h4></div>
-                </div>
-             </div>
-
-             <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
-                <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3"><Globe className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('مدير الدومينات المخصصة', 'Custom Domain Manager')}</h3></div>
-                </div>
-                <div className="overflow-x-auto">
-                   <table className={`w-full text-${isRtl ? 'right' : 'left'}`}>
-                      <thead className="bg-gray-50/50 dark:bg-gray-800/20 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
-                         <tr>
-                            <td className="px-8 py-5">{t('البطاقة والمستخدم', 'Card & User')}</td>
-                            <td className="px-8 py-5">{t('الدومين المخصص', 'Custom Domain')}</td>
-                            <td className="px-8 py-5 text-center">{t('الحالة', 'Status')}</td>
-                            <td className="px-8 py-5">{t('الإجراءات', 'Actions')}</td>
-                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                         {(stats?.recentCards || []).filter(c => c.customDomain).map((card) => (
-                            <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                               <td className="px-8 py-6">
-                                  <div className="flex flex-col">
-                                     <span className="font-black dark:text-white text-sm">{card.name}</span>
-                                     <span className="text-[10px] font-bold text-gray-400 uppercase">{card.ownerEmail}</span>
-                                  </div>
-                               </td>
-                               <td className="px-8 py-6 font-mono text-xs text-blue-600 font-bold">
-                                  <div className="flex items-center gap-2">
-                                     {card.customDomain}
-                                     <a href={`https://${card.customDomain}`} target="_blank" className="text-gray-400 hover:text-blue-600"><ExternalLink size={12}/></a>
-                                  </div>
-                               </td>
-                               <td className="px-8 py-6 text-center">
-                                  <div className={`inline-flex px-3 py-1 rounded-full text-[8px] font-black uppercase ${card.domainStatus === 'active' ? 'bg-emerald-50 text-emerald-600' : card.domainStatus === 'failed' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                                     {card.domainStatus === 'active' ? t('متصل', 'Connected') : card.domainStatus === 'failed' ? t('خطأ', 'Error') : t('قيد الانتظار', 'Pending')}
-                                  </div>
-                               </td>
-                               <td className="px-8 py-6">
-                                  <div className="flex gap-2">
-                                     <button 
-                                        onClick={() => handleUpdateDomainStatus(card, 'active')}
-                                        className="p-2 text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                        title={t('تفعيل الدومين', 'Activate Domain')}
-                                     >
-                                        <CheckCircle size={18}/>
-                                     </button>
-                                     <button 
-                                        onClick={() => handleUpdateDomainStatus(card, 'failed')}
-                                        className="p-2 text-red-500 bg-red-50 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                                        title={t('رفض الدومين', 'Reject Domain')}
-                                     >
-                                        <XCircle size={18}/>
-                                     </button>
-                                     <button 
-                                        onClick={() => handleDeleteDomain(card)}
-                                        className="p-2 text-red-600 bg-red-50 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                                        title={t('حذف الارتباط', 'Delete Domain Link')}
-                                     >
-                                        <Trash2 size={18}/>
-                                     </button>
-                                     <button 
-                                        onClick={() => { navigator.clipboard.writeText(card.customDomain); alert("Copied!"); }}
-                                        className="p-2 text-gray-500 bg-gray-50 rounded-xl hover:bg-gray-200 transition-all shadow-sm"
-                                     >
-                                        <Copy size={18}/>
                                      </button>
                                   </div>
                                </td>
@@ -1014,20 +891,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                     </div>
                  </div>
 
-                 {/* Advanced Image Storage Section - Based on provided requirement */}
                  <div className="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-12">
                     <div className="flex items-center gap-5">
                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><HardDrive size={26}/></div>
                        <h3 className="text-2xl font-black dark:text-white uppercase leading-none">{isRtl ? 'إعدادات تخزين الملفات المتقدمة' : 'Advanced Media DNA'}</h3>
                     </div>
 
-                    {/* Avatar Storage Strategy */}
                     <div className="space-y-6">
                        <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{isRtl ? 'استراتيجية تخزين الصور الشخصية (AVATAR)' : 'Avatar Storage Strategy'}</h4>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <button 
                             onClick={() => setSettings({...settings, avatarStorageType: 'database'})}
-                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType === 'database' ? 'bg-indigo-600 border-indigo-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                           >
                              <Database size={32} className={settings.avatarStorageType === 'database' ? 'text-white' : 'group-hover:text-indigo-500'} />
                              <div>
@@ -1039,7 +914,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                           </button>
                           <button 
                             onClick={() => setSettings({...settings, avatarStorageType: 'firebase'})}
-                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType !== 'database' ? 'bg-blue-600 border-blue-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                            className={`relative p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.avatarStorageType !== 'database' ? 'bg-blue-600 border-blue-600 text-white shadow-0 scale-[1.02]' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                           >
                              <Cloud size={32} className={settings.avatarStorageType !== 'database' ? 'text-white' : 'group-hover:text-blue-500'} />
                              <div>
@@ -1052,7 +927,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                        </div>
                     </div>
 
-                    {/* Large Files Storage Strategy */}
                     <div className="space-y-6">
                        <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{isRtl ? 'استراتيجية تخزين الملفات الكبيرة (خلفيات/ملحقات)' : 'Large Files Storage Strategy'}</h4>
                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1064,7 +938,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                              <button 
                                key={storage.id}
                                onClick={() => setSettings({...settings, mediaStorageType: storage.id as any})}
-                               className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.mediaStorageType === storage.id ? `bg-${storage.color}-600 border-${storage.color}-600 text-white shadow-0 scale-[1.02]` : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-400'}`}
+                               className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center text-center gap-4 group ${settings.mediaStorageType === storage.id ? `bg-${storage.color}-600 border-${storage.color}-600 text-white shadow-0 scale-[1.02]` : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400'}`}
                              >
                                 <storage.icon size={24} />
                                 <div>
@@ -1138,7 +1012,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
         )}
       </div>
 
-      {/* Modals for deletion etc */}
       {templateToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
@@ -1254,7 +1127,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                    disabled={isSavingSub}
                    className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-sm uppercase shadow-0 flex items-center justify-center gap-3"
                  >
-                    {isSavingSub ? <Loader2 className="animate-spin" size={18}/> : <Save size={18}/>}
+                    {/* Fix for duplicate attributes in Loader2 */}
+                    {isSavingSub ? <Loader2 className="animate-spin" size={18} /> : <Save size={18}/>}
                     {t('حفظ التعديلات', 'Save Changes')}
                  </button>
               </div>
