@@ -1474,7 +1474,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
                           <h4 className={labelTextClasses}>{t('ألوان قسم الروابط المباشرة', 'Direct Links Colors')}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:grid-cols-3">
                              <ColorPicker label={t('لون الروابط العامة', 'Links Base Color')} value={template.config.linksColor || '#3b82f6'} onChange={(v: string) => updateConfig('linksColor', v)} />
                              <ColorPicker label={t('خلفية قسم الروابط', 'Section Background')} value={template.config.linksSectionBgColor} onChange={(v: string) => updateConfig('linksSectionBgColor', v)} />
                              <ColorPicker label={t('لون نص في الروابط', 'Links Text Color')} value={template.config.linksSectionTextColor} onChange={(v: string) => updateConfig('linksSectionTextColor', v)} />
@@ -1896,7 +1896,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                      <RangeControl label={t('حجم الباركود', 'QR Size')} min={40} max={200} value={template.config.qrSize || 90} onChange={(v: number) => updateConfig('qrSize', v)} icon={Maximize2} />
                      <RangeControl label={t('إزاحة الباركود رأسياً', 'QR Vertical Offset')} min={-2000} max={2000} value={template.config.qrOffsetY || 0} onChange={(v: number) => updateConfig('qrOffsetY', v)} icon={Move} />
                      <RangeControl label={t('إزاحة الباركود أفقياً', 'QR Horizontal Offset')} min={-1000} max={1000} value={template.config.qrOffsetX || 0} onChange={(v: number) => updateConfig('qrOffsetX', v)} icon={ArrowLeftRight} />
-                     <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-800">
+                        <ColorPicker label={t('لون الباركود', 'QR Foreground')} value={template.config.qrColor || '#2563eb'} onChange={(v: string) => updateConfig('qrColor', v)} />
+                        <ColorPicker label={isRtl ? 'خلفية الباركود' : 'QR Background'} value={template.config.qrBgColor || 'transparent'} onChange={(v: string) => updateConfig('qrBgColor', v)} />
+                     </div>
                   </div>
                </div>
             )}
@@ -2117,7 +2120,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               </div>
               
               <div 
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
@@ -2130,7 +2133,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                 {/* Drag Overlays - تظهر فقط في وضع التحريك الحر */}
                 {isDragMode && (
                    <div className="absolute inset-0 z-[100] pointer-events-none">
-                      {/* طبقات شفافة قابلة للتفاعل للسحب والإسقاط فوق العناصر */}
                       {['avatar', 'name', 'title', 'bodyFeature', 'bio', 'linksSection', 'contactButtons', 'membership', 'occasion', 'specialLinks', 'location', 'socialLinks', 'qrCode', 'floatingAsset'].map(elId => {
                          const element = document.querySelector(`[data-element-id="${elId}"]`);
                          if (!element) return null;

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { VisualStyle, Language, TemplateConfig, ThemeType, PageBgStrategy, CardData } from '../types';
 import { getAllVisualStyles, saveVisualStyle, deleteVisualStyle, auth, ADMIN_EMAIL, getSiteSettings } from '../services/firebase';
@@ -13,7 +12,7 @@ import {
   AlignRight, Columns, Maximize2, Move, RefreshCcw, Grid, Shapes,
   Tag, Ruler, Pipette, Repeat, SlidersHorizontal, Sparkle, Link as LinkIcon, Smartphone, Tablet, ArrowUpDown, ArrowLeftRight, Code2, FileCode, Wand2 as MagicIcon,
   Info, FileUp, Terminal, RotateCw, Scaling, Aperture,
-  ChevronDown
+  ChevronDown, QrCode
 } from 'lucide-react';
 
 // --- المكونات المساعدة الخارجية ---
@@ -152,6 +151,8 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
         socialIconsColor: '#3b82f6',
         bioTextColor: 'rgba(0,0,0,0.6)',
         bioBgColor: 'rgba(0,0,0,0.03)',
+        qrColor: '#2563eb',
+        qrBgColor: 'transparent',
         defaultIsDark: false,
         cardBgColor: '',
         pageBgColor: '',
@@ -512,6 +513,26 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                        <RangeControl label={t('انحناء زوايا الجسم', 'Border Radius')} min={0} max={120} value={editingStyle.config?.bodyBorderRadius ?? 48} onChange={(v: number) => updateConfig('bodyBorderRadius', v)} icon={Ruler} />
                     </div>
                  </div>
+
+                 {/* Barcode & QR Styling Section */}
+                 <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm space-y-8">
+                    <div className="flex items-center gap-4"><QrCode className="text-indigo-600" size={24}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{isRtl ? 'ألوان الباركود' : 'Barcode & QR Colors'}</h3></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <ColorInput 
+                          label={isRtl ? 'لون الباركود' : 'Barcode Color'} 
+                          value={editingStyle.config?.qrColor || '#2563eb'} 
+                          onChange={(v: string) => updateConfig('qrColor', v)} 
+                          icon={Pipette}
+                       />
+                       <ColorInput 
+                          label={isRtl ? 'خلفية الباركود' : 'Barcode Background'} 
+                          value={editingStyle.config?.qrBgColor || 'transparent'} 
+                          onChange={(v: string) => updateConfig('qrBgColor', v)} 
+                          icon={Box}
+                       />
+                    </div>
+                 </div>
+
               </div>
 
               {/* Live Preview Sidebar */}
@@ -569,6 +590,8 @@ const StyleManager: React.FC<StyleManagerProps> = ({ lang }) => {
                               themeColor: editingStyle.config?.defaultThemeColor, 
                               themeGradient: editingStyle.config?.defaultThemeGradient,
                               showBodyFeature: editingStyle.config?.showBodyFeatureByDefault,
+                              qrColor: editingStyle.config?.qrColor,
+                              qrBgColor: editingStyle.config?.qrBgColor,
                               templateId: 'admin-preview'
                            } as any} 
                            lang={lang} 
