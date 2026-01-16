@@ -15,7 +15,7 @@ import {
   Phone, Globe, MessageCircle, Camera, Download, Tablet, Monitor, 
   Eye, QrCode, Wind, GlassWater, ChevronRight, ChevronLeft, 
   Waves, Square, Columns, Minus, ToggleLeft, ToggleRight, Calendar, MapPin, Timer, PartyPopper, Link as LinkIcon, FolderOpen, Plus, Tag, Settings2, SlidersHorizontal, Share2, FileCode, HardDrive, Database,
-  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search, Grab, ChevronDown, Sticker
+  CheckCircle2, Grid, RefreshCcw, Shapes, Code2, MousePointer2, AlignJustify, EyeOff, Briefcase, Wand2 as MagicIcon, RotateCcw, AlertTriangle, Repeat, Sparkle, LogIn, Trophy, Trash2, ImagePlus, Navigation2, Map as MapIcon, ShoppingCart, Quote, User as UserIcon, Image as ImageIconLucide, ArrowLeftRight, ArrowUpDown, MonitorDot, TabletSmartphone, ShieldCheck, UserCheck, Search, Grab, ChevronDown, Sticker
 } from 'lucide-react';
 
 // --- المكونات المساعدة ---
@@ -30,10 +30,6 @@ type BuilderTab =
   | 'direct-links' 
   | 'membership-lab' 
   | 'contact-lab' 
-  | 'special-links' 
-  | 'floating-asset-lab'
-  | 'occasion-lab'
-  | 'location' 
   | 'social-lab' 
   | 'qrcode' 
   | 'special-features' 
@@ -117,17 +113,17 @@ const ColorPicker = ({ label, value, onChange }: any) => (
   </div>
 );
 
-const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = "text-black", activeBg = "bg-gray-200 dark:bg-gray-800" }: any) => (
+const NavItem = ({ id, activeTab, setActiveTab, label, icon: Icon, colorClass = "text-blue-600", activeBg = "bg-blue-600" }: any) => (
   <button 
     type="button" 
     onClick={() => setActiveTab(id)} 
-    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${activeTab === id ? `${activeBg} text-black shadow-sm` : `${colorClass} hover:bg-gray-100 dark:hover:bg-white/5`}`}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${activeTab === id ? `bg-blue-50 dark:bg-blue-900/20 shadow-sm` : `hover:bg-gray-50 dark:hover:bg-white/5`}`}
   >
-    <div className={`p-1.5 rounded-lg ${activeTab === id ? 'bg-gray-800 text-white' : 'bg-gray-100 dark:bg-gray-800'} transition-colors`}>
-      <Icon size={14} className={activeTab === id ? 'text-white' : 'text-gray-400'} />
+    <div className={`p-1.5 rounded-lg transition-colors ${activeTab === id ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}>
+      <Icon size={14} className={activeTab === id ? 'text-white' : colorClass} />
     </div>
-    <span className={`text-[11px] font-black uppercase tracking-tight leading-tight text-start flex-1 ${activeTab === id ? 'text-black dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{label}</span>
-    {activeTab === id && <div className="w-1.5 h-1.5 bg-black dark:bg-white rounded-full animate-pulse" />}
+    <span className={`text-[11px] font-black uppercase tracking-tight leading-tight text-start flex-1 ${activeTab === id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>{label}</span>
+    {activeTab === id && <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />}
   </button>
 );
 
@@ -842,21 +838,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group1')}
-               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-gray-300 dark:bg-gray-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-900 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group1'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-100/80 dark:bg-gray-900/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group1'] ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black dark:text-gray-400'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group1'] ? 'bg-white text-blue-600' : 'bg-gray-200 text-gray-500 dark:text-gray-400'}`}>
                       <LayoutTemplate size={18} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter text-black dark:text-white`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group1'] ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>1. {isRtl ? 'الترويسة والانماط' : 'Header & Styles'}</span>
                 </div>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-black dark:text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group1'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group1'] && (
-                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-white/[0.02] border-x border-b border-gray-100 dark:border-white/5 rounded-b-[2rem] mx-1 mb-2">
-                   <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
+                   <NavItem id="header" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الترويسة والأنماط' : 'Header & Patterns'} icon={Layout} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="body-style" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'جسم البطاقة' : 'Card Body Style'} icon={Box} colorClass="text-indigo-600" activeBg="bg-blue-600" />
+                   <NavItem id="visuals" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الألوان والسمة' : 'Colors & Theme'} icon={Palette} colorClass="text-purple-600" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -865,22 +861,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group2')}
-               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-gray-300 dark:bg-gray-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-900 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group2'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-100/80 dark:bg-gray-900/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group2'] ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black dark:text-gray-400'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group2'] ? 'bg-white text-blue-600' : 'bg-gray-200 text-gray-500 dark:text-gray-400'}`}>
                       <UserIcon size={18} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter text-black dark:text-white`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group2'] ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>2. {isRtl ? 'بيانات الهوية' : 'Identity Data'}</span>
                 </div>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-black dark:text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group2'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group2'] && (
-                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-white/[0.02] border-x border-b border-gray-100 dark:border-white/5 rounded-b-[2rem] mx-1 mb-2">
-                   <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
+                   <NavItem id="avatar" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الصورة الشخصية' : 'Avatar Style'} icon={Circle} colorClass="text-rose-500" activeBg="bg-blue-600" />
+                   <NavItem id="identity-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات الهوية' : 'Identity Details'} icon={UserIcon} colorClass="text-blue-600" activeBg="bg-blue-600" />
+                   <NavItem id="bio-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'النبذة المهنية' : 'Professional Bio'} icon={Quote} colorClass="text-emerald-600" activeBg="bg-blue-600" />
+                   <NavItem id="location" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'الموقع الجغرافي' : 'Geographical Location'} icon={MapIcon} colorClass="text-orange-500" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -889,22 +885,22 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group3')}
-               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-gray-300 dark:bg-gray-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-900 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group3'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-100/80 dark:bg-gray-900/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group3'] ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black dark:text-gray-400'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group3'] ? 'bg-white text-blue-600' : 'bg-gray-200 text-gray-500 dark:text-gray-400'}`}>
                       <Share2 size={18} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter text-black dark:text-white`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group3'] ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>3. {isRtl ? 'التواصل والروابط' : 'Contact & Links'}</span>
                 </div>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-black dark:text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group3'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group3'] && (
-                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-white/[0.02] border-x border-b border-gray-100 dark:border-white/5 rounded-b-[2rem] mx-1 mb-2">
-                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
+                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-500" activeBg="bg-blue-600" />
+                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-indigo-600" activeBg="bg-blue-600" />
+                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-purple-600" activeBg="bg-blue-600" />
+                   <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-slate-700" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -913,21 +909,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
-               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-gray-300 dark:bg-gray-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-900 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-300 group rounded-2xl ${openGroups['group4'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-100/80 dark:bg-gray-900/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black dark:text-gray-400'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group4'] ? 'bg-white text-blue-600' : 'bg-gray-200 text-gray-500 dark:text-gray-400'}`}>
                       <Plus size={18} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter text-black dark:text-white`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group4'] ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>4. {isRtl ? 'المحتوى الإضافي' : 'Additional Content'}</span>
                 </div>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-black dark:text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group4'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group4'] && (
-                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-white/[0.02] border-x border-b border-gray-100 dark:border-white/5 rounded-b-[2rem] mx-1 mb-2">
-                   <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'} icon={Sticker} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
+                   <NavItem id="special-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط صور (عروض/منتجات)' : 'Image Links'} icon={ImagePlus} colorClass="text-pink-600" activeBg="bg-blue-600" />
+                   <NavItem id="floating-asset-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات الملحق المخصص' : 'Floating Asset DNA'} icon={Sticker} colorClass="text-blue-500" activeBg="bg-blue-600" />
+                   <NavItem id="occasion-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم المناسبات' : 'Occasions'} icon={PartyPopper} colorClass="text-rose-500" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -936,21 +932,21 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group5')}
-               className={`w-full flex items-center justify-between p-3.5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-gray-300 dark:bg-gray-800 shadow-sm' : 'bg-gray-100 dark:bg-gray-900 hover:brightness-95'}`}
+               className={`w-full flex items-center justify-between p-3.5 transition-all duration-500 group rounded-2xl ${openGroups['group5'] ? 'bg-blue-600 shadow-lg' : 'bg-gray-100/80 dark:bg-gray-900/50 hover:brightness-95'}`}
              >
                 <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group5'] ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black dark:text-gray-400'}`}>
+                   <div className={`p-2 rounded-xl transition-all duration-300 ${openGroups['group5'] ? 'bg-white text-blue-600' : 'bg-gray-200 text-gray-500 dark:text-gray-400'}`}>
                       <Settings2 size={18} />
                    </div>
-                   <span className={`text-[11px] font-black uppercase tracking-tighter text-black dark:text-white`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
+                   <span className={`text-[11px] font-black uppercase tracking-tighter ${openGroups['group5'] ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>5. {isRtl ? 'المميزات والإعدادات' : 'Features & Settings'}</span>
                 </div>
-                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-black dark:text-white' : 'text-gray-400'}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${openGroups['group5'] ? 'rotate-180 text-white' : 'text-gray-400'}`} />
              </button>
              {openGroups['group5'] && (
-                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-white/[0.02] border-x border-b border-gray-100 dark:border-white/5 rounded-b-[2rem] mx-1 mb-2">
-                   <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
-                   <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} colorClass="text-black" activeBg="bg-gray-200 dark:bg-gray-800" />
+                <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
+                   <NavItem id="special-features" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'المميزات الخاصة' : 'Special Features'} icon={Trophy} colorClass="text-amber-500" activeBg="bg-blue-600" />
+                   <NavItem id="membership-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'العضويات والاشتراكات' : 'Memberships'} icon={ShieldCheck} colorClass="text-emerald-500" activeBg="bg-blue-600" />
+                   <NavItem id="desktop-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'إعدادات العرض (سطح المكتب)' : 'Display Settings'} icon={MonitorDot} colorClass="text-slate-500" activeBg="bg-blue-600" />
                 </div>
              )}
           </div>
@@ -965,7 +961,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  <div className="bg-indigo-50 dark:bg-indigo-950/20 p-8 rounded-[3rem] border border-indigo-100 dark:border-indigo-900/30 space-y-6 shadow-sm">
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
-                          <Wand2 className="text-indigo-600" size={24} />
+                          <MagicIcon className="text-indigo-600" size={24} />
                           <h4 className="text-[12px] font-black uppercase tracking-widest dark:text-white">{t('استيراد ترويسة من المختبر', 'Import Header DNA')}</h4>
                        </div>
                     </div>
@@ -1769,7 +1765,6 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                              <ColorPicker label={t('اللون المميز (المؤقت)', 'Accent Color (Timer)')} value={template.config.occasionPrimaryColor} onChange={(v: string) => updateConfig('occasionPrimaryColor', v)} />
                              <ColorPicker label={t('لون خلفية القسم', 'Section Background Color')} value={template.config.occasionBgColor} onChange={(v: string) => updateConfig('occasionBgColor', v)} />
-                             <ColorPicker label={t('لون عنوان المناسبة', 'Title Color')} value={template.config.occasionTitleColor} onChange={(v: string) => updateConfig('occasionTitleColor', v)} />
                           </div>
                        </div>
                     </div>
