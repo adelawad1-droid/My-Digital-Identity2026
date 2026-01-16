@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { CustomTemplate, TemplateConfig, Language, CardData, TemplateCategory, VisualStyle, ThemeType, PageBgStrategy, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, SAMPLE_DATA, THEME_COLORS, THEME_GRADIENTS, BACKGROUND_PRESETS, AVATAR_PRESETS, PATTERN_PRESETS, SVG_PRESETS } from '../constants';
@@ -38,7 +39,7 @@ type BuilderTab =
   | 'special-features' 
   | 'desktop-lab';
 
-const RangeControl = ({ label, value, min, max, onChange, unit = "px", icon: Icon, hint }: any) => {
+const RangeControl = ({ label, value, min, max, onChange, icon: Icon, unit = "px", hint }: any) => {
   const [tempValue, setTempValue] = useState(value.toString());
 
   useEffect(() => {
@@ -341,7 +342,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       linksColor: '#3b82f6',
       socialIconsColor: '#3b82f6',
       contactPhoneColor: '#2563eb',
+      contactPhoneTextColor: '#ffffff',
       contactWhatsappColor: '#10b981',
+      contactWhatsappTextColor: '#ffffff',
       defaultThemeType: 'gradient',
       defaultThemeColor: '#2563eb',
       defaultThemeGradient: THEME_GRADIENTS[0],
@@ -897,7 +900,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
-          {/* Group 4: المحتوى الإضافي */}
+          {/* Group 4: المحتوي الإضافي */}
           <div className="overflow-hidden">
              <button 
                onClick={() => toggleGroup('group4')}
@@ -1609,9 +1612,23 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="pt-8 border-t dark:border-gray-800 space-y-6">
                           <h4 className={labelTextClasses}>{t('ألوان أزرار الاتصال', 'Contact Buttons Colors')}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <ColorPicker label={t('لون زر الاتصال', 'Phone Button Color')} value={template.config.contactPhoneColor || '#2563eb'} onChange={(v: string) => updateConfig('contactPhoneColor', v)} />
-                             <ColorPicker label={t('لون زر واتساب', 'WhatsApp Button Color')} value={template.config.contactWhatsappColor || '#10b981'} onChange={(v: string) => updateConfig('contactWhatsappColor', v)} />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50/50 dark:bg-white/[0.02] p-6 rounded-3xl border border-gray-100 dark:border-white/5">
+                             <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-blue-600">
+                                   <Phone size={14} />
+                                   <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'زر الاتصال' : 'Phone Button'}</span>
+                                </div>
+                                <ColorPicker label={t('لون الخلفية', 'Background Color')} value={template.config.contactPhoneColor || '#2563eb'} onChange={(v: string) => updateConfig('contactPhoneColor', v)} />
+                                <ColorPicker label={t('لون الكتابة والأيقونة', 'Text & Icon Color')} value={template.config.contactPhoneTextColor || '#ffffff'} onChange={(v: string) => updateConfig('contactPhoneTextColor', v)} />
+                             </div>
+                             <div className="space-y-4">
+                                <div className="flex items-center gap-2 text-emerald-600">
+                                   <MessageCircle size={14} />
+                                   <span className="text-[9px] font-black uppercase tracking-widest">{isRtl ? 'زر واتساب' : 'WhatsApp Button'}</span>
+                                </div>
+                                <ColorPicker label={t('لون الخلفية', 'Background Color')} value={template.config.contactWhatsappColor || '#10b981'} onChange={(v: string) => updateConfig('contactWhatsappColor', v)} />
+                                <ColorPicker label={t('لون الكتابة والأيقونة', 'Text & Icon Color')} value={template.config.contactWhatsappTextColor || '#ffffff'} onChange={(v: string) => updateConfig('contactWhatsappTextColor', v)} />
+                             </div>
                           </div>
                        </div>
 

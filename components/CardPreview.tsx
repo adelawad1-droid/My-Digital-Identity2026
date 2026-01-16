@@ -159,7 +159,9 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const linksColor = data.linksColor || config.linksColor || '#3b82f6';
   const socialIconsColor = data.socialIconsColor || config.socialIconsColor || linksColor;
   const phoneBtnColor = data.contactPhoneColor || config.contactPhoneColor || '#2563eb';
+  const phoneTextColor = data.contactPhoneTextColor || config.contactPhoneTextColor || '#ffffff';
   const whatsappBtnColor = data.contactWhatsappColor || config.contactWhatsappColor || '#10b981';
+  const whatsappTextColor = data.contactWhatsappTextColor || config.contactWhatsappTextColor || '#ffffff';
 
   const getImgProps = (url: string) => {
     if (!url) return {};
@@ -471,7 +473,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const cbGlassy = config.contactButtonsGlassy;
   const cbVariant = config.contactButtonsVariant || 'buttons';
 
-  const getContactBtnStyle = (baseColor: string): React.CSSProperties => {
+  const getContactBtnStyle = (baseColor: string, textColorProp?: string): React.CSSProperties => {
     let finalRadius = `${cbRadius}px`;
     if (cbVariant === 'pills' || cbVariant === 'icons-circle') finalRadius = '999px';
     else if (cbVariant === 'icons-square') finalRadius = '16px';
@@ -484,7 +486,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       backdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       WebkitBackdropFilter: cbGlassy ? 'blur(10px)' : 'none',
       border: cbGlassy ? `1px solid rgba(${hexToRgb(baseColor).string}, 0.3)` : 'none',
-      color: cbGlassy ? baseColor : '#ffffff',
+      color: cbGlassy ? baseColor : (textColorProp || '#ffffff'),
       fontFamily: 'inherit',
       display: 'flex',
       alignItems: 'center',
@@ -780,7 +782,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                   }}
                 >
                     {showPhone && finalPhones.map((phone, idx) => (
-                    <a key={`ph-${idx}`} href={`tel:${phone}`} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(phoneBtnColor)}>
+                    <a key={`ph-${idx}`} href={`tel:${phone}`} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(phoneBtnColor, phoneTextColor)}>
                         <Phone size={14} className="shrink-0" /> 
                         {!cbVariant.startsWith('icons') && (
                             <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('call')} {finalPhones.length > 1 ? idx + 1 : ''}</span>
@@ -789,7 +791,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     ))}
                     
                     {showWhatsapp && finalWhatsapps.map((wa, idx) => (
-                    <a key={`wa-${idx}`} href={`https://wa.me/${wa}`} target="_blank" className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(whatsappBtnColor)}>
+                    <a key={`wa-${idx}`} href={`https://wa.me/${wa}`} target="_blank" className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle(whatsappBtnColor, whatsappTextColor)}>
                         <MessageCircle size={14} className="shrink-0" /> 
                         {!cbVariant.startsWith('icons') && (
                             <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('whatsappBtn')} {finalWhatsapps.length > 1 ? idx + 1 : ''}</span>
@@ -798,7 +800,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                     ))}
 
                     {!hideSaveButton && showButtons && (
-                    <button onClick={() => downloadVCard(data)} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle('#111827')}>
+                    <button onClick={() => downloadVCard(data)} className="shadow-lg hover:brightness-110 active:scale-95 transition-all" style={getContactBtnStyle('#111827', '#ffffff')}>
                         <UserPlus size={14} className="shrink-0" /> 
                         {!cbVariant.startsWith('icons') && (
                             <span className="truncate text-[10px] font-black" style={{ fontFamily: 'inherit' }}>{t('saveContact')}</span>
@@ -920,70 +922,46 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    fontFamily: 'inherit'
                  }}
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-md text-blue-600 transition-transform group-hover:rotate-12" style={{ color: locIconColor }}>
-                   <MapIcon size={22} />
+                 <div className="p-3 bg-white/10 rounded-2xl shadow-inner text-blue-500 group-hover:scale-110 transition-transform" style={{ color: locIconColor }}>
+                    <MapPin size={22} />
                  </div>
-                 <div className="flex-1 text-start min-w-0" style={{ fontFamily: 'inherit' }}>
-                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 leading-none" style={{ fontFamily: 'inherit' }}>{t('locationSection')}</h4>
-                   <p className="font-bold dark:text-white truncate leading-tight" style={{ color: locTextColor, fontSize: `${locAddressSize}px`, fontFamily: 'inherit' }}>{data.location || t('visitUs')}</p>
+                 <div className="flex-1 min-w-0 text-start">
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-0.5" style={{ fontFamily: 'inherit' }}>{t('locationSection')}</p>
+                    <p className="font-bold truncate" style={{ color: locTextColor, fontSize: `${locAddressSize}px`, fontFamily: 'inherit' }}>{data.location || t('visitUs')}</p>
                  </div>
-                 <div className="shrink-0 p-2 bg-blue-600 rounded-full text-white shadow-lg shadow-blue-600/20 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" style={{ backgroundColor: themeColor }}>
-                   <Navigation2 size={14} />
+                 <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    <Navigation2 size={16} />
                  </div>
                </a>
              </div>
            )}
 
-           {showSocialLinks && data.socialLinks?.length > 0 && (
-             <div 
-               data-element-id="socialLinks"
-               className={`mx-auto ${forCapture ? 'py-4' : 'py-6'}`} 
-               style={{ 
-                 display: sCols > 0 ? 'grid' : 'flex',
-                 flexWrap: sCols > 0 ? 'nowrap' : 'wrap',
-                 justifyContent: 'center',
-                 gridTemplateColumns: sCols > 0 ? `repeat(${sCols}, minmax(0, 1fr))` : 'none',
-                 transform: `translate(${data.socialLinksOffsetX ?? config.socialLinksOffsetX ?? 0}px, ${data.socialLinksOffsetY ?? config.socialLinksOffsetY ?? 0}px)`,
-                 gap: `${sGap}px`,
-                 width: 'fit-content',
-                 maxWidth: '100%',
-                 fontFamily: 'inherit'
-               }}
-             >
-               {data.socialLinks.map((link, idx) => (
-                 <a 
-                   key={idx} 
-                   href={link.url} 
-                   target="_blank" 
-                   className="hover:scale-110 active:scale-95 transition-transform"
-                   style={{ ...getSocialBtnStyles(link.platformId), fontFamily: 'inherit' }}
-                 >
-                   <SocialIcon 
-                    platformId={link.platformId} 
-                    size={sSize} 
-                    color={(useBrandColors && sVariant === 'filled') ? '#ffffff' : (BRAND_COLORS[link.platformId] && useBrandColors ? BRAND_COLORS[link.platformId] : sColor)} 
-                   />
-                 </a>
-               ))}
-             </div>
-           )}
-
            {showQrCode && (
-             <div data-element-id="qrCode" className={`${forCapture ? 'pt-6' : 'pt-12'} flex flex-col items-center gap-3`} style={{ transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)`, fontFamily: 'inherit' }}>
-               <div className="transition-all duration-700 overflow-hidden shadow-2xl p-1 bg-white" 
-                    style={{ 
-                      border: `${qrBorderWidth}px solid ${qrBorderColor}`, 
-                      borderRadius: `${qrBorderRadius}px`, 
-                      padding: `${config.qrPadding || 4}px`
-                    }}>
-                  <img src={qrImageUrl} alt="QR" style={{ width: `${qrSize}px`, height: `${qrSize}px` }} />
-               </div>
-             </div>
+              <div 
+                data-element-id="qrCode"
+                className="mx-auto mt-6 animate-fade-in-up"
+                style={{ 
+                  transform: `translate(${qrOffsetX}px, ${qrOffsetY}px)`,
+                  padding: `${config.qrPadding || 0}px`,
+                  fontFamily: 'inherit'
+                }}
+              >
+                <div 
+                   className="relative group p-4 inline-block transition-all duration-500 hover:scale-105"
+                   style={{ 
+                      backgroundColor: qrBgColor,
+                      borderRadius: `${qrBorderRadius}px`,
+                      border: qrBorderWidth > 0 ? `${qrBorderWidth}px solid ${qrBorderColor}` : 'none',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                   }}
+                >
+                   <img src={qrImageUrl} style={{ width: `${qrSize}px`, height: `${qrSize}px` }} className="relative z-10" alt="QR Code" />
+                   <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[inherit]"></div>
+                </div>
+              </div>
            )}
         </div>
       </div>
-      {!forCapture && <div className="h-24 shrink-0" />}
     </div>
   );
 };
