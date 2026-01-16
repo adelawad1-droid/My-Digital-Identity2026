@@ -50,7 +50,6 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
            }
            
            setMaxLimit(limit);
-           // نعتمد على العداد المسجل في سجل المستخدم لسرعة التحقق
            setIsLimitReached((profile?.cardCount || 0) >= limit);
         }
 
@@ -108,7 +107,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 animate-fade-in-up space-y-10 md:space-y-16">
+    <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-8 md:py-12 animate-fade-in-up space-y-10 md:space-y-16">
       
       {isLimitReached && (
         <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-[2.5rem] border border-red-100 dark:border-red-900/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake shadow-xl">
@@ -136,7 +135,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
           {isPrivateMode ? <Crown size={12} className="text-amber-500" /> : <Palette size={12} />}
           {isPrivateMode ? (isRtl ? 'معرض التصاميم الخاصة بك' : 'Your Private Designs') : t('templates')}
         </div>
-        <h1 className="text-4xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter">
+        <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter">
           {isPrivateMode ? (isRtl ? 'تصاميم صممت لك خصيصاً' : 'Designs Crafted For You') : (isRtl ? 'اختر نمط هويتك' : 'Select Your Identity Style')}
         </h1>
         <p className="text-sm md:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-bold opacity-80 leading-relaxed">
@@ -171,7 +170,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ lang, onSelect }) =
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16 pt-4 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 pt-4 w-full">
         {filteredTemplates.map(tmpl => (
           <TemplateCard key={tmpl.id} tmpl={tmpl} lang={lang} onSelect={handleSelectTemplate} sampleData={sampleCardData} isPrivate={isPrivateMode} disabled={isLimitReached} />
         ))}
@@ -212,29 +211,29 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className={`relative aspect-[9/16] w-full bg-white dark:bg-black rounded-[3.8rem] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.2)] overflow-hidden mb-8 group-hover:shadow-[0_50px_120px_-20px_rgba(0,0,0,0.3)] transition-all duration-700 border-[3px] border-gray-200 dark:border-gray-800 cursor-ns-resize`}
+        className={`relative aspect-[9/16] w-full bg-white dark:bg-black rounded-[3rem] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] overflow-hidden mb-6 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.25)] transition-all duration-700 border-[2px] border-gray-100 dark:border-gray-800 cursor-ns-resize`}
         style={{ isolation: 'isolate' }}
       >
-        <div className="absolute inset-0 border-[8px] border-gray-950 dark:border-gray-900 rounded-[3.8rem] pointer-events-none z-50">
-           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
+        <div className="absolute inset-0 border-[6px] border-gray-950 dark:border-gray-900 rounded-[3rem] pointer-events-none z-50">
+           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
         </div>
         
         {isPrivate ? (
-           <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-0 animate-pulse">
-             <ShieldCheck size={12} fill="currentColor" />
+           <div className="absolute top-6 left-6 z-[60] flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-1.5 rounded-full font-black text-[8px] uppercase shadow-0 animate-pulse">
+             <ShieldCheck size={10} fill="currentColor" />
              {isRtl ? 'تصميم حصري' : 'Exclusive'}
            </div>
         ) : tmpl.isFeatured && (
-          <div className="absolute top-10 left-10 z-[60] flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-full font-black text-[9px] uppercase shadow-0">
-            <Star size={12} fill="currentColor" />
+          <div className="absolute top-6 left-6 z-[60] flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full font-black text-[8px] uppercase shadow-0">
+            <Star size={10} fill="currentColor" />
             {isRtl ? 'باقة برو' : 'Pro Template'}
           </div>
         )}
         
-        <div className="absolute inset-[2px] overflow-hidden pointer-events-none" 
+        <div className="absolute inset-[1px] overflow-hidden pointer-events-none" 
              style={{ 
-               borderRadius: '3.6rem', 
-               clipPath: 'inset(0 round 3.6rem)', 
+               borderRadius: '2.9rem', 
+               clipPath: 'inset(0 round 2.9rem)', 
                zIndex: 10,
                transform: 'translateZ(0)'
              }}>
@@ -265,7 +264,6 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                   specialLinks: (tmpl.config.defaultSpecialLinks && tmpl.config.defaultSpecialLinks.length > 0) 
                                  ? tmpl.config.defaultSpecialLinks 
                                  : sampleData.specialLinks,
-                  // إزالة قيم الظهور القسرية والاعتماد على إعدادات القالب الافتراضية
                   showName: tmpl.config.showNameByDefault, 
                   showTitle: tmpl.config.showTitleByDefault, 
                   showBio: tmpl.config.showBioByDefault, 
@@ -288,22 +286,22 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                e.stopPropagation();
                onSelect(tmpl.id);
              }}
-             className={`${disabled ? 'bg-red-600' : 'bg-blue-600'} text-white px-12 py-5 rounded-[1.5rem] font-black text-xs uppercase shadow-0 flex items-center justify-center gap-3 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-110 active:scale-95 pointer-events-auto cursor-pointer`}
+             className={`${disabled ? 'bg-red-600' : 'bg-blue-600'} text-white px-8 py-4 rounded-[1.25rem] font-black text-[10px] uppercase shadow-0 flex items-center justify-center gap-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 hover:scale-105 pointer-events-auto cursor-pointer`}
            >
-             {disabled ? (isRtl ? 'ترقية الباقة (تم الوصول للحد)' : 'Upgrade (Limit Reached)') : (isPrivate ? (isRtl ? 'تحرير بطاقتي الخاصة' : 'Edit My Private Card') : t('useTemplate'))}
-             {disabled ? <Zap size={18} /> : <Plus size={18} />}
+             {disabled ? (isRtl ? 'ترقية' : 'Upgrade') : (isPrivate ? (isRtl ? 'تحرير' : 'Edit') : t('useTemplate'))}
+             {disabled ? <Zap size={14} /> : <Plus size={14} />}
            </button>
         </div>
       </div>
 
-      <div className="px-6 text-center sm:text-start flex flex-col gap-2">
-         <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isPrivate ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.5)]' : tmpl.isFeatured ? 'bg-amber-50 shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'bg-blue-600'}`}></div>
-            <h3 className="text-xl md:text-2xl font-black dark:text-white uppercase tracking-tight truncate">
+      <div className="px-4 text-center sm:text-start flex flex-col gap-1.5">
+         <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${isPrivate ? 'bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.5)]' : tmpl.isFeatured ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-blue-600'}`}></div>
+            <h3 className="text-lg font-black dark:text-white uppercase tracking-tight truncate">
               {isRtl ? tmpl.nameAr : tmpl.nameEn}
             </h3>
          </div>
-         <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 leading-relaxed uppercase tracking-widest px-1">
+         <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 leading-relaxed uppercase tracking-widest px-1">
            {isRtl ? tmpl.descAr : tmpl.descEn}
          </p>
       </div>
