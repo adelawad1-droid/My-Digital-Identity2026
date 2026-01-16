@@ -740,7 +740,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
     const groups = [
       { id: 'group1', tabs: ['header', 'body-style', 'visuals'] },
       { id: 'group2', tabs: ['avatar', 'identity-lab', 'bio-lab', 'location'] },
-      { id: 'group3', tabs: ['contact-lab', 'social-lab', 'direct-links', 'qrcode'] },
+      { id: 'group3', tabs: ['direct-links', 'contact-lab', 'social-lab', 'qrcode'] },
       { id: 'group4', tabs: ['special-links', 'floating-asset-lab', 'occasion-lab'] },
       { id: 'group5', tabs: ['special-features', 'membership-lab', 'desktop-lab'] }
     ];
@@ -897,9 +897,9 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              </button>
              {openGroups['group3'] && (
                 <div className="px-1 pb-3 pt-2 space-y-1 animate-fade-in bg-gray-50/50 dark:bg-blue-900/5 rounded-b-2xl mx-1 border-x border-b border-gray-100 dark:border-white/5">
-                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الاتصال' : 'Contact Section'} icon={Phone} colorClass="text-blue-500" activeBg="bg-blue-600" />
-                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات التواصل' : 'Social Icons'} icon={Share2} colorClass="text-indigo-600" activeBg="bg-blue-600" />
-                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'قسم الروابط المباشرة' : 'Direct Links Section'} icon={LinkIcon} colorClass="text-purple-600" activeBg="bg-blue-600" />
+                   <NavItem id="direct-links" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'روابط الأميل والموقع' : 'Email & Website Links'} icon={LinkIcon} colorClass="text-blue-500" activeBg="bg-blue-600" />
+                   <NavItem id="contact-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'بيانات التواصل' : 'Contact Details'} icon={Phone} colorClass="text-indigo-600" activeBg="bg-blue-600" />
+                   <NavItem id="social-lab" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'أيقونات مواقع التواصل' : 'Social Media Icons'} icon={Share2} colorClass="text-purple-600" activeBg="bg-blue-600" />
                    <NavItem id="qrcode" activeTab={activeTab} setActiveTab={setActiveTab} label={isRtl ? 'رمز الـ QR' : 'QR Code Style'} icon={QrCode} colorClass="text-slate-700" activeBg="bg-blue-600" />
                 </div>
              )}
@@ -1469,7 +1469,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl"><LinkIcon size={24} /></div>
-                       <h2 className="text-2xl font-black dark:text-white uppercase tracking-widest">{isRtl ? 'روابط الإيميل والموقع' : t('directLinksSection')}</h2>
+                       <h2 className="text-2xl font-black dark:text-white uppercase tracking-widest">{isRtl ? 'روابط الأميل والموقع' : t('directLinksSection')}</h2>
                     </div>
 
                     <div className="space-y-6">
@@ -1580,7 +1580,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
                     <div className="flex items-center gap-4">
                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl shadow-sm"><Phone size={24} /></div>
                        <div>
-                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{t('قسم أزرار الاتصال', 'Contact Buttons Section')}</h2>
+                          <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{isRtl ? 'بيانات التواصل' : 'Contact Details'}</h2>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('التحكم الكامل في أزرار الهاتف وواتساب', 'Full control over Phone and WhatsApp buttons')}</p>
                        </div>
                     </div>
@@ -1805,7 +1805,10 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
             {activeTab === 'social-lab' && (
               <div className="space-y-8 animate-fade-in">
                  <div className="bg-white dark:bg-gray-900 p-8 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl space-y-10">
-                    <div className="flex items-center gap-4"><div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Share2 size={24} /></div><h2 className="text-2xl font-black dark:text-white">{t('مختبر أيقونات التواصل', 'Social Icons Lab')}</h2></div>
+                    <div className="flex items-center gap-4">
+                       <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl shadow-sm"><Share2 size={24} /></div>
+                       <h2 className="text-2xl font-black dark:text-white uppercase leading-none mb-1">{isRtl ? 'أيقونات مواقع التواصل' : 'Social Media Icons'}</h2>
+                    </div>
                     
                     <div className="space-y-6">
                        <ToggleSwitch 
