@@ -20,7 +20,7 @@ import LanguageToggle from './components/LanguageToggle';
 import ShareModal from './components/ShareModal';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
-import { auth, getCardBySerial, getCardByDomain, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
+import { auth, getCardBySerial, getUserByDomain, saveCardToDB, ADMIN_EMAIL, getUserCards, getSiteSettings, deleteUserCard, getAllTemplates, syncUserProfile, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { Sun, Moon, Loader2, Plus, User as UserIcon, LogIn, AlertCircle, Home as HomeIcon, LayoutGrid, CreditCard, Mail, Coffee, Heart, Trash2, Briefcase, HelpCircle, ShieldCheck, Menu, X, ChevronRight, MessageSquare, Zap, Globe, ChevronDown, LogOut, Settings } from 'lucide-react';
 
@@ -116,7 +116,6 @@ const AppContent: React.FC = () => {
       if (initFlag.current) return;
       initFlag.current = true;
 
-      // 1. جلب الإعدادات والقوالب أولاً
       const [settings, templates] = await Promise.all([
         getSiteSettings().catch(() => null),
         getAllTemplates().catch(() => [])
@@ -125,31 +124,37 @@ const AppContent: React.FC = () => {
       if (settings) setSiteConfig(prev => ({ ...prev, ...settings }));
       if (templates) setCustomTemplates(templates as CustomTemplate[]);
 
-      // 2. الكشف عن الدومين المخصص
       const hostname = window.location.hostname;
+      const officialDomains = ['nextid.my', 'www.nextid.my', 'localhost', '127.0.0.1'];
       
-      // النطاقات التي يجب أن تعرض الصفحة الرئيسية (النطاقات الرسمية فقط)
-      const officialDomains = [
-        'nextid.my', 'www.nextid.my', 
-        'localhost', '127.0.0.1'
-      ];
-      
-      // إذا لم يكن النطاق رسمياً، نبحث عنه كدومين مخصص لبطاقة
+      // 1. الكشف عن الدومين المخصص المرتبط بالحساب
       if (!officialDomains.includes(hostname)) {
         try {
-          const cardByDomain = await getCardByDomain(hostname);
-          if (cardByDomain) {
-            setPublicCard(cardByDomain as CardData);
-            setIsDarkMode(cardByDomain.isDark);
-            setIsInitializing(false);
-            return; // عرض الملف الشخصي فقط وتوقف
+          const ownerProfile = await getUserByDomain(hostname);
+          if (ownerProfile) {
+            const searchParams = new URLSearchParams(window.location.search);
+            const slug = searchParams.get('u')?.trim().toLowerCase();
+            
+            let card;
+            if (slug) {
+              card = await getCardBySerial(slug);
+            } else {
+              // إذا لم يوجد slug، ابحث عن أول بطاقة نشطة للمستخدم
+              const cards = await getUserCards(ownerProfile.uid);
+              card = cards.find(c => c.isActive !== false);
+            }
+            
+            if (card && card.ownerId === ownerProfile.uid) {
+              setPublicCard(card as CardData);
+              setIsDarkMode(card.isDark);
+              setIsInitializing(false);
+              return;
+            }
           }
-        } catch (e) {
-          console.error("Domain routing error:", e);
-        }
+        } catch (e) { console.error("Domain routing error:", e); }
       }
 
-      // 3. الكشف عن معرف السيرة الذاتية (Slug) عبر ?u=
+      // 2. الكشف عن معرف السيرة الذاتية (Slug) عبر ?u= في الدومين الرسمي
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
       
@@ -159,15 +164,10 @@ const AppContent: React.FC = () => {
           if (card) { 
             setPublicCard(card as CardData); 
             setIsDarkMode(card.isDark);
-          } else { 
-            setIsCardDeleted(true); 
-          }
-        } catch (e) { 
-          setIsCardDeleted(true); 
-        }
+          } else { setIsCardDeleted(true); }
+        } catch (e) { setIsCardDeleted(true); }
       }
 
-      // 4. إدارة حالة تسجيل الدخول للمستخدمين العاديين
       onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
         if (user) {
@@ -176,9 +176,7 @@ const AppContent: React.FC = () => {
             const profile = await getUserProfile(user.uid);
             setUserProfile(profile);
             setIsAdmin(profile?.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-          } catch (e) {
-            setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-          }
+          } catch (e) { setIsAdmin(user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()); }
           
           if (!slug && officialDomains.includes(hostname)) {
             try {
@@ -278,7 +276,6 @@ const AppContent: React.FC = () => {
   const Sidebar = () => (
     <>
       <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[1100] transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
-      {/* Fix line 281: Added quotes around translate-x-0 class to avoid JS variable errors */}
       <div className={`fixed top-0 bottom-0 ${isRtl ? 'right-0' : 'left-0'} w-72 bg-white dark:bg-[#0a0a0c] z-[1200] shadow-2xl transition-transform duration-500 ease-out border-l border-gray-100 dark:border-gray-800 flex flex-col ${isSidebarOpen ? 'translate-x-0' : (isRtl ? 'translate-x-full' : '-translate-x-full')}`}>
         <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center">
           <div className="flex items-center gap-3">

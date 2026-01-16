@@ -49,7 +49,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-// Using initializeFirestore with experimentalForceLongPolling to fix connectivity issues
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
@@ -77,7 +76,6 @@ export const syncUserProfile = async (user: User) => {
   try {
     const userRef = doc(db, "users_registry", user.uid);
     const snap = await getDoc(userRef);
-    
     const isCurrentAdmin = user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
     
     const userData: any = {
@@ -93,20 +91,14 @@ export const syncUserProfile = async (user: User) => {
         createdAt: userData.lastLogin,
         displayName: user.displayName || user.email?.split('@')[0] || '',
         role: isCurrentAdmin ? 'admin' : 'user',
-        planId: null,
-        premiumUntil: null,
-        isActive: true,
-        cardCount: 0 
+        cardCount: 0,
+        isActive: true
       });
     } else {
-      if (isCurrentAdmin) {
-        userData.role = 'admin';
-      }
+      if (isCurrentAdmin) userData.role = 'admin';
       await updateDoc(userRef, userData);
     }
-  } catch (error) {
-    console.warn("Registry sync failed:", error);
-  }
+  } catch (error) { console.warn("Registry sync failed:", error); }
 };
 
 export const getUserProfile = async (uid: string) => {
@@ -114,7 +106,6 @@ export const getUserProfile = async (uid: string) => {
     const snap = await getDoc(doc(db, "users_registry", uid));
     if (snap.exists()) {
       const data = snap.data();
-      // تحقق من انتهاء الباقة
       if ((data.role === 'premium' || data.planId) && data.premiumUntil) {
         const expiry = new Date(data.premiumUntil);
         if (expiry < new Date()) {
@@ -128,6 +119,10 @@ export const getUserProfile = async (uid: string) => {
   } catch (e) { return null; }
 };
 
+// Fix for AdminDashboard.tsx and UserAccount.tsx: Adding missing exported members
+/**
+ * Updates basic user profile info in the users_registry collection
+ */
 export const updateProfileInfo = async (uid: string, data: { displayName?: string }) => {
   const userRef = doc(db, "users_registry", uid);
   await updateDoc(userRef, {
@@ -136,10 +131,13 @@ export const updateProfileInfo = async (uid: string, data: { displayName?: strin
   });
 };
 
+/**
+ * Fetches all registered users with their associated statistics (card count, total views)
+ */
 export const getAllUsersWithStats = async () => {
   try {
     const usersSnap = await getDocs(query(collection(db, "users_registry"), orderBy("createdAt", "desc")));
-    const users = usersSnap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
+    const users = usersSnap.docs.map(doc => ({...doc.data(), uid: doc.id}));
     const cardsSnap = await getDocs(collection(db, "public_cards"));
     const allCards = cardsSnap.docs.map(doc => doc.data());
 
@@ -147,6 +145,7 @@ export const getAllUsersWithStats = async () => {
       const userCards = allCards.filter(card => card.ownerId === user.uid);
       return {
         ...user,
+        cardCount: userCards.length,
         totalViews: userCards.reduce((acc, card) => acc + (card.viewCount || 0), 0),
         lastCardUpdate: userCards.length > 0 ? userCards.sort((a,b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedAt : null
       };
@@ -154,6 +153,32 @@ export const getAllUsersWithStats = async () => {
   } catch (error) {
     throw error;
   }
+};
+
+// البحث عن مستخدم عبر الدومين المخصص (على مستوى الحساب)
+export const getUserByDomain = async (hostname: string) => {
+  try {
+    const cleanDomain = hostname.toLowerCase().replace(/^www\./i, '');
+    const q = query(
+      collection(db, "users_registry"),
+      where("customDomain", "in", [cleanDomain, `www.${cleanDomain}`]),
+      where("domainStatus", "==", "active"),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    return snap.empty ? null : snap.docs[0].data();
+  } catch (error) { return null; }
+};
+
+// تحديث إعدادات الدومين للمستخدم
+export const updateUserDomain = async (uid: string, domain: string, status: string = 'pending') => {
+  const userRef = doc(db, "users_registry", uid);
+  await updateDoc(userRef, {
+    customDomain: domain.toLowerCase().trim(),
+    domainStatus: status,
+    domainVerifiedAt: status === 'active' ? new Date().toISOString() : null,
+    updatedAt: serverTimestamp()
+  });
 };
 
 export const getAllPricingPlans = async () => {
@@ -165,17 +190,11 @@ export const getAllPricingPlans = async () => {
 
 export const savePricingPlan = async (plan: Partial<PricingPlan>) => {
   const planId = plan.id || `plan_${Date.now()}`;
-  await setDoc(doc(db, "pricing_plans", planId), { 
-    ...sanitizeData(plan), 
-    id: planId,
-    updatedAt: new Date().toISOString() 
-  }, { merge: true });
+  await setDoc(doc(db, "pricing_plans", planId), { ...sanitizeData(plan), id: planId, updatedAt: new Date().toISOString() }, { merge: true });
   return planId;
 };
 
-export const deletePricingPlan = async (id: string) => {
-  await deleteDoc(doc(db, "pricing_plans", id));
-};
+export const deletePricingPlan = async (id: string) => { await deleteDoc(doc(db, "pricing_plans", id)); };
 
 export const getSiteSettings = async () => {
   try {
@@ -190,11 +209,7 @@ export const updateSiteSettings = async (settings: any) => {
 
 export const saveCustomTemplate = async (template: any) => {
   const templateId = template.id || `custom_${Date.now()}`;
-  await setDoc(doc(db, "custom_templates", templateId), {
-    ...sanitizeData(template),
-    id: templateId,
-    updatedAt: new Date().toISOString()
-  });
+  await setDoc(doc(db, "custom_templates", templateId), { ...sanitizeData(template), id: templateId, updatedAt: new Date().toISOString() });
 };
 
 export const getAllTemplates = async () => {
@@ -208,73 +223,24 @@ export const getAllTemplates = async () => {
   } catch (error) { return []; }
 };
 
-export const deleteTemplate = async (id: string) => {
-  await deleteDoc(doc(db, "custom_templates", id));
-};
+export const deleteTemplate = async (id: string) => { await deleteDoc(doc(db, "custom_templates", id)); };
 
 export async function saveCardToDB({ cardData, oldId }: { cardData: CardData, oldId?: string }) {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Auth required");
-  
   const finalOwnerId = cardData.ownerId || currentUser.uid;
   const newId = cardData.id.toLowerCase();
-  
-  // التحقق مما إذا كانت هذه عملية إنشاء جديدة (بطاقة جديدة تماماً)
   const isNewCard = !oldId;
-  
-  const dataToSave = { 
-    ...sanitizeData(cardData), 
-    ownerId: finalOwnerId,
-    ownerEmail: cardData.ownerEmail || currentUser.email || '',
-    updatedAt: new Date().toISOString(),
-    isActive: cardData.isActive ?? true,
-    viewCount: cardData.viewCount || 0
-  };
+  const dataToSave = { ...sanitizeData(cardData), ownerId: finalOwnerId, ownerEmail: cardData.ownerEmail || currentUser.email || '', updatedAt: new Date().toISOString(), isActive: cardData.isActive ?? true, viewCount: cardData.viewCount || 0 };
   
   if (oldId && oldId.toLowerCase() !== newId) {
     await deleteDoc(doc(db, "public_cards", oldId.toLowerCase()));
     await deleteDoc(doc(db, "users", finalOwnerId, "cards", oldId.toLowerCase()));
   }
   
-  await Promise.all([
-    setDoc(doc(db, "public_cards", newId), dataToSave),
-    setDoc(doc(db, "users", finalOwnerId, "cards", newId), dataToSave)
-  ]);
-
-  // تحديث العداد في سجل المستخدم فقط عند الإنشاء الجديد
-  if (isNewCard) {
-    await updateDoc(doc(db, "users_registry", finalOwnerId), {
-      cardCount: increment(1)
-    });
-  }
+  await Promise.all([ setDoc(doc(db, "public_cards", newId), dataToSave), setDoc(doc(db, "users", finalOwnerId, "cards", newId), dataToSave) ]);
+  if (isNewCard) await updateDoc(doc(db, "users_registry", finalOwnerId), { cardCount: increment(1) });
 }
-
-export const getCardByDomain = async (hostname: string) => {
-  try {
-    // تنظيف الهوست نيم من www. لضمان التطابق مع قاعدة البيانات
-    const cleanDomain = hostname.toLowerCase().replace(/^www\./i, '');
-    
-    // البحث عن الدومين في الحالتين (بـ www وبدونها) لضمان المرونة
-    const q = query(
-      collection(db, "public_cards"),
-      where("customDomain", "in", [cleanDomain, `www.${cleanDomain}`]),
-      where("domainStatus", "==", "active"),
-      limit(1)
-    );
-    
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      const cardData = snap.docs[0].data();
-      // تحديث عداد المشاهدات
-      updateDoc(doc(db, "public_cards", snap.docs[0].id), { viewCount: increment(1) }).catch(() => {});
-      return cardData;
-    }
-    return null;
-  } catch (error) {
-    console.error("Domain fetch error:", error);
-    return null;
-  }
-};
 
 export const getCardBySerial = async (serialId: string) => {
   try {
@@ -299,10 +265,7 @@ export const deleteUserCard = async ({ ownerId, cardId }: { ownerId: string, car
   await Promise.all([
     deleteDoc(doc(db, "public_cards", cardId.toLowerCase())),
     deleteDoc(doc(db, "users", ownerId, "cards", cardId.toLowerCase())),
-    // تحديث العداد بنقص واحد
-    updateDoc(doc(db, "users_registry", ownerId), {
-      cardCount: increment(-1)
-    })
+    updateDoc(doc(db, "users_registry", ownerId), { cardCount: increment(-1) })
   ]);
 };
 
@@ -320,15 +283,8 @@ export const getAdminStats = async () => {
     const totalSnap = await getCountFromServer(collection(db, "public_cards"));
     const viewSumSnap = await getAggregateFromServer(collection(db, "public_cards"), { totalViews: sum('viewCount') });
     const recentDocs = await getDocs(query(collection(db, "public_cards"), orderBy("updatedAt", "desc"), limit(100)));
-    return { 
-      totalCards: totalSnap.data().count, 
-      activeCards: totalSnap.data().count,
-      totalViews: viewSumSnap.data().totalViews || 0,
-      recentCards: recentDocs.docs.map(doc => doc.data()) 
-    };
-  } catch (error) { 
-    throw error;
-  }
+    return { totalCards: totalSnap.data().count, activeCards: totalSnap.data().count, totalViews: viewSumSnap.data().totalViews || 0, recentCards: recentDocs.docs.map(doc => doc.data()) };
+  } catch (error) { throw error; }
 };
 
 export const getAllCategories = async () => {
@@ -344,9 +300,7 @@ export const saveTemplateCategory = async (category: Partial<TemplateCategory>) 
   return catId;
 };
 
-export const deleteTemplateCategory = async (id: string) => {
-  await deleteDoc(doc(db, "template_categories", id));
-};
+export const deleteTemplateCategory = async (id: string) => { await deleteDoc(doc(db, "template_categories", id)); };
 
 export const getAllVisualStyles = async () => {
   try {
@@ -357,18 +311,11 @@ export const getAllVisualStyles = async () => {
 
 export const saveVisualStyle = async (style: Partial<VisualStyle>) => {
   const styleId = style.id || `style_${Date.now()}`;
-  await setDoc(doc(db, "visual_styles", styleId), { 
-    ...sanitizeData(style), 
-    id: styleId, 
-    updatedAt: new Date().toISOString(),
-    createdAt: style.createdAt || new Date().toISOString()
-  }, { merge: true });
+  await setDoc(doc(db, "visual_styles", styleId), { ...sanitizeData(style), id: styleId, updatedAt: new Date().toISOString(), createdAt: style.createdAt || new Date().toISOString() }, { merge: true });
   return styleId;
 };
 
-export const deleteVisualStyle = async (id: string) => {
-  await deleteDoc(doc(db, "visual_styles", id));
-};
+export const deleteVisualStyle = async (id: string) => { await deleteDoc(doc(db, "visual_styles", id)); };
 
 export const toggleCardStatus = async (cardId: string, ownerId: string, isActive: boolean) => {
   await Promise.all([
@@ -389,9 +336,7 @@ export const updateUserSecurity = async (currentPassword: string, newEmail: stri
   if (!user || !user.email) throw new Error("auth/no-user");
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
-  if (newEmail && newEmail !== user.email) {
-    await verifyBeforeUpdateEmail(user, newEmail);
-  }
+  if (newEmail && newEmail !== user.email) await verifyBeforeUpdateEmail(user, newEmail);
   if (newPassword) await updatePassword(user, newPassword);
 };
 
@@ -406,41 +351,26 @@ export const searchUsersByEmail = async (emailSearch: string) => {
     );
     const snap = await getDocs(q);
     return snap.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
-  } catch (e) {
-    console.error("Search error:", e);
-    return [];
-  }
+  } catch (e) { return []; }
 };
 
 export const updateUserSubscription = async (uid: string, role: string, planId: string | null, premiumUntil: string | null) => {
   const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    role, 
-    planId,
-    premiumUntil,
-    updatedAt: serverTimestamp()
-  });
+  await updateDoc(userRef, { role, planId, premiumUntil, updatedAt: serverTimestamp() });
 };
 
 export const toggleUserStatus = async (uid: string, isActive: boolean) => {
   const userRef = doc(db, "users_registry", uid);
-  await updateDoc(userRef, { 
-    isActive,
-    updatedAt: serverTimestamp()
-  });
+  await updateDoc(userRef, { isActive, updatedAt: serverTimestamp() });
 };
 
 export const getAuthErrorMessage = (code: string, lang: 'ar' | 'en'): string => {
   const isAr = lang === 'ar';
   switch (code) {
     case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
-    case 'auth/email-already-in-use':
-      return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
-    case 'auth/weak-password':
-      return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
-    default:
-      return isAr ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.';
+    case 'auth/invalid-credential': return isAr ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' : 'Invalid email or password.';
+    case 'auth/email-already-in-use': return isAr ? 'هذا البريد مستخدم بالفعل.' : 'This email is already in use.';
+    case 'auth/weak-password': return isAr ? 'كلمة المرور الجديدة ضعيفة جداً.' : 'New password is too weak.';
+    default: return isAr ? 'حدث خطأ غير متوقع.' : 'An unexpected error occurred.';
   }
 };
