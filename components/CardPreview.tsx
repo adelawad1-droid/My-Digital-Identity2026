@@ -1,6 +1,6 @@
 
-import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { Mail, Phone, Globe, MessageCircle, UserPlus, Camera, Download, QrCode, Cpu, Calendar, MapPin, Timer, PartyPopper, Navigation2, Quote, Sparkle, CheckCircle, Star, ExternalLink, Map as MapIcon, Link as LinkIcon, ShoppingCart, ShieldCheck } from 'lucide-react';
 import { CardData, Language, TemplateConfig, SpecialLinkItem } from '../types';
 import { TRANSLATIONS, PATTERN_PRESETS } from '../constants';
 import { downloadVCard } from '../utils/vcard';
@@ -140,6 +140,7 @@ const CountdownTimer = ({ targetDate, isDark, primaryColor, lang }: { targetDate
   );
 };
 
+// Fix: CardPreview now correctly references React namespace after import
 const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hideSaveButton = false, isFullFrame = false, hideHeader = false, bodyOffsetYOverride, forCapture = false }) => {
   const isRtl = lang === 'ar';
   const t = (key: string) => TRANSLATIONS[key] ? (TRANSLATIONS[key][lang] || TRANSLATIONS[key]['en']) : key;
@@ -191,6 +192,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     bBgColor = `rgba(${rgb.string}, ${bOpacity})`;
   }
 
+  // Fix: CSSProperties correctly referenced
   const bioStyles: React.CSSProperties = {
     backgroundColor: bBgColor,
     transform: `translate(${data.bioOffsetX ?? config.bioOffsetX ?? 0}px, ${data.bioOffsetY ?? config.bioOffsetY ?? 0}px)`,
@@ -284,6 +286,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                            (showWhatsapp && finalWhatsapps.length > 0) || 
                            (!hideSaveButton && showButtons);
 
+  // Fix: CSSProperties correctly referenced
   const getHeaderStyles = (): React.CSSProperties => {
     const opacity = (config.headerOpacity ?? 100) / 100;
     const isGlassy = config.headerGlassy;
@@ -350,6 +353,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const finalBodyOffsetY = bodyOffsetYOverride !== undefined ? bodyOffsetYOverride : (data.bodyOffsetY ?? config.bodyOffsetY ?? 0);
   const finalBodyOffsetX = data.bodyOffsetX ?? config.bodyOffsetX ?? 0;
 
+  // Fix: CSSProperties correctly referenced
   const bodyContentStyles: React.CSSProperties = {
     marginTop: hideHeader ? '0px' : (headerType === 'overlay' ? '40px' : (headerType.startsWith('side') ? '40px' : '-40px')),
     transform: `translate(${finalBodyOffsetX}px, ${finalBodyOffsetY}px)`, 
@@ -410,6 +414,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const sBorderColor = config.socialIconBorderColor || (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)');
   const useBrandColors = data.useSocialBrandColors !== undefined ? data.useSocialBrandColors : config.useSocialBrandColors;
 
+  // Fix: CSSProperties correctly referenced
   const getSocialBtnStyles = (platformId: string): React.CSSProperties => {
     const brandColor = BRAND_COLORS[platformId];
     let style: React.CSSProperties = {
@@ -471,6 +476,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const cbGlassy = config.contactButtonsGlassy;
   const cbVariant = config.contactButtonsVariant || 'buttons';
 
+  // Fix: CSSProperties correctly referenced
   const getContactBtnStyle = (baseColor: string): React.CSSProperties => {
     let finalRadius = `${cbRadius}px`;
     if (cbVariant === 'pills' || cbVariant === 'icons-circle') finalRadius = '999px';
@@ -505,6 +511,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
     return style;
   };
 
+  const finalAvatarBorderColor = config.avatarBorderColor || (isDark ? 'rgba(255,255,255,0.1)' : '#ffffff');
+
   const currentFont = data.fontFamily || config.fontFamily || 'var(--site-font), sans-serif';
 
   const cleanSvgRaw = (raw: string, userConfig: TemplateConfig) => {
@@ -527,6 +535,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
       .replace(/<svg/g, `<svg preserveAspectRatio="none" style="${transformStyle}"`);
   };
 
+  // Fix: CSSProperties correctly referenced
   const getProfileImageStyle = (): React.CSSProperties => {
     let filter = '';
     const whiteMode = data.profileImageWhiteMode ?? config.profileImageWhiteMode;
@@ -598,8 +607,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                  width: `${config.avatarSize}px`, height: `${config.avatarSize}px`, 
                  transform: `translate(${data.avatarOffsetX ?? config.avatarOffsetX ?? 0}px, ${data.avatarOffsetY ?? config.avatarOffsetY ?? 0}px)`,
                  padding: `${config.avatarBorderWidth ?? 4}px`, 
-                 backgroundColor: showAnimatedBorder ? 'transparent' : (config.avatarBorderColor || '#ffffff'),
-                 boxShadow: config.avatarAnimatedGlow ? `0 0 20px rgba(${hexToRgb(borderClr1).string}, 0.5)` : '0 20px 40px rgba(0,0,0,0.1)',
+                 backgroundColor: showAnimatedBorder ? 'transparent' : finalAvatarBorderColor,
+                 boxShadow: config.avatarAnimatedGlow ? `0 0 20px rgba(${hexToRgb(borderClr1).string}, 0.5)` : '0 10px 30px rgba(0,0,0,0.1)',
                  fontFamily: 'inherit'
                }}>
             
@@ -615,7 +624,10 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
               </div>
             )}
 
-            <div className={`w-full h-full ${getAvatarRadiusClasses(true)} overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center`}>
+            <div className={`w-full h-full ${getAvatarRadiusClasses(true)} overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center relative shadow-inner group/av-holder`}>
+              {!finalProfileImage && (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 opacity-50"></div>
+              )}
               {finalProfileImage ? (
                 <img 
                   {...getImgProps(finalProfileImage)} 
@@ -623,9 +635,13 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                   style={getProfileImageStyle()}
                 />
               ) : (
-                <Camera size={40} className="text-gray-200" />
+                <Camera size={config.avatarSize * 0.3} className="text-gray-400 dark:text-gray-500 relative z-10 opacity-70 group-hover/av-holder:scale-110 transition-transform" />
               )}
             </div>
+            
+            {!finalProfileImage && (
+              <div className={`absolute inset-0 ${getAvatarRadiusClasses()} pointer-events-none border border-black/5 dark:border-white/5`}></div>
+            )}
           </div>
         )}
 

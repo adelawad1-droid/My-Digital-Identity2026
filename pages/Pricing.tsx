@@ -30,17 +30,28 @@ const Pricing: React.FC<PricingProps> = ({ lang }) => {
 
   const handleSubscribe = (plan: PricingPlan) => {
     if (!auth.currentUser) {
+      // توجيه لصفحة تسجيل الدخول إذا لم يكن مسجلاً
       navigate(`/${lang}/login`); 
       return;
     }
 
     if (plan.stripeLink) {
       const userId = auth.currentUser.uid;
+      const planId = plan.id;
+      
+      // بناء الرابط مع تمرير المعرفات لسترايب
+      // client_reference_id: يستخدمه سترايب لربط العملية بالمستخدم
+      // نستخدم URLSearchParams لضمان دقة بناء الرابط
       try {
         const stripeUrl = new URL(plan.stripeLink);
         stripeUrl.searchParams.set('client_reference_id', userId);
+        
+        // ملاحظة: تأكد من ضبط رابط العودة (Return URL) في إعدادات Stripe Payment Link 
+        // ليكون: https://nextid.my/account?payment=success&planId=HERE_USE_PLAN_ID
+        
         window.location.href = stripeUrl.toString();
       } catch (e) {
+        // Fallback في حال كان الرابط نصياً بسيطاً
         const separator = plan.stripeLink.includes('?') ? '&' : '?';
         window.location.href = `${plan.stripeLink}${separator}client_reference_id=${userId}`;
       }
