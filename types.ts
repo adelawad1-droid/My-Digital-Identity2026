@@ -127,6 +127,8 @@ export interface TemplateConfig {
   socialIconPadding?: number;
   useSocialBrandColors?: boolean;
 
+  actionButtonColor?: string;
+
   showSpecialLinksByDefault?: boolean;
   specialLinksCols?: number;
   specialLinksGap?: number;
@@ -432,6 +434,7 @@ export interface CardData {
   socialIconsColor?: string;
   contactPhoneColor?: string;
   contactWhatsappColor?: string;
+  actionButtonColor?: string;
 
   bioBorderRadius?: number;
   bioBorderWidth?: number;

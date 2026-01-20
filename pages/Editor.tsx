@@ -1210,7 +1210,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
             </div>
         </main>
 
-        <aside className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
+        <aside className="hidden lg:flex w-full lg:w-[560px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth sticky top-24 h-[calc(100vh-120px)] rounded-[3rem]">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
@@ -1225,7 +1225,7 @@ const Editor: React.FC<EditorProps> = ({ lang, onSave, onCancel, initialData, is
               </div>
               
               <div 
-                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate ${previewDevice === 'mobile' ? 'w-[340px]' : previewDevice === 'tablet' ? 'w-[440px]' : 'w-full'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[3.5rem] shadow-0 overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black isolate ${previewDevice === 'mobile' ? 'w-[420px]' : previewDevice === 'tablet' ? 'w-[500px]' : 'w-full'}`} 
                    style={{ 
                      isolation: 'isolate', 
                      backgroundColor: previewPageBg,

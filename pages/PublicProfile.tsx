@@ -107,6 +107,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
   }
 
   const { primary } = getColors();
+  const actionButtonBg = customConfig?.actionButtonColor || '#2563eb';
   const hexToRgb = (hex: string) => {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -115,7 +116,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
     const b = parseInt(hex.substring(4, 6), 16) || 0;
     return { r, g, b, string: `${r}, ${g}, ${b}` };
   };
-  const rgb = hexToRgb(primary);
+  const rgb = hexToRgb(actionButtonBg);
   
   const isDesktop = windowWidth >= 1024;
   const isFullHeaderEnabled = customConfig?.desktopLayout === 'full-width-header' && isDesktop;
@@ -167,7 +168,7 @@ const PublicProfile: React.FC<PublicProfileProps> = ({ data, lang, customConfig,
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[100] animate-bounce-in">
          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-800 rounded-[2.5rem] p-3 shadow-[0_25px_50_px_-12px_rgba(0,0,0,0.5)] flex items-center gap-3">
             <button onClick={() => downloadVCard(data)} className="flex-1 flex items-center justify-center gap-3 py-4 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase shadow-lg"
-              style={{ backgroundColor: primary, boxShadow: `0 10px 25px -5px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)` }}>
+              style={{ backgroundColor: actionButtonBg, boxShadow: `0 10px 25px -5px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)` }}>
                <UserPlus size={18} /><span>{t('saveContact')}</span>
             </button>
             <button onClick={() => setShowShareModal(true)} className="p-4 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-3xl hover:bg-gray-200 transition-colors">

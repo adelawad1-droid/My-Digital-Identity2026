@@ -57,6 +57,33 @@ const AppContent: React.FC = () => {
   const [editingCard, setEditingCard] = useState<CardData | null>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  const CARD_CACHE_TTL_MS = 1000 * 60 * 30; // 30 دقيقة صلاحية الكاش
+  const cacheKey = (slug: string) => `card_cache_${slug}`;
+
+  const readCardCache = (slug: string) => {
+    try {
+      const raw = localStorage.getItem(cacheKey(slug));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.data || !parsed?.ts) return null;
+      if (Date.now() - parsed.ts > CARD_CACHE_TTL_MS) {
+        localStorage.removeItem(cacheKey(slug));
+        return null;
+      }
+      return parsed as { data: CardData; ts: number };
+    } catch { return null; }
+  };
+
+  const writeCardCache = (slug: string, data: CardData) => {
+    try {
+      localStorage.setItem(cacheKey(slug), JSON.stringify({ data, ts: Date.now() }));
+    } catch { /* storage full or disabled */ }
+  };
+
+  const clearCardCache = (slug: string) => {
+    try { localStorage.removeItem(cacheKey(slug)); } catch {}
+  };
+
   const [siteConfig, setSiteConfig] = useState({ 
     siteNameAr: 'هويتي الرقمية', 
     siteNameEn: 'NextID', 
@@ -155,14 +182,30 @@ const AppContent: React.FC = () => {
       const searchParams = new URLSearchParams(window.location.search);
       const slug = searchParams.get('u')?.trim().toLowerCase();
       
+      const cachedCard = slug ? readCardCache(slug) : null;
+      if (cachedCard?.data) {
+        setPublicCard(cachedCard.data as CardData);
+        setIsDarkMode((cachedCard.data as CardData).isDark);
+      }
+
       if (slug) {
         try {
           const card = await getCardBySerial(slug);
-          if (card) { 
-            setPublicCard(card as CardData); 
-            setIsDarkMode(card.isDark);
-          } else { setIsCardDeleted(true); }
-        } catch (e) { setIsCardDeleted(true); }
+          if (card) {
+            const cachedUpdatedAt = cachedCard?.data?.updatedAt ? new Date(cachedCard.data.updatedAt).getTime() : 0;
+            const incomingUpdatedAt = card.updatedAt ? new Date(card.updatedAt).getTime() : Date.now();
+            const isFresher = !cachedCard || incomingUpdatedAt >= cachedUpdatedAt;
+
+            if (isFresher) {
+              setPublicCard(card as CardData);
+              setIsDarkMode(card.isDark);
+              writeCardCache(slug, card as CardData);
+            }
+          } else {
+            if (!cachedCard) setIsCardDeleted(true);
+            clearCardCache(slug);
+          }
+        } catch (e) { if (!cachedCard) setIsCardDeleted(true); }
       }
 
       onAuthStateChanged(auth, async (user) => {
@@ -203,6 +246,11 @@ const AppContent: React.FC = () => {
     root.style.setProperty('--brand-primary', siteConfig.primaryColor);
     root.style.setProperty('--brand-secondary', siteConfig.secondaryColor);
     root.style.setProperty('--site-font', siteConfig.fontFamily);
+    
+    const favicon = document.getElementById('site-favicon') as HTMLLinkElement;
+    if (favicon && siteConfig.siteIcon) {
+      favicon.href = siteConfig.siteIcon;
+    }
   }, [isDarkMode, lang, siteConfig]);
 
   if (isInitializing) return (

@@ -214,8 +214,8 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
         className={`relative aspect-[9/16] w-full bg-white dark:bg-black rounded-[3rem] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] overflow-hidden mb-6 group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.25)] transition-all duration-700 border-[2px] border-gray-100 dark:border-gray-800 cursor-ns-resize`}
         style={{ isolation: 'isolate' }}
       >
-        <div className="absolute inset-0 border-[6px] border-gray-950 dark:border-gray-900 rounded-[3rem] pointer-events-none z-50">
-           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
+        <div className="absolute inset-0 border-[10px] border-gray-950 dark:border-gray-900 rounded-[3rem] pointer-events-none z-50">
+           <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-18 h-3.5 bg-gray-950 dark:bg-gray-900 rounded-full z-[60] border border-white/5 shadow-inner"></div>
         </div>
         
         {isPrivate ? (

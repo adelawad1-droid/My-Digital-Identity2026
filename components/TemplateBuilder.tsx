@@ -342,6 +342,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
       socialIconsColor: '#3b82f6',
       contactPhoneColor: '#2563eb',
       contactWhatsappColor: '#10b981',
+      actionButtonColor: '#2563eb',
       defaultThemeType: 'gradient',
       defaultThemeColor: '#2563eb',
       defaultThemeGradient: THEME_GRADIENTS[0],
@@ -390,7 +391,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   const [currentSpecialLinks, setCurrentSpecialLinks] = useState<SpecialLinkItem[]>(initialTemplate?.config.defaultSpecialLinks || (SAMPLE_DATA[lang]?.specialLinks as SpecialLinkItem[]) || []);
 
   useEffect(() => {
-    getAllCategories().then(setCategories);
+    getAllCategories().then(cats => {
+      setCategories(cats);
+      if (!initialTemplate && cats.length > 0 && !template.categoryId) {
+        setTemplate(prev => ({ ...prev, categoryId: cats[0].id }));
+      }
+    });
     getAllVisualStyles().then(setVisualStyles);
     getSiteSettings().then(settings => {
       if (settings) {
@@ -1149,6 +1155,8 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                   <ColorPicker label={t('لون السمة الأساسي', 'Base Theme Color')} value={template.config.defaultThemeColor} onChange={(v: string) => updateConfig('defaultThemeColor', v)} />
                   
+                  <ColorPicker label={isRtl ? 'لون زر حفظ جهة الاتصال' : 'Save Contact Button Color'} value={template.config.actionButtonColor || '#2563eb'} onChange={(v: string) => updateConfig('actionButtonColor', v)} />
+
                   <div className="pt-4 border-t dark:border-gray-800 flex items-center justify-between">
                       <div className="flex items-center gap-3"><Moon className="text-gray-400" size={18} /><span className="text-xs font-black dark:text-white uppercase tracking-widest">{t('الوضع ليلي افتراضياً', 'Default Dark Mode')}</span></div>
                       <button type="button" onClick={() => updateConfig('defaultIsDark', !template.config.defaultIsDark)} className={`w-14 h-7 rounded-full relative transition-all ${template.config.defaultIsDark ? 'bg-blue-600 shadow-lg' : 'bg-gray-200 dark:bg-gray-700'}`}><div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${isRtl ? (template.config.defaultIsDark ? 'right-8' : 'right-1') : (template.config.defaultIsDark ? 'left-8' : 'left-1')}`} /></button>

@@ -13,6 +13,7 @@ import {
 } from "firebase/auth";
 import { 
   initializeFirestore,
+  enableIndexedDbPersistence,
   doc, 
   setDoc, 
   getDoc, 
@@ -54,6 +55,11 @@ export const db = initializeFirestore(app, {
 });
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// تفعيل كاش Firestore في المتصفح لتحميل البطاقات أسرع عند المشاركة
+enableIndexedDbPersistence(db).catch(() => {
+  // قد يفشل إذا كانت التبويبات متعددة أو المتصفح لا يدعم IndexedDB
+});
 
 export const ADMIN_EMAIL = "adelawad1@gmail.com"; 
 

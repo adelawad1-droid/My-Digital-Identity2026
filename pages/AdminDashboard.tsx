@@ -268,6 +268,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const [searchTerm, setSearchTerm] = useState('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [templateSearchTerm, setTemplateSearchTerm] = useState('');
+  const [templateStatusFilter, setTemplateStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [templateCategoryFilter, setTemplateCategoryFilter] = useState<string>('all');
+  const [templateSortBy, setTemplateSortBy] = useState<'name' | 'date' | 'category'>('date');
 
   const t = (arOrKey: string, en?: string) => {
     if (en) return isRtl ? arOrKey : en;
@@ -777,13 +780,68 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               </div>
 
               <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-0 overflow-hidden">
-                <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3"><Layout className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('قائمة القوالب', 'Template List')}</h3></div>
-                  <div className="relative w-full md:w-80">
-                    <Search className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                    <input type="text" value={templateSearchTerm} onChange={e => setTemplateSearchTerm(e.target.value)} placeholder={t('ابحث في القوالب...', 'Search templates...')} className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 transition-all`} />
+                <div className="p-8 border-b border-gray-50 dark:border-gray-800 space-y-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3"><Layout className="text-blue-600" size={20}/><h3 className="text-lg font-black dark:text-white uppercase tracking-widest">{t('قائمة القوالب', 'Template List')}</h3></div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
+                      <LayoutGrid size={14}/> {customTemplates.length} {t('قالب', 'Templates')}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="relative">
+                      <Search className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                      <input 
+                        type="text" 
+                        value={templateSearchTerm} 
+                        onChange={e => setTemplateSearchTerm(e.target.value)} 
+                        placeholder={t('ابحث في القوالب...', 'Search templates...')} 
+                        className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all`} 
+                      />
+                    </div>
+                    
+                    <div className="relative">
+                      <Filter className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                      <select 
+                        value={templateStatusFilter} 
+                        onChange={e => setTemplateStatusFilter(e.target.value as any)}
+                        className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all appearance-none cursor-pointer dark:text-white`}
+                      >
+                        <option value="all">{t('كل الحالات', 'All Status')}</option>
+                        <option value="active">{t('نشط فقط', 'Active Only')}</option>
+                        <option value="inactive">{t('معطل فقط', 'Inactive Only')}</option>
+                      </select>
+                    </div>
+                    
+                    <div className="relative">
+                      <Tag className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                      <select 
+                        value={templateCategoryFilter} 
+                        onChange={e => setTemplateCategoryFilter(e.target.value)}
+                        className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all appearance-none cursor-pointer dark:text-white`}
+                      >
+                        <option value="all">{t('كل الأقسام', 'All Categories')}</option>
+                        {categories.filter(c => c.isActive).map(cat => (
+                          <option key={cat.id} value={cat.id}>{isRtl ? cat.nameAr : cat.nameEn}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="relative">
+                      <ArrowUpAZ className={`absolute ${isRtl ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                      <select 
+                        value={templateSortBy} 
+                        onChange={e => setTemplateSortBy(e.target.value as any)}
+                        className={`w-full ${isRtl ? 'pr-12' : 'pl-12'} py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all appearance-none cursor-pointer dark:text-white`}
+                      >
+                        <option value="date">{t('حسب التاريخ', 'By Date')}</option>
+                        <option value="name">{t('حسب الاسم', 'By Name')}</option>
+                        <option value="category">{t('حسب القسم', 'By Category')}</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
+                
                 <div className="overflow-x-auto">
                    <table className={`w-full text-${isRtl ? 'right' : 'left'}`}>
                       <thead className="bg-gray-50/50 dark:bg-gray-800/20 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
@@ -791,11 +849,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                             <td className="px-8 py-5">{t('القالب', 'Template')}</td>
                             <td className="px-8 py-5">{t('القسم', 'Category')}</td>
                             <td className="px-8 py-5">{t('الحالة', 'Status')}</td>
-                            <td className="px-8 py-5">{t('الإجراءات', 'Actions')}</td>
+                            <td className="px-8 py-5 text-center">{t('الإجراءات', 'Actions')}</td>
                          </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                         {customTemplates.filter(t => (isRtl ? t.nameAr : t.nameEn).toLowerCase().includes(templateSearchTerm.toLowerCase())).map((tmpl) => {
+                         {customTemplates
+                           .filter(t => {
+                             const matchesSearch = (isRtl ? t.nameAr : t.nameEn).toLowerCase().includes(templateSearchTerm.toLowerCase());
+                             const matchesStatus = templateStatusFilter === 'all' || (templateStatusFilter === 'active' ? t.isActive : !t.isActive);
+                             const matchesCategory = templateCategoryFilter === 'all' || t.categoryId === templateCategoryFilter;
+                             return matchesSearch && matchesStatus && matchesCategory;
+                           })
+                           .sort((a, b) => {
+                             if (templateSortBy === 'name') {
+                               return (isRtl ? a.nameAr : a.nameEn).localeCompare(isRtl ? b.nameAr : b.nameEn);
+                             } else if (templateSortBy === 'category') {
+                               return (a.categoryId || '').localeCompare(b.categoryId || '');
+                             } else {
+                               return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+                             }
+                           })
+                           .map((tmpl) => {
                             const category = categories.find(c => c.id === tmpl.categoryId);
                             const categoryName = category ? (isRtl ? category.nameAr : category.nameEn) : tmpl.categoryId;
                             
@@ -838,7 +912,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                   </div>
                                </td>
                                <td className="px-8 py-6">
-                                  <div className="flex gap-2">
+                                  <div className="flex justify-center gap-2">
                                      <button 
                                         onClick={() => handleToggleTemplateActive(tmpl)} 
                                         className={`p-2.5 rounded-xl transition-all shadow-sm ${tmpl.isActive ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white' : 'text-gray-400 bg-gray-50 hover:bg-gray-600 hover:text-white'}`}
@@ -862,6 +936,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                          )})}
                       </tbody>
                    </table>
+                   
+                   {customTemplates
+                     .filter(t => {
+                       const matchesSearch = (isRtl ? t.nameAr : t.nameEn).toLowerCase().includes(templateSearchTerm.toLowerCase());
+                       const matchesStatus = templateStatusFilter === 'all' || (templateStatusFilter === 'active' ? t.isActive : !t.isActive);
+                       const matchesCategory = templateCategoryFilter === 'all' || t.categoryId === templateCategoryFilter;
+                       return matchesSearch && matchesStatus && matchesCategory;
+                     }).length === 0 && (
+                     <div className="text-center py-20">
+                       <FolderOpen className="mx-auto text-gray-200 dark:text-gray-800 mb-4" size={60}/>
+                       <p className="text-lg font-black text-gray-400 dark:text-gray-500 uppercase">{t('لا توجد نتائج', 'No Results Found')}</p>
+                       <p className="text-xs text-gray-400 mt-2">{t('جرب تغيير معايير الفلترة', 'Try adjusting filters')}</p>
+                     </div>
+                   )}
                 </div>
               </div>
            </div>
@@ -1054,7 +1142,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
       {templateToDelete && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-           <div className="bg-white dark:bg-gray-900 w-full max-sm rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
+           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-[3rem] p-10 text-center shadow-0 border border-red-100 dark:border-red-900/20">
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Trash2 size={40} /></div>
               <h3 className="text-2xl font-black dark:text-white mb-4">{t('حذف القالب؟', 'Delete Template?')}</h3>
               <p className="text-sm font-bold text-gray-500 mb-8">{t('هل أنت متأكد من حذف هذا القالب؟ لا يمكن التراجع عن هذا الإجراء.', 'Are you sure? This action cannot be undone.')}</p>
