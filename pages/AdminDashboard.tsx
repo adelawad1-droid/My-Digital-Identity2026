@@ -22,7 +22,7 @@ import { AVAILABLE_FONTS, THEME_GRADIENTS, TRANSLATIONS, THEME_COLORS, SAMPLE_DA
 import * as LucideIcons from 'lucide-react';
 import { 
   BarChart3, Users, Clock, Loader2,
-  ShieldCheck, Trash2, Edit3, Eye, Settings, 
+  ShieldCheck, Trash2, Edit3, Eye, EyeOff, Settings, 
   Globe, Power, Save, Search, LayoutGrid,
   Lock, CheckCircle2, Image as ImageIcon, UploadCloud, X, Layout, User as UserIcon,
   Plus, Palette, ShieldAlert, Key, Star, Hash, AlertTriangle, Pin, PinOff, ArrowUpAZ,
@@ -170,6 +170,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
 
   useEffect(() => { fetchData(); }, []);
 
+  useEffect(() => {
+    const handleTabSwitch = (e: CustomEvent) => {
+      if (e.detail === 'templates') {
+        setActiveTab('templates');
+      }
+    };
+    window.addEventListener('switchAdminTab', handleTabSwitch as EventListener);
+    return () => window.removeEventListener('switchAdminTab', handleTabSwitch as EventListener);
+  }, []);
+
+
   const confirmDeletePlan = async () => {
     if (!planToDelete) return;
     try {
@@ -280,9 +291,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   const TabButton = ({ id, label, icon: Icon, activeColor }: any) => (
     <button 
       onClick={() => setActiveTab(id)} 
-      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase transition-all whitespace-nowrap ${activeTab === id ? `${activeColor} text-white shadow-lg` : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[13px] uppercase transition-all whitespace-nowrap ${activeTab === id ? `${activeColor} text-white shadow-lg` : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
     >
-      <Icon size={16} /> <span className="hidden sm:inline">{label}</span>
+      <Icon size={18} /> <span className="hidden sm:inline">{label}</span>
     </button>
   );
 
@@ -312,22 +323,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
   );
 
   return (
-    <div className="max-w-[1840px] mx-auto px-4 md:px-6 space-y-10 animate-fade-in-up">
+    <div className={`max-w-[1600px] mx-auto px-4 md:px-6 animate-fade-in-up ${activeTab === 'builder' ? 'flex flex-col' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: activeTab === 'builder' ? '0' : '2.5rem' }}>
       {activeTab !== 'builder' && (
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 dark:border-gray-800 pb-10">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg"><ShieldCheck size={20} /></div>
-              <span className="text-xs font-black text-blue-600 uppercase tracking-widest">{t('نظام الإدارة', 'Admin System')}</span>
-            </div>
-            <div className="flex items-center gap-4">
-               <h1 className="text-4xl md:text-5xl font-black dark:text-white">{t('لوحة التحكم', 'Dashboard')}</h1>
-               <button onClick={() => fetchData(true)} disabled={isRefreshing} className={`p-3 bg-white dark:bg-gray-900 border rounded-2xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm ${isRefreshing ? 'animate-spin' : ''}`}>
-                  <RefreshCw size={20} />
-               </button>
-            </div>
+        <div className="flex flex-col items-center justify-center gap-6 border-b border-gray-100 dark:border-gray-800 pb-10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg"><ShieldCheck size={20} /></div>
+            <span className="text-xs font-black text-blue-600 uppercase tracking-widest">{t('نظام الإدارة', 'Admin System')}</span>
+            <button onClick={() => fetchData(true)} disabled={isRefreshing} className={`p-2 bg-white dark:bg-gray-900 border rounded-xl text-blue-600 hover:bg-blue-50 transition-all shadow-sm ${isRefreshing ? 'animate-spin' : ''}`}>
+              <RefreshCw size={18} />
+            </button>
           </div>
-          <div className="flex bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto no-scrollbar">
+          <div className="w-full max-w-7xl flex bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto no-scrollbar justify-center">
             <TabButton id="stats" label={t('البطاقات', 'Cards')} icon={BarChart3} activeColor="bg-blue-600" />
             <TabButton id="users" label={t('المسجلين', 'Users')} icon={Users} activeColor="bg-purple-600" />
             <TabButton id="plans" label={t('الباقات', 'Plans')} icon={CardIcon} activeColor="bg-indigo-600" />
@@ -879,7 +885,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
                                   <div className="flex items-center gap-4">
                                      <div className="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 border dark:border-gray-700 flex items-center justify-center overflow-hidden shrink-0">
                                         <div className="scale-[0.15] origin-center w-[400px] h-[700px] pointer-events-none">
-                                           <CardPreview data={{...SAMPLE_DATA[lang], templateId: tmpl.id} as any} lang={lang} customConfig={tmpl.config} hideSaveButton={true}/>
+                                           <CardPreview data={{...SAMPLE_DATA[lang], templateId: tmpl.id, location: tmpl.config.defaultLocation || '', locationUrl: tmpl.config.defaultLocationUrl || ''} as any} lang={lang} customConfig={tmpl.config} hideSaveButton={true}/>
                                         </div>
                                      </div>
                                      <div>
@@ -976,12 +982,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ lang, onEditCard, onDel
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  {categories.map(cat => (
-                   <div key={cat.id} className="bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group">
-                      <div className="flex items-center gap-5">
-                         <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner"><Tag size={20}/></div>
-                         <div><h3 className="font-black dark:text-white leading-none mb-1">{isRtl ? cat.nameAr : cat.nameEn}</h3><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('ترتيب', 'Order')}: {cat.order}</p></div>
+                   <div key={cat.id} className="bg-white dark:bg-gray-900 p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm group">
+                      <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-5">
+                            <div className="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner"><Tag size={20}/></div>
+                            <div><h3 className="font-black dark:text-white leading-none mb-1">{isRtl ? cat.nameAr : cat.nameEn}</h3><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('ترتيب', 'Order')}: {cat.order}</p></div>
+                         </div>
+                         <div className="flex gap-2"><button onClick={() => { setEditingCategoryId(cat.id); setCategoryData(cat); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={18}/></button><button onClick={() => setCategoryToDelete(cat.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={18}/></button></div>
                       </div>
-                      <div className="flex gap-2"><button onClick={() => { setEditingCategoryId(cat.id); setCategoryData(cat); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={18}/></button><button onClick={() => setCategoryToDelete(cat.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={18}/></button></div>
+                      <div className="flex items-center justify-between pt-4 border-t dark:border-gray-800">
+                         <div className="flex items-center gap-2">
+                            {cat.isActive ? <Eye size={16} className="text-green-500"/> : <EyeOff size={16} className="text-gray-400"/>}
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${cat.isActive ? 'text-green-600' : 'text-gray-400'}`}>{cat.isActive ? t('ظاهر', 'Active') : t('مخفي', 'Hidden')}</span>
+                         </div>
+                         <button onClick={async () => { try { await saveTemplateCategory({...cat, isActive: !cat.isActive}); await fetchData(true); } catch(e) {} }} className={`w-12 h-6 rounded-full relative transition-all ${cat.isActive ? 'bg-green-500' : 'bg-gray-300'}`}>
+                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${isRtl ? (cat.isActive ? 'right-7' : 'right-1') : (cat.isActive ? 'left-7' : 'left-1')}`} />
+                         </button>
+                      </div>
                    </div>
                  ))}
               </div>

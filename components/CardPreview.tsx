@@ -182,6 +182,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   const bTextColor = data.bioTextColor || config.bioTextColor || (isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)');
   let bBgColor = data.bioBgColor || config.bioBgColor || (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)');
   const bGlassy = data.bioGlassy ?? config.bioGlassy;
+  const bHideBg = data.bioHideBg ?? config.bioHideBg ?? false;
   const bOpacity = (data.bioOpacity ?? config.bioOpacity ?? 100) / 100;
   if (bGlassy && bBgColor.startsWith('#')) {
     const rgb = hexToRgb(bBgColor);
@@ -192,18 +193,18 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
   }
 
   const bioStyles: React.CSSProperties = {
-    backgroundColor: bBgColor,
+    backgroundColor: bHideBg ? 'transparent' : bBgColor,
     transform: `translate(${data.bioOffsetX ?? config.bioOffsetX ?? 0}px, ${data.bioOffsetY ?? config.bioOffsetY ?? 0}px)`,
     maxWidth: `${data.bioMaxWidth ?? config.bioMaxWidth ?? 90}%`,
-    borderRadius: `${data.bioBorderRadius ?? config.bioBorderRadius ?? 32}px`,
-    borderWidth: `${data.bioBorderWidth ?? config.bioBorderWidth ?? 1}px`,
-    borderColor: data.bioBorderColor ?? config.bioBorderColor ?? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
-    paddingTop: `${data.bioPaddingV ?? config.bioPaddingV ?? 20}px`,
-    paddingBottom: `${data.bioPaddingV ?? config.bioPaddingV ?? 20}px`,
-    paddingLeft: `${data.bioPaddingH ?? config.bioPaddingH ?? 20}px`,
-    paddingRight: `${data.bioPaddingH ?? config.bioPaddingH ?? 20}px`,
-    backdropFilter: bGlassy ? 'blur(15px)' : 'none',
-    WebkitBackdropFilter: bGlassy ? 'blur(15px)' : 'none',
+    borderRadius: bHideBg ? '0px' : `${data.bioBorderRadius ?? config.bioBorderRadius ?? 32}px`,
+    borderWidth: bHideBg ? '0px' : `${data.bioBorderWidth ?? config.bioBorderWidth ?? 1}px`,
+    borderColor: bHideBg ? 'transparent' : (data.bioBorderColor ?? config.bioBorderColor ?? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')),
+    paddingTop: bHideBg ? '0px' : `${data.bioPaddingV ?? config.bioPaddingV ?? 20}px`,
+    paddingBottom: bHideBg ? '0px' : `${data.bioPaddingV ?? config.bioPaddingV ?? 20}px`,
+    paddingLeft: bHideBg ? '0px' : `${data.bioPaddingH ?? config.bioPaddingH ?? 20}px`,
+    paddingRight: bHideBg ? '0px' : `${data.bioPaddingH ?? config.bioPaddingH ?? 20}px`,
+    backdropFilter: (bGlassy && !bHideBg) ? 'blur(15px)' : 'none',
+    WebkitBackdropFilter: (bGlassy && !bHideBg) ? 'blur(15px)' : 'none',
     textAlign: (data.bioTextAlign ?? config.bioTextAlign ?? 'center') as any,
     fontFamily: 'inherit'
   };
@@ -682,8 +683,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
 
            {showBio && finalBio && (
-             <div className="mx-auto relative group overflow-hidden" data-element-id="bio" style={bioStyles}>
-                <Quote size={12} className="absolute top-3 left-4 opacity-20 text-blue-500" />
+             <div className={`mx-auto relative group ${bHideBg ? '' : 'overflow-hidden'}`} data-element-id="bio" style={bioStyles}>
+                {!bHideBg && <Quote size={12} className="absolute top-3 left-4 opacity-20 text-blue-500" />}
                <p className="font-bold leading-relaxed italic" style={{ color: bTextColor, fontSize: `${config.bioSize}px`, fontFamily: 'inherit' }}>
                  {finalBio}
                </p>
@@ -901,11 +902,11 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
               </div>
            )}
 
-           {showLocation && data.locationUrl && (
+           {showLocation && (data.location || data.locationUrl) && (
              <div data-element-id="location" className="w-full px-2 animate-fade-in-up" style={{ transform: `translate(${data.locationOffsetX ?? config.locationOffsetX ?? 0}px, ${data.locationOffsetY ?? config.locationOffsetY ?? 0}px)`, fontFamily: 'inherit' }}>
                <a 
-                 href={data.locationUrl} 
-                 target="_blank" 
+                 href={data.locationUrl || '#'} 
+                 target={data.locationUrl ? "_blank" : undefined} 
                  className={`flex items-center gap-4 transition-all duration-500 hover:scale-[1.02] shadow-xl group relative overflow-hidden`}
                  style={{ 
                    borderRadius: `${locRadius}px`, 
@@ -925,8 +926,8 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
                    <MapIcon size={22} />
                  </div>
                  <div className="flex-1 text-start min-w-0" style={{ fontFamily: 'inherit' }}>
-                   <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-1 leading-none" style={{ fontFamily: 'inherit' }}>{t('locationSection')}</h4>
-                   <p className="font-bold dark:text-white truncate leading-tight" style={{ color: locTextColor, fontSize: `${locAddressSize}px`, fontFamily: 'inherit' }}>{data.location || t('visitUs')}</p>
+                   <h4 className="text-[10px] font-black uppercase tracking-widest mb-1 leading-none" style={{ color: locTextColor, opacity: 0.6, fontFamily: 'inherit' }}>{t('locationSection')}</h4>
+                   <p className="font-bold truncate leading-tight" style={{ color: locTextColor, fontSize: `${locAddressSize}px`, fontFamily: 'inherit' }}>{data.location || t('visitUs')}</p>
                  </div>
                  <div className="shrink-0 p-2 bg-blue-600 rounded-full text-white shadow-lg shadow-blue-600/20 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" style={{ backgroundColor: themeColor }}>
                    <Navigation2 size={14} />
@@ -983,7 +984,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({ data, lang, customConfig, hid
            )}
         </div>
       </div>
-      {!forCapture && <div className="h-24 shrink-0" />}
+      {!forCapture && <div className="h-32 sm:h-24 shrink-0" />}
     </div>
   );
 };

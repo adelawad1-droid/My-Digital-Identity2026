@@ -386,11 +386,11 @@ const AppContent: React.FC = () => {
               </div>
             </div>
             <nav className="hidden xl:flex items-center gap-1 ml-4 mr-4">
-              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
-              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
-              <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
-              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
-              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
+              <button onClick={() => navigateWithLang('/templates')} className={`px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${location.pathname.includes('/templates') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('templates')}</button>
+              <button onClick={() => navigateWithLang('/how-to-start')} className={`px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${location.pathname.includes('/how-to-start') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('howToStart')}</button>
+              <button onClick={() => navigateWithLang('/pricing')} className={`px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${location.pathname.includes('/pricing') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('pricing')}</button>
+              <button onClick={() => navigateWithLang('/custom-orders')} className={`px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${location.pathname.includes('/custom-orders') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('customOrders')}</button>
+              {currentUser && <button onClick={() => navigateWithLang('/my-cards')} className={`px-4 py-2 rounded-xl text-sm font-black uppercase transition-all ${location.pathname.includes('/my-cards') ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>{t('myCards')}</button>}
             </nav>
           </div>
           <div className="flex items-center gap-2">
@@ -423,6 +423,13 @@ const AppContent: React.FC = () => {
                         </button>
                       )}
 
+                      {isAdmin && (
+                        <button onClick={() => { navigateWithLang('/admin'); setTimeout(() => { const event = new CustomEvent('switchAdminTab', { detail: 'templates' }); window.dispatchEvent(event); }, 100); }} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-600 transition-all group">
+                           <Plus size={18} className="group-hover:scale-110 transition-transform" />
+                           <span className="text-[11px] font-black uppercase tracking-tight">{t('إضافة قالب جديد', 'Add Template')}</span>
+                        </button>
+                      )}
+
                       <button onClick={() => navigateWithLang('/account')} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all group">
                          <Settings size={18} className="group-hover:scale-110 transition-transform" />
                          <span className="text-[11px] font-black uppercase tracking-tight">{t('account')}</span>
@@ -443,7 +450,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       </header>
-      <main className="flex-1 p-4 md:p-8">
+      <main className={`flex-1 ${location.pathname.includes('/admin/template-builder') || location.pathname.includes('/admin/builder') ? '' : 'p-4 md:p-8 overflow-y-auto'}`}>
         <Routes>
           <Route path="/" element={<Home lang={lang} onStart={() => navigateWithLang('/templates')} />} />
           <Route path="/how-to-start" element={<HowToStart lang={lang} />} />

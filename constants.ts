@@ -155,7 +155,9 @@ export const SAMPLE_DATA: Record<string, Partial<CardData>> = {
     specialLinks: [
       { id: '1', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400', linkUrl: '#', titleEn: 'New Product' },
       { id: '2', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400', linkUrl: '#', titleEn: 'Best Seller' }
-    ]
+    ],
+    location: 'San Francisco, CA, USA',
+    locationUrl: 'https://maps.google.com/?q=San+Francisco'
   },
   ar: {
     name: 'أحمد محمد',
@@ -182,7 +184,9 @@ export const SAMPLE_DATA: Record<string, Partial<CardData>> = {
     specialLinks: [
       { id: '1', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400', linkUrl: '#', titleAr: 'منتج جديد' },
       { id: '2', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400', linkUrl: '#', titleAr: 'الأكثر مبيعاً' }
-    ]
+    ],
+    location: 'الرياض، المملكة العربية السعودية',
+    locationUrl: 'https://maps.google.com/?q=الرياض'
   }
 };
 
@@ -344,6 +348,10 @@ export const TRANSLATIONS: TranslationStrings = {
   limitReached: { ar: 'لقد وصلت للحد الأقصى من البطاقات المسموح بها في باقتك الحالية.', en: 'You have reached the maximum card limit allowed for your current plan.' },
   cardUsage: { ar: 'استهلاك البطاقات', en: 'Card Usage' },
   upgradeToAdd: { ar: 'قم بالترقية لزيادة عدد البطاقات', en: 'Upgrade to add more cards' },
+
+  ظاهر: { ar: 'ظاهر', en: 'Active' },
+  مخفي: { ar: 'مخفي', en: 'Hidden' },
+  'إضافة قالب جديد': { ar: 'إضافة قالب جديد', en: 'Add New Template' },
 
   // نصوص صفحة الدومين الجديد
   customDomain: { ar: 'الدومين الخاص', en: 'Custom Domain' },

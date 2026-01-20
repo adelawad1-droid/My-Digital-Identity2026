@@ -264,6 +264,8 @@ const TemplateCard = ({ tmpl, lang, onSelect, sampleData, isPrivate, disabled }:
                   specialLinks: (tmpl.config.defaultSpecialLinks && tmpl.config.defaultSpecialLinks.length > 0) 
                                  ? tmpl.config.defaultSpecialLinks 
                                  : sampleData.specialLinks,
+                  location: tmpl.config.defaultLocation || sampleData.location || '',
+                  locationUrl: tmpl.config.defaultLocationUrl || sampleData.locationUrl || '',
                   showName: tmpl.config.showNameByDefault, 
                   showTitle: tmpl.config.showTitleByDefault, 
                   showBio: tmpl.config.showBioByDefault, 

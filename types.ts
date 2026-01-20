@@ -244,6 +244,7 @@ export interface TemplateConfig {
   bioGlassy?: boolean;
   bioOpacity?: number;
   bioMaxWidth?: number;
+  bioHideBg?: boolean;
   bioTextAlign?: 'start' | 'center' | 'end';
   defaultBioAr?: string;
   defaultBioEn?: string;
@@ -444,6 +445,7 @@ export interface CardData {
   bioGlassy?: boolean;
   bioOpacity?: number;
   bioMaxWidth?: number;
+  bioHideBg?: boolean;
   bioTextAlign?: 'start' | 'center' | 'end';
   defaultBioAr?: string;
   defaultBioEn?: string;

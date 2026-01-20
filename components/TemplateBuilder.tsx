@@ -753,7 +753,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
   }, [activeTab]);
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0c] rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col h-[calc(100vh-100px)] min-h-[850px] relative">
+    <div className="bg-white dark:bg-[#0a0a0c] rounded-[3rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col min-h-screen relative">
       
       {showAuthWarning && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
@@ -794,43 +794,27 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
         />
       )}
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-8 py-4 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10 shrink-0">
-        <div className="flex items-center gap-5">
-          <button type="button" onClick={onCancel} className="p-2 bg-white dark:bg-gray-800 text-gray-400 hover:text-red-500 rounded-xl border border-gray-100 dark:border-gray-700 transition-all shadow-sm"><ArrowLeft size={18} className={isRtl ? 'rotate-180' : ''} /></button>
-          <div>
-            <h2 className="text-base font-black dark:text-white leading-none mb-1">{t('تصميم القالب المخصص', 'Custom Template Design')}</h2>
-            <div className="flex items-center gap-2">
-               <Hash size={10} className="text-blue-500" />
-               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">{template.id}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            type="button" 
-            onClick={() => checkAuthAndClick(floatingAssetInputRef)} 
-            className="px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl font-black text-xs uppercase border border-indigo-100 dark:border-indigo-800/30 transition-all flex items-center gap-2 hover:bg-indigo-600 hover:text-white shadow-sm"
-          >
-             {uploadingFloating ? <Loader2 size={18} className="animate-spin" /> : <Sticker size={18} />}
-             {isRtl ? 'إضافة ملحق خاص' : 'Add Custom Asset'}
-          </button>
-          <input type="file" ref={floatingAssetInputRef} className="hidden" accept="image/*" onChange={handleFloatingAssetUpload} />
-
-          <button 
-            type="button" 
-            onClick={() => setIsDragMode(!isDragMode)} 
-            className={`px-6 py-3 rounded-xl font-black text-xs uppercase transition-all flex items-center gap-2 border-2 ${isDragMode ? 'bg-amber-500 text-white border-amber-600 shadow-lg scale-105' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
-          >
-             {isDragMode ? <Grab size={18} /> : <Move size={18} />}
-             {isDragMode ? t('إيقاف التحريك الحر', 'Stop Drag Mode') : t('تفعيل التحريك الحر', 'Free Drag Mode')}
-          </button>
-          <button type="button" onClick={() => setShowSaveModal(true)} disabled={loading} className="px-10 py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all">{t('حفظ القالب', 'Save Template')}</button>
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <div className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row flex-1 pt-4">
         {/* Sidebar Container with independent scroll */}
-        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col overflow-y-auto no-scrollbar shrink-0 bg-white dark:bg-[#0a0a0c] p-3 space-y-2">
+        <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col shrink-0 bg-white dark:bg-[#0a0a0c] p-3 space-y-2">
+          
+          {/* Header Section with Exit Button */}
+          <div className="mb-2 pb-3 border-b border-gray-200 dark:border-gray-800">
+            <button 
+              type="button" 
+              onClick={onCancel} 
+              className="w-full flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl border border-red-100 dark:border-red-800/30 transition-all hover:bg-red-600 hover:text-white shadow-sm group"
+            >
+              <ArrowLeft size={16} className={`${isRtl ? 'rotate-180' : ''} group-hover:scale-110 transition-transform`} />
+              <div className="flex-1 text-start">
+                <div className="text-xs font-black uppercase tracking-tight">{t('الخروج من القالب', 'Exit Template')}</div>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Hash size={8} className="opacity-50" />
+                  <span className="text-[8px] font-bold opacity-70">{template.id}</span>
+                </div>
+              </div>
+            </button>
+          </div>
           
           {/* Group 1: الترويسة والانماط */}
           <div className="overflow-hidden">
@@ -949,10 +933,41 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
              )}
           </div>
 
+          {/* Action Buttons Section */}
+          <div className="mt-4 space-y-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <button 
+              type="button" 
+              onClick={() => checkAuthAndClick(floatingAssetInputRef)} 
+              className="w-full px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-xl font-black text-xs uppercase border border-indigo-100 dark:border-indigo-800/30 transition-all flex items-center justify-center gap-2 hover:bg-indigo-600 hover:text-white shadow-sm"
+            >
+               {uploadingFloating ? <Loader2 size={16} className="animate-spin" /> : <Sticker size={16} />}
+               {isRtl ? 'إضافة ملحق خاص' : 'Add Custom Asset'}
+            </button>
+            <input type="file" ref={floatingAssetInputRef} className="hidden" accept="image/*" onChange={handleFloatingAssetUpload} />
+
+            <button 
+              type="button" 
+              onClick={() => setIsDragMode(!isDragMode)} 
+              className={`w-full px-4 py-3 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border-2 ${isDragMode ? 'bg-amber-500 text-white border-amber-600 shadow-lg scale-105' : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
+            >
+               {isDragMode ? <Grab size={16} /> : <Move size={16} />}
+               {isDragMode ? t('إيقاف التحريك الحر', 'Stop Drag Mode') : t('تفعيل التحريك الحر', 'Free Drag Mode')}
+            </button>
+            
+            <button 
+              type="button" 
+              onClick={() => setShowSaveModal(true)} 
+              disabled={loading} 
+              className="w-full px-4 py-4 bg-blue-600 text-white rounded-xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {t('حفظ القالب', 'Save Template')}
+            </button>
+          </div>
+
         </div>
 
-        <div className="flex-1 p-8 overflow-y-auto no-scrollbar bg-gray-50/20 dark:bg-transparent">
-          <div className="max-w-3xl mx-auto space-y-10 animate-fade-in pb-32">
+        <div className="flex-1 py-2 px-6 bg-gray-50/20 dark:bg-transparent">
+          <div className="mx-auto space-y-10 animate-fade-in pb-[600px] w-full">
             
             {activeTab === 'header' && (
               <div className="space-y-8 animate-fade-in">
@@ -1410,6 +1425,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
 
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-6 border-t dark:border-gray-800">
                           <ToggleSwitch label={t('تفعيل تأثير زجاجي (Glassy)', 'Glassy Effect')} value={template.config.bioGlassy} onChange={(v: boolean) => updateConfig('bioGlassy', v)} icon={GlassWater} color="bg-indigo-600" isRtl={isRtl} />
+                          <ToggleSwitch label={t('إخفاء خلفية النبذة', 'Hide Bio Background')} value={template.config.bioHideBg} onChange={(v: boolean) => updateConfig('bioHideBg', v)} icon={EyeOff} color="bg-purple-600" isRtl={isRtl} />
                           <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 flex items-center justify-between">
                              <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('إظهار الإطار', 'Show Border')}</span>
@@ -2116,7 +2132,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
           </div>
         </div>
 
-        <div className="hidden lg:flex w-full lg:w-[480px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 flex flex-col items-center relative overflow-y-auto no-scrollbar scroll-smooth">
+        <div className="hidden lg:flex w-full lg:w-[420px] bg-gray-50/50 dark:bg-black/40 border-r lg:border-r-0 lg:border-l dark:border-gray-800 p-6 pb-96 flex flex-col items-center relative">
            <div className="flex flex-col items-center w-full">
               <div className="mb-6 w-full flex items-center justify-between px-4">
                 <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.4)]"></div><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('معاينة حية', 'Live Preview')}</span></div>
@@ -2128,12 +2144,12 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
               </div>
               
               <div 
-                   className={`transition-all duration-500 origin-top rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black ${previewDevice === 'mobile' ? 'w-[360px]' : previewDevice === 'tablet' ? 'w-[480px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
+                   className={`transition-all duration-500 origin-top rounded-[4rem] overflow-hidden relative border-[12px] border-gray-950 dark:border-gray-900 bg-white dark:bg-black ${previewDevice === 'mobile' ? 'w-[360px] h-[720px]' : previewDevice === 'tablet' ? 'w-[480px] h-[750px]' : 'w-full'} ${isDragMode ? 'cursor-grab' : 'cursor-ns-resize'}`} 
                    style={{ 
                      isolation: 'isolate', 
-                     transform: previewDevice === 'desktop' ? 'scale(0.48)' : 'none',
-                     width: previewDevice === 'desktop' ? '850px' : undefined,
-                     height: previewDevice === 'desktop' ? '1200px' : undefined,
+                     transform: previewDevice === 'desktop' ? 'scale(0.48)' : previewDevice === 'tablet' ? 'scale(0.85)' : 'none',
+                     width: previewDevice === 'desktop' ? '850px' : previewDevice === 'tablet' ? '480px' : undefined,
+                     height: previewDevice === 'desktop' ? '1200px' : previewDevice === 'tablet' ? '880px' : undefined,
                      minHeight: previewDevice === 'desktop' ? '1200px' : undefined,
                      backgroundColor: previewPageBg
                    }}>
@@ -2311,7 +2327,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({ lang, onSave, onCance
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
            <div className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[3.5rem] shadow-0 border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col lg:flex-row h-[90vh] lg:h-auto animate-zoom-in">
               
-              <div className="w-full lg:w-[400px] bg-indigo-50/30 dark:bg-black/20 p-8 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col space-y-6">
+              <div className="w-full lg:w-[340px] bg-indigo-50/30 dark:bg-black/20 p-8 border-b lg:border-b-0 lg:border-l dark:border-gray-800 flex flex-col space-y-6">
                  <div className="flex items-center gap-3">
                     <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-lg"><UserCheck size={20} /></div>
                     <h3 className="text-xl font-black dark:text-white uppercase tracking-tighter">{isRtl ? 'تخصيص القالب لعضو محدد' : 'Restrict to Member'}</h3>
